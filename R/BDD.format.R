@@ -354,9 +354,6 @@ BDD.format <- function(
         select(id, everything(), `_modif_utilisateur`, `_modif_type`,`_modif_date`)
     }
   } # fin de travail sur les résultats
-  
-  DBI::dbDisconnect(dbD)
-  
   } # Fin de travail sur les chroniques
   
   ##### PC #####
