@@ -82,11 +82,8 @@ BDD.format <- function(
   if(traitementforce == TRUE & Type == "Chroniques") Testtraitementforce <- 1
   if(traitementforce == FALSE & Type == "Chroniques") Testtraitementforce <- 1
   if(Testtraitementforce == 1){
-    
-  ## Connexion à la BDD ##
-  dbD <- BDD.ouverture("Data")
   
-  ## Récupération des données ##
+  ## Création des données type ##
   Stations <- structure(list(id = 301L, chsta_coderhj = "CHYh1", chsta_codemo = "H1", 
                              chsta_codesie = NA_character_, chsta_mo = "FDCJ", chsta_milieu = "CHY", 
                              chsta_milieucodehydro = NA, chsta_bassin = NA, chsta_sousbassin = NA, 
