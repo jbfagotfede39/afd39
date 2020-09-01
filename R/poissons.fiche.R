@@ -6,11 +6,10 @@
 #' @param date Date de la pêche
 #' @param commentaires \code{FALSE} par défault
 #' @keywords poissons
-#' @import stringr 
-#' @import DBI 
-#' @import RSQLite 
-#' @import lubridate 
+#' @import DBI
 #' @import knitr
+#' @import lubridate
+#' @import stringr
 #' @export
 #' @examples
 #' poissons.fiche("SOR10-2", "2015-05-19", commentaires = FALSE)

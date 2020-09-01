@@ -5,7 +5,9 @@
 #' @param ListeOperations Dataframe contenant un colonne "Station" avec le code de la station (RHJ) et une colonne "Date"
 #' @param expertise \code{TRUE} par défault
 #' @keywords poissons
-#' @import dplyr DBI RSQLite lubridate
+#' @import DBI
+#' @import dplyr
+#' @import lubridate
 #' @export
 #' @examples
 #' poissons.IPR()
@@ -17,7 +19,7 @@
 # Ré-écriture nécessaire afin de réduire au maximum le volume de données à transférer
 #####################
 
-#library(aquatools);library(dplyr);library(lubridate);library(RSQLite)
+#library(aquatools);library(dplyr);library(lubridate)
 
 poissons.IPR <- function(
   ListeOperations = data.frame(Station = character(0), Date = character(0)),

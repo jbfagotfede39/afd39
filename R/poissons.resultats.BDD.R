@@ -4,8 +4,7 @@
 #' @name poissons.resultats.BDD
 #' @keywords donnees
 #' @import DBI
-#' @import dplyr 
-#' @import RSQLite
+#' @import dplyr
 #' @param periode Permet de limiter la durée des données traitées : 10ans (par défaut), 20ans, Complet , 4campagnes
 #' @export
 #' @examples

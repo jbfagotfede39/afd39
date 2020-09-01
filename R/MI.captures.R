@@ -4,7 +4,9 @@
 #' @name MI.captures
 #' @param listeOperations Dataframe contenant un colonne "Station" avec le code de la station (RHJ) et une colonne "Date"
 #' @keywords donnees
-#' @import dplyr RSQLite DBI lubridate
+#' @import DBI
+#' @import dplyr
+#' @import lubridate
 #' @export
 #' @examples
 #' MI.captures()

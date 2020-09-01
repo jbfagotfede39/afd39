@@ -24,6 +24,7 @@
 ##### TODO LIST #####
 # Ajout de l'échelon cantonal
 # Ajout de l'échelon ComCom (regroupement dans BDD avec "NAS-DATA/Géographie/Toponymie/table-appartenance-geo-communes-18.xlsx")
+# Ajout de l'échelon territoire AAPPMA
 # Problème avec par exemple Poligny -> Poligny + Vaux-sur-Poligny
 # Il faudrait ajouter un champ "Clé", qui serait ensuite la clé de distinction pour poissons.synthese par exemple, au lieu d'avoir à tout réécrire dans cette fonction pour les mailles de regroupement
 # Pour les bassins et sous-bassin il faudrait peut-être travailler à partir du chaînage des écosystèmes en plus ? Cas du Suran, qui n'est pas inclus dans bvthema + autres territoires du NO du département
@@ -159,6 +160,8 @@ stations.territoire <- function(
   #### GEMAPI ####
   if(Echelle == "GEMAPI"){
     stop("Traitement des entités GEMAPI à développer")
+    # Il faut créer une table avec les territoires d'action qui fait référence à la table des MO et qui historise (champ actif ou tri/filtre sur date d'ajout la plus récente ?) les versions des différents territoires d'action, avec un champ de sous-thème GEMAP/N2000 (cas du PNRHJ), avec une seule combinaison active possible
+    
     # dbD <- BDD.ouverture("Data")
     # communes <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.topographie_communes WHERE (tpcomm_departement_insee = '39');")
     # DBI::dbDisconnect(dbD)

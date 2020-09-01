@@ -4,9 +4,8 @@
 #' @name poissons.ecosystemes
 #' @param Nom de l'écosystème
 #' @keywords poissons
-#' @import dplyr
-#' @import RSQLite
 #' @import DBI
+#' @import dplyr
 #' @export
 #' @examples
 #' listeCE <- poissons.ecosystemes()

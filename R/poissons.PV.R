@@ -4,9 +4,8 @@
 #' @name poissons.PV
 #' @param ecosysteme Code de l'écosystème
 #' @keywords poissons
+#' @import DBI
 #' @import dplyr 
-#' @import DBI 
-#' @import RSQLite
 #' @import lubridate
 #' @export
 #' @examples
@@ -17,7 +16,7 @@
 
 #####################
 
-#library(aquatools);library(dplyr);library(lubridate);library(RSQLite);ecosysteme="ROU"
+#library(aquatools);library(dplyr);library(lubridate);ecosysteme="ROU"
 
 poissons.PV <- function(
   ecosysteme="")

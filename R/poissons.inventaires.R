@@ -5,7 +5,9 @@
 #' @param station Code de la station
 #' @param all Affichage de tous les paramètres de la table - \code{FALSE} (par défault) 
 #' @keywords poissons
-#' @import dplyr RSQLite DBI lubridate
+#' @import DBI
+#' @import dplyr
+#' @import lubridate
 #' @export
 #' @examples
 #' poissons.inventaires()

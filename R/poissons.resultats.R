@@ -5,11 +5,10 @@
 #' @param ListeStations Dataframe contenant un colonne "Nom" avec le code de la station (RHJ)
 #' @param Sortie Forme du dataframe de sortie - \code{Simple} (par défault), \code{Propre} (format diffusable, avec stations) ou \code{Complet} (tous les champs)
 #' @keywords donnees
-#' @import dplyr 
-#' @import RSQLite
-#' @import DBI 
+#' @import DBI
+#' @import dplyr
 #' @import lubridate
-#' @param periode Permet de limiter la durée des données traitées : 10ans (par défaut), 20ans, Complet , 4campagnes
+#' @param periode Permet de limiter la durée des données traitées : 5ans, 10ans (par défaut), 20ans, Complet, 4campagnes
 #' @export
 #' @examples
 #' poissons.resultats()
@@ -19,7 +18,7 @@
 poissons.resultats <- function(
   ListeStations = data.frame(Nom = character(0)),
   Sortie = c("Simple","Propre","Complet"),
-  periode = c("10ans","20ans","Complet","4campagnes")
+  periode = c("10ans","5ans", "20ans","Complet","4campagnes")
 )
   {
   
@@ -77,6 +76,7 @@ if(dim(ListeStations)[1] != 0){
 }
   
   ##### Limitation temporelle des résultats #####
+  if(periode == "5ans") limitetemporelle <- now()-years(5)
   if(periode == "10ans") limitetemporelle <- now()-years(10)
   if(periode == "20ans") limitetemporelle <- now()-years(20)
   if(periode == "Complet") limitetemporelle <- now()-years(100)
