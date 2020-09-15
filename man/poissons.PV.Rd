@@ -7,7 +7,7 @@
 poissons.PV(ecosysteme = "")
 }
 \arguments{
-\item{ecosysteme}{Code de l'écosystème}
+\item{ecosysteme}{Code de l'écosystème. Si vide (par défaut), exporte l'intégralité du jeu de données}
 }
 \description{
 Cette fonction permet d'exporter les données de PV de gestion piscicole

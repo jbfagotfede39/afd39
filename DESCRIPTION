@@ -1,6 +1,6 @@
 Package: afd39
 Title: Outils pour la FJPPMA
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: person("Jean-Baptiste", "Fagot", email = "jean-baptiste.fagot@peche-jura.com", role = c("aut", "cre"))
 Description: Outils d'aide à la gestion des données de la Fédération du Jura pour la Pêche et la Protection du Milieu Aquatique
 Imports:
