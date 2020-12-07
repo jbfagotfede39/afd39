@@ -54,7 +54,7 @@ chronique.capteurs <- function(x = "CD39",
   #### Formatage ####
   Vue <-
     Vue %>% 
-    arrange(chcap_numerocapteur) %>% 
+    {if (nrow(.) != 0) arrange(., chcap_numerocapteur) else .} %>% 
     {if(Sortie == "Propre") select(., -contains("modif")) else .}
   
   #### Affichage des résultats ####

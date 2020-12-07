@@ -3,7 +3,7 @@
 #' Cette fonction permet d'attribuer des classes de qualité à des valeurs physico-chimiques
 #' @name PC.classes
 #' @param PC Jeu de données
-#' @param Referentiel Referentiel de qualité (NV par défaut)
+#' @param Referentiel Referentiel de qualité : NV (par défaut), SEQ-EAU, Quebec ou Arrete4aout2006tableau4
 #' @param Categorie Catégorie piscicole (1 par défaut)
 #' @import tidyverse
 #' @import reshape2
@@ -16,13 +16,7 @@
 #' PC.classes(PC,Referentiel="SEQ-EAU",Categorie = 2)
 
 ##### TODO LIST #####
-# Si mise à jour des paramètres :
-# library(readxl);library(tidyverse);data <- read_excel("data/Seuils_PC_V5.xlsx");save(data,file="data/Seuils_PC.RData")
-# PC <- PC %>% filter(pcmes_supportsandre == 6)
-# PCsave <- PC
-# library(readxl);library(tidyverse);library(reshape2);library(aquatools);data(Seuils_PC);Categorie = 1
-# load("data/Seuils_PC.RData")
-# 
+# Voir pour intégrer un passage par PC.agregation avant attribution des classes de qualité ?
 # Ajout d'un filtre si inférieur au seuil de detection avec commentaire en fonction de la valeur de ce seuil/toxicité
 # Notion d'unité : à faire avec la clé : parametre-Matrice-Unite
 # Option permettant différentes sorties (couleurs/valeurs etc.) = Ajout d'une option permettant de choisir le mode de sortie (en l'état avec 2 colonnes de + ou bien différents types de matrices de synthèse (valeurs, ClasseQualite, couleurs) comme dans fichier PC_V3.R)
@@ -33,7 +27,7 @@
 
 PC.classes <- function(
   PC,
-  Referentiel = c("NV", "SEQ-EAU", "Quebec"),
+  Referentiel = c("NV", "SEQ-EAU", "Quebec", "Arrete4aout2006tableau4"),
   Categorie = 1
   )
 {
@@ -309,7 +303,60 @@ ClasseQualites <-
                                  TRUE ~ "Pas de classe"))  # cette dernière ligne permet d'ajouter ce qu'on veut aux cas qui ne se sont pas présentés
     
 }
-
+  
+  ###### Sédiments Arrete4aout2006tableau4 #####
+  
+  if(Referentiel == "Arrete4aout2006tableau4") {
+    
+    ## Création des seuils ##
+    Seuils <- 
+      data %>% 
+      filter(Referentiel == "Arrete4aout2006tableau4") %>% 
+      tidyr::unite(Seuil, c(Seuil, ClasseQualite), remove=T, sep = "-") %>% 
+      dcast(Referentiel + pcmes_parametresandre + pcmes_supportsandre + pcmes_unitesandre ~ Seuil, value.var = "ValeurSeuil") %>% 
+      tidyr::unite(Cl, c(pcmes_parametresandre, pcmes_supportsandre, pcmes_unitesandre), remove=T, sep = "-")
+    
+    ## Attribution des classes de qualité ##
+    ClasseQualites <-
+      PC %>% 
+      ## Transformation des unités ##
+      mutate(pcmes_unitenom = ifelse(pcmes_unitenom == "mg(Cd)/kg MS", "mg/kg MS", pcmes_unitenom)) %>% 
+      mutate(pcmes_unitesandre = ifelse(pcmes_unitesandre == "294", "160", pcmes_unitesandre)) %>% 
+      mutate(pcmes_unitenom = ifelse(pcmes_unitenom == "mg(Cu)/kg MS", "mg/kg MS", pcmes_unitenom)) %>% 
+      mutate(pcmes_unitesandre = ifelse(pcmes_unitesandre == "371", "160", pcmes_unitesandre)) %>% 
+      mutate(pcmes_unitenom = ifelse(pcmes_unitenom == "mg(Hg)/kg MS", "mg/kg MS", pcmes_unitenom)) %>% 
+      mutate(pcmes_unitesandre = ifelse(pcmes_unitesandre == "312", "160", pcmes_unitesandre)) %>% 
+      mutate(pcmes_unitenom = ifelse(pcmes_unitenom == "mg(Ni)/kg MS", "mg/kg MS", pcmes_unitenom)) %>% 
+      mutate(pcmes_unitesandre = ifelse(pcmes_unitesandre == "396", "160", pcmes_unitesandre)) %>% 
+      mutate(pcmes_unitenom = ifelse(pcmes_unitenom == "mg(Pb)/kg MS", "mg/kg MS", pcmes_unitenom)) %>% 
+      mutate(pcmes_unitesandre = ifelse(pcmes_unitesandre == "336", "160", pcmes_unitesandre)) %>% 
+      mutate(pcmes_unitenom = ifelse(pcmes_unitenom == "mg(Zn)/kg MS", "mg/kg MS", pcmes_unitenom)) %>% 
+      mutate(pcmes_unitesandre = ifelse(pcmes_unitesandre == "350", "160", pcmes_unitesandre)) %>% 
+      mutate(pcmes_valeur = as.numeric( sub(",", ".", pcmes_valeur))) %>% 
+      mutate(pcmes_valeur = ifelse(pcmes_unitesandre == "132", pcmes_valeur/1000, pcmes_valeur)) %>% 
+      mutate(pcmes_unitesandre = ifelse(pcmes_unitesandre == "132", "160", pcmes_unitesandre)) %>% 
+      mutate(pcmes_unitenom = ifelse(pcmes_unitenom == "µg/kg MS", "mg/kg MS", pcmes_unitenom)) %>% 
+      tidyr::unite(Cl, c(pcmes_parametresandre, pcmes_supportsandre, pcmes_unitesandre), remove=F, sep = "-") %>% 
+      left_join(Seuils, by = c("Cl" = "Cl")) %>% 
+      mutate(ClasseQualite = NA_character_) %>% # Création préalable nsc pour le ifelse en-dessous
+      mutate(ClasseQualite = ifelse(!is.na(`Maximum-1`),
+                                    case_when(.$pcmes_valeur < .$`Maximum-1` ~ "Autorisé",
+                                              .$pcmes_valeur >= .$`Maximum-1` ~ "Non autorisé",
+                                              TRUE ~ "Pas de classe"),  # cette dernière ligne permet d'ajouter ce qu'on veut aux cas qui ne se sont pas présentés
+                                    ClasseQualite)
+      ) %>%
+      mutate(ClasseQualite = ifelse(pcmes_coderemarque == 10 & !is.na(`Referentiel`), "< seuil quantification", ClasseQualite)) %>%  # Pour compléter les cas inférieurs au seuil de quantification
+      mutate(ClasseQualite = ifelse(pcmes_coderemarque == 2 & !is.na(`Referentiel`), "< seuil detection", ClasseQualite)) %>%  # Pour compléter les cas inférieurs au seuil de detection 
+      select(-(`Maximum-1`), -Cl) %>% 
+      mutate(Couleur = case_when(.$ClasseQualite == "Autorisé" ~ "Vert",
+                                 .$ClasseQualite == "Non autorisé" ~ "Rouge",
+                                 .$ClasseQualite == "< seuil detection" ~ "Gris clair",
+                                 .$ClasseQualite == "< seuil quantification" ~ "Gris",
+                                 TRUE ~ "Pas de classe"))  # cette dernière ligne permet d'ajouter ce qu'on veut aux cas qui ne se sont pas présentés
+    
+  }
+  
+  
 #### Retour des données ####
   return(ClasseQualites)
   

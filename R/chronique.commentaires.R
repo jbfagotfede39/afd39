@@ -49,8 +49,8 @@ if(Recherche == "Année biologique"){
   #### Formatage ####
     Vue <-
     Resultats %>% 
-    arrange(chres_coderhj, chres_anneebiol)
-  
+      {if (nrow(.) != 0) arrange(., chres_coderhj, chres_anneebiol) else .}
+
   #### Affichage des résultats ####
   return(Vue)
 }

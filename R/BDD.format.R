@@ -5,6 +5,7 @@
 #' @param data Chronique à valider
 #' @keywords data
 #' @import dplyr
+#' @import glue
 #' @import lubridate
 #' @import sf
 #' @import stringr
@@ -20,7 +21,7 @@
 BDD.format <- function(
   data = data,
   traitementforce = FALSE,
-  Type = c("MI", "Chroniques", "PC")
+  Type = c("MI", "Chroniques", "PC", "Temps de travail")
   )
 {
   
@@ -222,12 +223,12 @@ BDD.format <- function(
       mutate(chsvi_coderhj = ifelse(chsvi_coderhj == "ILABLOC", "ILAbloc", chsvi_coderhj)) %>% 
       mutate(chsvi_coderhj = ifelse(chsvi_coderhj == "LEM-2-2", "LEM2-2", chsvi_coderhj)) %>% 
       mutate(chsvi_coderhj = ifelse(chsvi_coderhj == "NCZ6-2TRÉMONTAGNE", "NCZ6-2", chsvi_coderhj)) %>% 
-      mutate(chsvi_coderhj = stringr::str_replace(chsvi_coderhj, "BIS.*", "bis")) %>% # Remplacement en fin de station de BIS par bis
-      mutate(chsvi_coderhj = stringr::str_replace(chsvi_coderhj, "LAC.*", "lac")) %>% # Remplacement en fin de station de LAC par lac
-      mutate(chsvi_coderhj = stringr::str_replace(chsvi_coderhj, "BARO.*", "baro")) %>% # Remplacement en fin de station de BARO par baro
-      mutate(chsvi_coderhj = stringr::str_replace(chsvi_coderhj, "AMONT.*", "amont")) %>% # Remplacement en fin de station de AMONT par amont
-      mutate(chsvi_coderhj = stringr::str_replace(chsvi_coderhj, "AVAL.*", "aval")) %>% # Remplacement en fin de station de AVAL par aval
-      mutate(chsvi_coderhj = stringr::str_replace(chsvi_coderhj, "ATMO.*", "atmo")) # Remplacement en fin de station de ATMO par atmo
+      mutate(chsvi_coderhj = stringr::str_replace(chsvi_coderhj, "BIS$", "bis")) %>% # Remplacement en fin de station de BIS par bis
+      mutate(chsvi_coderhj = stringr::str_replace(chsvi_coderhj, "LAC$", "lac")) %>% # Remplacement en fin de station de LAC par lac
+      mutate(chsvi_coderhj = stringr::str_replace(chsvi_coderhj, "BARO$", "baro")) %>% # Remplacement en fin de station de BARO par baro
+      mutate(chsvi_coderhj = stringr::str_replace(chsvi_coderhj, "AMONT$", "amont")) %>% # Remplacement en fin de station de AMONT par amont
+      mutate(chsvi_coderhj = stringr::str_replace(chsvi_coderhj, "AVAL$", "aval")) %>% # Remplacement en fin de station de AVAL par aval
+      mutate(chsvi_coderhj = stringr::str_replace(chsvi_coderhj, "ATMO$", "atmo")) # Remplacement en fin de station de ATMO par atmo
       #mutate(chsvi_coderhj = ifelse(chsvi_coderhj == "", "", chsvi_coderhj)) %>% 
     
     # Travail sur les dates #
@@ -280,17 +281,33 @@ BDD.format <- function(
     data$chsvi_unite <- str_replace(data$chsvi_unite, "degré Celsius", "°C")
 
     # Transformation des actions
-    data$chsvi_action <- dplyr::recode(data$chsvi_action,
-                                 "disparue" = "Disparue",
-                                 "Sonde disparue" = "Disparue",
-                                 "releve" = "Relève",
-                                 "relève" = "Relève",
-                                 "Relève et repose" = "Relève",
-                                 "Relevé" = "Relève",
-                                 "pose" = "Pose",
-                                 "Repose" = "Pose",
-                                 "dépose" = "Dépose"
-    )
+    data <-
+      data %>% 
+      mutate(chsvi_action = str_to_sentence(chsvi_action)) %>% # Pour n'avoir une majuscule qu'au début
+      mutate(chsvi_action = dplyr::recode(chsvi_action,
+                                       # "disparue" = "Disparue",
+                                       "Sonde disparue" = "Disparue",
+                                       "releve" = "Relève",
+                                       # "relève" = "Relève",
+                                       "Relève et repose" = "Relève",
+                                       "Relevé" = "Relève",
+                                       # "pose" = "Pose",
+                                       "Repose" = "Pose"
+                                       # "dépose" = "Dépose"
+                                       )
+             )
+      
+    # data$chsvi_action <- dplyr::recode(data$chsvi_action,
+    #                              "disparue" = "Disparue",
+    #                              "Sonde disparue" = "Disparue",
+    #                              "releve" = "Relève",
+    #                              "relève" = "Relève",
+    #                              "Relève et repose" = "Relève",
+    #                              "Relevé" = "Relève",
+    #                              "pose" = "Pose",
+    #                              "Repose" = "Pose",
+    #                              "dépose" = "Dépose"
+    # )
     
     # Vérification des types d'action
     if(dim(filter(data, chsvi_action == "changement de pile"))[1] > 0){
@@ -379,6 +396,61 @@ BDD.format <- function(
       mutate(id = row_number() + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_production.physicochimie_mesures;")))
   } # Fin de travail sur les mesures de PC
   } # Fin de travail sur PC
+  
+  ##### Temps de travail ####
+  Testtraitementforce <- 0
+  if(traitementforce == TRUE & Type == "Temps de travail") Testtraitementforce <- 1
+  if(traitementforce == FALSE & Type == "Temps de travail") Testtraitementforce <- 1
+  if(Testtraitementforce == 1){
+    ## Connexion à la BDD ##
+    dbD <- BDD.ouverture("Data")
+    
+    ## Récupération des données ##
+    TpsWOpenTime <- structure(list(jour = structure(numeric(0), tzone = "UTC", class = c("POSIXct", 
+                                                                                 "POSIXt")), domaine = character(0), activité = character(0), 
+                           `sous-projet` = character(0), statut = character(0), `date de lancement` = character(0), 
+                           `date de clôture` = character(0), métier = character(0), 
+                           Utilisateur = character(0), `numéro de matricule` = logical(0), 
+                           `temps (h)` = numeric(0), commentaire = character(0), Validé = character(0), 
+                           `code analytique (domaine)` = logical(0), `code analytique` = logical(0), 
+                           `financeur(s)...16` = logical(0), `financeur(s)...17` = logical(0), 
+                           `coût horaire (direct)` = numeric(0), `coût horaire (production)` = numeric(0), 
+                           description = logical(0), de = character(0), à = character(0)), row.names = integer(0), class = c("tbl_df", 
+                                                                                                                             "tbl", "data.frame"))
+    TpsW <- tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_detail")) %>% collect(n = 1)
+    RecapTpsW <- tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_recapitulatif")) %>% collect(n = 1)
+    Projets <- tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_projets")) %>% collect(n = Inf)
+    Personnels <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_operateurs")) %>% filter(gestop_mo == 3 & gestop_type == "Salarié") %>% select(id:gestop_qualite) %>% collect(n = Inf)
+    
+    ## Travail sur les données OpenTime ##
+    if(all(colnames(data) %in% colnames(TpsWOpenTime))) {
+      
+      # Transformation des formats
+      data <-
+        data %>% 
+          # nettoyage
+          rename(date = jour, poste = `métier`, personnel = Utilisateur, duree = `temps (h)`, remarques = commentaire, validation = `Validé`, heuredebut = de, heurefin = `à`) %>% 
+          select(-statut, -`date de lancement`, -`date de clôture`, -`numéro de matricule`, -poste) %>% 
+          select(date:`sous-projet`, personnel, heuredebut, heurefin, duree, validation, remarques) %>%
+          mutate(date = as_date(date)) %>% 
+          mutate(personnel = ifelse(personnel == "Fagot Jean Baptiste", "Fagot Jean-Baptiste", personnel)) %>% # Ajout du tiret manquant
+          mutate(validation = str_to_title(validation)) %>% # Ajout d'une majuscule à oui/non
+          # Complément/modification
+          left_join(Personnels %>% mutate(personnel = glue("{gestop_nom} {gestop_prenom}")), by = c("personnel")) %>% 
+          mutate(personnel = id) %>% 
+          select(-contains("gestop"), -id) %>% 
+          # mise en forme 
+          rename_all(list(~ stringi::stri_trans_general(., "latin-ascii"))) %>% # Pour remplacer les caractères accentués par les mêmes sans accents
+          rename_all(list(~ paste0("tpswot_", .))) %>%
+          rename_all(list(~ gsub("[[:punct:]]", "_", .))) %>%
+          rename_all(list(~ tolower(.))) %>% 
+          mutate(id = row_number() + as.numeric(dbGetQuery(dbD, "SELECT nextval('fd_production.tpstravail_opentime_id_seq');"))) %>% # Pour incrémenter les id à partir du dernier
+          mutate(`_modif_utilisateur` = NA_character_) %>% 
+          mutate(`_modif_type` = NA_character_) %>% 
+          mutate(`_modif_date` = NA) %>% 
+          select(id, everything(), `_modif_utilisateur`, `_modif_type`,`_modif_date`)
+    } # Fin de travail sur les mesures de temps de travail
+  } # Fin de travail sur Temps de travail
   
   ##### Commun #####
 data <- as.data.frame(data)

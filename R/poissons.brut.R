@@ -6,9 +6,10 @@
 #' @param date Date de la pêche
 #' @keywords poissons
 #' @import dplyr 
+#' @import glue
 #' @import gridExtra
 #' @import lubridate
-#' @import xlsx 
+#' @import openxlsx 
 #' @export
 #' @examples
 #' poissons.brut("SOR10-2", "2015-05-19")
@@ -17,6 +18,10 @@ poissons.brut <- function(
   station="AIN18-4",
   date="2011-09-07")
 {
+
+  ##### TODO LIST #####
+  # Supprimer l'utilisation de xlsx
+  #####################
   
   ## Ouverture de la BDD ##
   dbP <- BDD.ouverture(Type = "Poissons")
@@ -113,16 +118,21 @@ poissons.brut <- function(
   
   ###### Écriture des fichiers ######
   ## Captures excel ##
-  write.xlsx(x = Captures, file = paste0(station, "_", date, "_captures.xlsx"),
-             sheetName = paste0(station, " ", date), row.names = F)
+  captures <- createWorkbook() # Création d'un classeur
+  addWorksheet(captures, sheetName = glue('{station} {date}')) # Ajout d'une feuille
+  writeData(captures, 1, Captures, startCol = 1, startRow = 1, colNames = T) # Ajout des données
+  setColWidths(captures, sheet = 1, cols = 2, widths = 10) # Largeur de colonne pour la date
+  saveWorkbook(captures, glue('{station}_{date}_captures.xlsx'), overwrite = T) # save workbook
   
   ## Résultats calculés excel ##
-  SortieResultats <- createWorkbook()
-  feuillebruts <- createSheet(wb=SortieResultats, sheetName="Bruts")
-  feuillecalcules <- createSheet(wb=SortieResultats, sheetName="Calculés")
-  addDataFrame(x=Bruts, sheet=feuillebruts, row.names=FALSE)
-  addDataFrame(x=Elabores, sheet=feuillecalcules, row.names=FALSE)
-  saveWorkbook(SortieResultats, paste0(station, "_", date, "_résultats.xlsx"))
+  SortieResultats <- createWorkbook() # Création d'un classeur
+  addWorksheet(SortieResultats, sheetName = "Bruts") # Ajout d'une feuille
+  addWorksheet(SortieResultats, sheetName = "Calculés") # Ajout d'une feuille
+  writeData(SortieResultats, 1, Bruts, startCol = 1, startRow = 1, colNames = T) # Ajout des données
+  writeData(SortieResultats, 2, Elabores, startCol = 1, startRow = 1, colNames = T) # Ajout des données
+  setColWidths(SortieResultats, sheet = 1, cols = 2, widths = 10) # Largeur de colonne pour la date
+  setColWidths(SortieResultats, sheet = 2, cols = 2, widths = 10) # Largeur de colonne pour la date
+  saveWorkbook(SortieResultats, glue('{station}_{date}_résultats.xlsx'), overwrite = T) # save workbook
   
   ## Résultats calculés png ##
   Elabores <- Elabores %>% mutate(Date = format(Date, format="%Y-%m-%d"))

@@ -4,12 +4,16 @@
 \alias{PC.classes}
 \title{Attribution de classes de qualité}
 \usage{
-PC.classes(PC, Referentiel = c("NV", "SEQ-EAU", "Quebec"), Categorie = 1)
+PC.classes(
+  PC,
+  Referentiel = c("NV", "SEQ-EAU", "Quebec", "Arrete4aout2006tableau4"),
+  Categorie = 1
+)
 }
 \arguments{
 \item{PC}{Jeu de données}
 
-\item{Referentiel}{Referentiel de qualité (NV par défaut)}
+\item{Referentiel}{Referentiel de qualité : NV (par défaut), SEQ-EAU, Quebec ou Arrete4aout2006tableau4}
 
 \item{Categorie}{Catégorie piscicole (1 par défaut)}
 }

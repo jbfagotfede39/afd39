@@ -6,14 +6,14 @@
 \usage{
 chronique.traitement(
   data = data,
-  projet = as.character(NA),
+  projet = NA_character_,
   export = T,
   exportfigures = T,
   exportDCE = F,
   filtrage = F,
-  anneevmm = TRUE,
-  datefperiode = "07-15",
-  nbj = 75,
+  filtrageanneevmm = TRUE,
+  filtragedatefperiode = "07-15",
+  filtragenbj = 75,
   typemesure = c("Thermie", "Thermie barométrique", "Thermie piézométrique",
     "Barométrie", "Piézométrie", "Piézométrie brute", "Piézométrie compensée",
     "Piézométrie calée", "Piézométrie NGF", "Oxygénation", "Hydrologie",
@@ -36,17 +36,17 @@ chronique.traitement(
 
 \item{filtrage}{Si \code{TRUE}, filtre les résultats avec chronique.resultats.filtrage pour ne conserver que les pertinents pour les représentations graphiques inter-annuelles/inter-sites. \code{FALSE} (par défault)}
 
-\item{typemesure}{Défini le type de données et modifie le traitement en fonction}
-
-\item{dep39}{Si \code{FALSE} (par défault), ne va pas rechercher les données de stations dans la base locale et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations}
-
-\item{archivage}{Si \code{Aucun} (par défault), ne va pas créer une archives .zip du répertoire de sortie. Si \code{Partiel}, créé une archive et conserve le répertoire. Si \code{Complet}, créé une archive et supprimer le répertoire.}
-
 \item{filtrageanneevmm}{Si \code{TRUE} (par défault), ne conserve que les résultats dont l'année de fin de vmm30j est égale à l'année biologique du résultat}
 
 \item{filtragedatefperiode}{Ne conserver que les résultats dont la date de fin de période est postérieure à la date choisie ("07-15", soit le 15 juillet par défault)}
 
 \item{filtragenbj}{Nombre de journées minimales pour chaque résultat à conserver (75 par défault).}
+
+\item{typemesure}{Défini le type de données et modifie le traitement en fonction}
+
+\item{dep39}{Si \code{FALSE} (par défault), ne va pas rechercher les données de stations dans la base locale et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations}
+
+\item{archivage}{Si \code{Aucun} (par défault), ne va pas créer une archives .zip du répertoire de sortie. Si \code{Partiel}, créé une archive et conserve le répertoire. Si \code{Complet}, créé une archive et supprimer le répertoire.}
 }
 \description{
 Permet d'exécuter plusieurs opérations de traitement des données de chronique d'une station

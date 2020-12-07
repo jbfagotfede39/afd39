@@ -10,6 +10,10 @@
 
 poissons_synthese_CAR <- function(poissons){
 
+  
+  ##### TODO LIST #####
+  # Supprimer l'utilisation de xlsx
+  #####################
 
 ##### Calcul du minimum entre CAP et CAN pour obtenir CAR #####
 poissons$CAR <- apply(poissons[,(ncol(poissons)-1):ncol(poissons)], 1, min)

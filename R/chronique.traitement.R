@@ -34,14 +34,14 @@
 
 chronique.traitement <- function(  
   data = data,
-  projet = as.character(NA),
+  projet = NA_character_,
   export = T,
   exportfigures = T,
   exportDCE = F,
   filtrage = F,
-  anneevmm = TRUE,
-  datefperiode = "07-15",
-  nbj = 75,
+  filtrageanneevmm = TRUE,
+  filtragedatefperiode = "07-15",
+  filtragenbj = 75,
   typemesure = c("Thermie", "Thermie barométrique", "Thermie piézométrique", "Barométrie", "Piézométrie", "Piézométrie brute", "Piézométrie compensée", "Piézométrie calée", "Piézométrie NGF", "Oxygénation", "Hydrologie", "Pluviométrie"),
   dep39 = c(FALSE, TRUE, "autre"),
   archivage = c("Aucun","Partiel","Complet"),
@@ -50,8 +50,12 @@ chronique.traitement <- function(
 {
 
 ##### -------------- A FAIRE -------------- #####
+# Ajouter un test qui vérifie, avec de sortir les figures de préférendums thermiques, si on travaille bien sur des données thermiques
+# Implanter la fonction chronique.resultats.periode() dans chronique.analyse() ou chronique.traitement() plutôt, afin que le calcul de l'enveloppe soit directement juste, notamment pour les autres FD
 # Il serait intéressant d'ajouter dans le fichier session_info.txt les dates/heures de début et de fin ainsi que le temps de calcul (replacer l'export du fichier à la fin, en stockant l'heure de démarrage)
+# Il faudrait ajouter une suppression automatique du répertoire de sortie s'il existe déjà
 # Export fichier readme qui explique le fonctionnement + auteur + date + noms/versions (session_info) des packages 
+# Ajouter une vérification qu'il n'y a pas un double commentaire sur une clé, ce qui aurait pour effet de produire un double ligne de résultats et donc risque de confusion + bug dans la génération de figures qui s'appuient dessus (preferendums thermiques par ex)
 # Essayer de supprimer le warning qui apparaît suite à # Analyse des données # (In bind_rows_(x, .id) : Unequal factor levels: coercing to character)
 # Faire un outil de regroupement des données brutes au format large à partir de la fin du code de 2020-02-13_Export_suivi_FUR_format_DCE.R  
 # -------------- A FAIRE -------------- #  
@@ -83,9 +87,10 @@ if(export == TRUE){
   dir.create(paste0("./",projet, "/Sorties/Vues/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Sorties/Vues/Interannuelles"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Sorties/Vues/Intersites"), showWarnings = FALSE, recursive = FALSE)
-  dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_absolu-fixé/"), showWarnings = FALSE, recursive = FALSE)
+  dir.create(paste0("./",projet, "/Sorties/Vues/Preferendums_biologiques"), showWarnings = FALSE, recursive = FALSE)
+  dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_absolu-fixe/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_absolu-libre/"), showWarnings = FALSE, recursive = FALSE)
-  dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_relatif-fixé/"), showWarnings = FALSE, recursive = FALSE)
+  dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_relatif-fixe/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_relatif-libre/"), showWarnings = FALSE, recursive = FALSE)
 }
 
@@ -106,9 +111,10 @@ if(file.exists(paste0("./",projet, "/Sorties/")) == TRUE & file.exists(paste0(".
   dir.create(paste0("./",projet, "/Sorties/Vues/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Sorties/Vues/Interannuelles"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Sorties/Vues/Intersites"), showWarnings = FALSE, recursive = FALSE)
+  dir.create(paste0("./",projet, "/Sorties/Vues/Preferendums_biologiques"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_absolu-fixé/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_absolu-libre/"), showWarnings = FALSE, recursive = FALSE)
-  dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_relatif-fixé/"), showWarnings = FALSE, recursive = FALSE)
+  dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_relatif-fixe/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_relatif-libre/"), showWarnings = FALSE, recursive = FALSE)
 }
 }
@@ -236,8 +242,8 @@ DataTravailSIG <- DataTravailSIG %>% left_join(communes %>% st_drop_geometry() %
 DataTravailSIG <- DataTravailSIG %>% st_join(HER) %>% select(-id)
 DataTravailSIG <- DataTravailSIG %>% st_join(contextesPDPG %>% select(hycont_contexte_code))
 DataTravailSIG <- DataTravailSIG %>% left_join(Commentaires %>% select(chres_coderhj, chres_typemesure, chres_anneebiol, chres_commentaire), by = c('chsta_coderhj' = "chres_coderhj", "AnneeVMM" = "chres_anneebiol", "Typemesure" = "chres_typemesure"))
-SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", format(now(), format="%Y-%m-%d"), "_Résultats"), shp = F)
-SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", "Atlas_Résultats"), shp = F, excel = F, kml = F)
+SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", format(now(), format="%Y-%m-%d"), "_Resultats"), shp = F)
+SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", "Atlas_Resultats"), shp = F, excel = F, kml = F)
 }
 
 if(export == TRUE & dep39 == "autre"){
@@ -246,14 +252,15 @@ if(export == TRUE & dep39 == "autre"){
   DataTravailSIG <- DataTravailSIG %>% 
   {if("chsta_codecontextepdpg" %in% names(DataTravailSIG)) mutate(., hycont_contexte_code = chsta_codecontextepdpg) %>% select(., -chsta_codecontextepdpg) else .} %>%
   {if(!("chsta_codecontextepdpg" %in% names(DataTravailSIG))) mutate(., hycont_contexte_code = NA_character_) else .}
+  {if(!("chsta_milieu" %in% names(DataTravailSIG))) mutate(., chsta_milieu = NA_character_) else .}
   DataTravailSIG <- DataTravailSIG %>% left_join(Commentaires %>% select(chres_coderhj, chres_typemesure, chres_anneebiol, chres_commentaire), by = c('chsta_coderhj' = "chres_coderhj", "AnneeVMM" = "chres_anneebiol", "Typemesure" = "chres_typemesure"))
-  SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", format(now(), format="%Y-%m-%d"), "_Résultats"), shp = F)
-  SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", "Atlas_Résultats"), shp = F, excel = F, kml = F)
+  SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", format(now(), format="%Y-%m-%d"), "_Resultats"), shp = F)
+  SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", "Atlas_Resultats"), shp = F, excel = F, kml = F)
 }
 
 if(export == TRUE & dep39 == FALSE){
   DataTravail %>% 
-    openxlsx::write.xlsx(paste0("./",projet, "/Sorties/Résultats/", format(now(), format="%Y-%m-%d"), "_Résultats.xlsx"), sheetName = "Feuille1", row.names = F, showNA = F, colWidths="auto")
+    openxlsx::write.xlsx(paste0("./",projet, "/Sorties/Résultats/", format(now(), format="%Y-%m-%d"), "_Resultats.xlsx"), sheetName = "Feuille1", row.names = F, showNA = F, colWidths="auto")
 }
 
 ##### Sorties format DCE #####
@@ -364,35 +371,41 @@ if (exportfigures == TRUE) {
   }
 
   ## Type de mesures non spécifié ##
-  if (export == T) {
-    if (all("chmes_typemesure" %in% colnames(data)) != TRUE) {
-      warning("Vérification nécessaire car plusieurs typemesure donc ce paramètre n'est pas pris en compte dans les sorties graphiques")
-      # Y libre sans vmm30j
-      data %>%
-        group_split(chmes_coderhj, chmes_anneebiol) %>%
-        purrr::map_dfr(~ chronique.figure(data = ., Titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = "Thermie", Ymin = NA, Ymax = NA, save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
-      # Y libre avec vmm30j
-      data %>%
-        group_split(chmes_coderhj, chmes_anneebiol) %>%
-        purrr::map_dfr(~ chronique.figure(data = ., Titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = "Thermie", Ymin = NA, Ymax = NA, Vmm30j = T, save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
-      # Y fixé sans vmm30j
-      data %>%
-        group_split(chmes_coderhj, chmes_anneebiol) %>%
-        purrr::map_dfr(~ chronique.figure(data = ., Titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = "Thermie", Ymin = -1, Ymax = 30, save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
-      # Y fixé avec vmm30j
-      data %>%
-        group_split(chmes_coderhj, chmes_anneebiol) %>%
-        purrr::map_dfr(~ chronique.figure(data = ., Titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = "Thermie", Ymin = -1, Ymax = 30, Vmm30j = T, save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
-    }
+  if (all("chmes_typemesure" %in% colnames(data)) != TRUE) {
+    warning("Vérification nécessaire car plusieurs typemesure donc ce paramètre n'est pas pris en compte dans les sorties graphiques")
+    # Y libre sans vmm30j
+    data %>%
+      group_split(chmes_coderhj, chmes_anneebiol) %>%
+      purrr::map_dfr(~ chronique.figure(data = ., Titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = "Thermie", Ymin = NA, Ymax = NA, save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
+    # Y libre avec vmm30j
+    data %>%
+      group_split(chmes_coderhj, chmes_anneebiol) %>%
+      purrr::map_dfr(~ chronique.figure(data = ., Titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = "Thermie", Ymin = NA, Ymax = NA, Vmm30j = T, save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
+    # Y fixé sans vmm30j
+    data %>%
+      group_split(chmes_coderhj, chmes_anneebiol) %>%
+      purrr::map_dfr(~ chronique.figure(data = ., Titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = "Thermie", Ymin = -1, Ymax = 30, save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
+    # Y fixé avec vmm30j
+    data %>%
+      group_split(chmes_coderhj, chmes_anneebiol) %>%
+      purrr::map_dfr(~ chronique.figure(data = ., Titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = "Thermie", Ymin = -1, Ymax = 30, Vmm30j = T, save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
   }
+  
+  ### Sortie graphique cumul degrés-jours ###
+  if (all(export & "chmes_typemesure" %in% colnames(data) & n_distinct(data$chmes_typemesure) == 1) == TRUE) {
+    data %>%
+      group_split(chmes_coderhj, chmes_typemesure) %>%
+      purrr::map_dfr(~ chronique.figure.cumul(data = ., Titre = as.character(paste0(unique(.$chmes_coderhj))), typemesure = unique(.$chmes_typemesure), save = T, projet = projet, format = ".png"))
+  } # Fin de Sortie graphique cumul degrés-jours
 
-  ### Sortie graphique boxplot interannuel ###
+  ### Sorties graphiques basées sur les résultats (filtrés ou non) ###
+  if(filtrage == F){dataaconserver <- DataTravailSIG}
   if(filtrage == T){
-    # Filtrage des données brutes
+    # Filtrage des données brutes à partir des résultats à conserver
     dataaconserver <- 
-      DataTravail %>% 
+      DataTravailSIG %>% 
       chronique.resultats.filtrage(anneevmm = filtrageanneevmm, datefperiode = filtragedatefperiode, nbj = filtragenbj) %>% 
-      chronique.cle(formatcle = "SAT") 
+      chronique.cle(formatcle = "SAT")
     
     datafiltrees <-
       data %>% 
@@ -403,9 +416,10 @@ if (exportfigures == TRUE) {
     # Vérification de la quantité
     if(nrow(datafiltrees) != 0) data <- datafiltrees # Cas général
     if(nrow(datafiltrees) == 0) data <- data # Dans le cas où il ne reste aucune année suite au filtrage, du coup on n'en fait pas
-    if(nrow(datafiltrees) == 0) warning("Filtrage non réalisé car il n'y aurait plus aucune donnée")
+    if(nrow(datafiltrees) == 0) warning("Filtrage pour les vues non réalisé car il n'y aurait plus aucune donnée")
   }
     
+  ## Sortie graphique boxplot interannuel ##
   if (all(export & "chmes_typemesure" %in% colnames(data) & n_distinct(data$chmes_typemesure) == 1) == TRUE) {
     # Boxplot
     data %>%
@@ -416,7 +430,40 @@ if (exportfigures == TRUE) {
       group_split(chmes_coderhj, chmes_typemesure) %>%
       purrr::map_dfr(~ chronique.figure.interannuelle(data = ., Titre = as.character(paste0(unique(.$chmes_coderhj))), typemesure = unique(.$chmes_typemesure), style = "violon", save = T, projet = projet, format = ".png"))
   }
-}
+  
+  ## Sortie graphique profil longitudinal ##
+  if (all(export & "chmes_typemesure" %in% colnames(data) & n_distinct(data$chmes_typemesure) == 1) == TRUE) {
+    dataaconserver %>% # Le filtrage général est réalisé plus en amont avec ce qui remplit dataaconserver
+      filter(chsta_milieu %in% (DataTravailSIG %>% 
+                                  group_by(chsta_milieu) %>% 
+                                  distinct(chsta_coderhj) %>% 
+                                  group_by(chsta_milieu) %>% 
+                                  summarise(N = n()) %>% 
+                                  filter(N > 2) %>% 
+                                  pull(chsta_milieu)
+                                )
+             ) %>% # Ici on filtre pour ne conserver que les milieux pour lesquels il y a au moins trois stations
+      group_split(chsta_milieu) %>%
+      purrr::map_dfr(~ chronique.figure.longitudinale(data = ., save = T, projet = projet, format = ".png"))
+  } # Fin de Sortie graphique profil longitudinal
+  
+  ## Sortie graphique preferendums thermiques des espèces ##
+  if (all(export) == TRUE) {
+    # Toutes espèces #
+    dataaconserver %>% # Le filtrage général est réalisé plus en amont avec ce qui remplit dataaconserver
+      chronique.cle(formatcle = "SAT") %>% 
+      filter(chsta_transmission == "Non") %>% # Temporaire = pour éliminer HER14-8 hydrologie suite à la jointure des résultats avec les stations, le temps qu'on travaille directement par ID
+      group_split(Cle) %>%
+      purrr::map_dfr(~ chronique.figure.preferendums(staderecherche = "Adulte", tmm30j = .$VMaxMoy30J, listeEspeces = c("Toutes espèces"), Titre = as.character(glue('{unique(.$chsta_coderhj)} - {unique(.$Annee)}')), save = T, projet = projet, format = ".png"))
+    # Liste d'espèces #
+    # dataaconserver %>% # Le filtrage général est réalisé plus en amont avec ce qui remplit dataaconserver
+    #   filter(!is.na()) %>% # pour ne conserver que les stations comprenant une liste de référence d'espèces
+    #   chronique.cle(formatcle = "SAT") %>% 
+    #   group_split(Cle) %>%
+    # purrr::map_dfr(~ chronique.figure.preferendums(staderecherche = "Adulte", tmm30j = .$VMaxMoy30J, listeEspeces = c("Toutes espèces"), Titre = as.character(glue('{unique(.$chsta_coderhj)} - unique(.$Annee)}')), save = T, projet = projet, format = ".png"))
+  } # Fin de Sortie preferendums thermiques des espèces
+
+} # Fin de exportfigures == T
   
 #### Notices ####
 if(export == TRUE){
