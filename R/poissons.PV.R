@@ -5,7 +5,6 @@
 #' @param ecosysteme Code de l'écosystème. Si vide (par défaut), exporte l'intégralité du jeu de données
 #' @keywords poissons
 #' @import DBI
-#' @import lubridate
 #' @import tidyverse 
 #' @export
 #' @examples

@@ -7,7 +7,7 @@
 #' @param Sortie Forme du dataframe de sortie - \code{Complet} (par défault - tous les champs), \code{Propre} ou \code{Simple}
 #' @keywords capteurs
 #' @keywords chronique
-#' @import dplyr
+#' @import tidyverse
 #' @export
 #' @examples
 #' chronique.capteurs("CD39","Propriétaire")

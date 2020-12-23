@@ -5,7 +5,7 @@
 #' @param Nom de l'écosystème
 #' @keywords poissons
 #' @import DBI
-#' @import dplyr
+#' @import tidyverse
 #' @export
 #' @examples
 #' listeCE <- poissons.ecosystemes()

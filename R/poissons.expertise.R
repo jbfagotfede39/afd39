@@ -2,8 +2,7 @@
 #' @name poissons.expertise
 #' @param ListeOperations Dataframe contenant un colonne "Station" avec le code de la station (RHJ) et une colonne "Date"
 #' @keywords poissons
-#' @import dplyr
-#' @import lubridate
+#' @import tidyverse
 #' @export
 #' @examples
 #' poissons.expertise(data.frame(Station = "SOR10-2", Date = "2012-11-03"))

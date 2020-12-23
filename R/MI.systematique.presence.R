@@ -4,7 +4,7 @@
 #' @name MI.systematique.presence
 #' @param data Jeu de données à compléter
 #' @keywords MI
-#' @import dplyr DBI
+#' @import tidyverse
 #' @export
 #' @examples
 #' MI.systematique.presence(data)

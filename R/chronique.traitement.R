@@ -17,10 +17,9 @@
 #' @param archivage Si \code{Aucun} (par défault), ne va pas créer une archives .zip du répertoire de sortie. Si \code{Partiel}, créé une archive et conserve le répertoire. Si \code{Complet}, créé une archive et supprimer le répertoire.
 #' @import fs
 #' @import glue
+#' @import lubridate
 #' @import openxlsx
-#' @import purrr
 #' @import sf
-#' @import stringr
 #' @import tcltk
 #' @import tidyverse
 #' @import zip
@@ -55,6 +54,7 @@ chronique.traitement <- function(
 # Il serait intéressant d'ajouter dans le fichier session_info.txt les dates/heures de début et de fin ainsi que le temps de calcul (replacer l'export du fichier à la fin, en stockant l'heure de démarrage)
 # Il faudrait ajouter une suppression automatique du répertoire de sortie s'il existe déjà
 # Export fichier readme qui explique le fonctionnement + auteur + date + noms/versions (session_info) des packages 
+# Il serait intéressant de créer un test avant chaque calcul de figure, qui vérifie si le fichier de sortie existe déjà dans le répertoire de sortie, auquel cas la figure n'est pas de nouveau générée. Intérêt dans le cas de gros traitement qui plantent en cours de route : pas tout à refaire pour les figures lorsqu'on a résolu le pb
 # Ajouter une vérification qu'il n'y a pas un double commentaire sur une clé, ce qui aurait pour effet de produire un double ligne de résultats et donc risque de confusion + bug dans la génération de figures qui s'appuient dessus (preferendums thermiques par ex)
 # Essayer de supprimer le warning qui apparaît suite à # Analyse des données # (In bind_rows_(x, .id) : Unequal factor levels: coercing to character)
 # Faire un outil de regroupement des données brutes au format large à partir de la fin du code de 2020-02-13_Export_suivi_FUR_format_DCE.R  
@@ -123,6 +123,7 @@ if(export == TRUE & dep39 != TRUE & file.exists(paste0("./",projet, "/Entrées/"
   dir.create(paste0("./",projet, "/Entrées/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Entrées/Données/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Entrées/Stations/"), showWarnings = FALSE, recursive = FALSE)
+  dir.create(paste0("./",projet, "/Entrées/Capteurs/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Entrées/Commentaires/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Entrées/Suivi/"), showWarnings = FALSE, recursive = FALSE)
 }
@@ -149,32 +150,15 @@ data <-
   ungroup()
 }
 
-#### Analyse des données ####
-DataTravail <- 
-  data %>%
-  group_split(chmes_coderhj, chmes_anneebiol, chmes_typemesure) %>% 
-    purrr::map_dfr(~ chronique.analyse(.)) %>% 
-    ungroup()
-# ça pourra crasher par ici lorsqu'on fera un essai mixant chmes_typemesure == "Thermie" avec un autre chmes_typemesure à cause de la jointure à réaliser et un nb de champ différent (absence de TRF$DateDebutDegresJours et la suite)
-
-DataTravail <- 
-  DataTravail %>% 
-    group_by(Coderhj, Typemesure) %>% 
-    summarise(min = min(AnneeVMM),
-              max = max(AnneeVMM)) %>% 
-    mutate(PeriodeTotale = paste0(min, " - ", max)) %>% 
-    select(-min,-max) %>% 
-    left_join(DataTravail, by = c("Coderhj", "Typemesure")) %>% 
-  ungroup()
-
+  
 ##### Importation des données nécessaires aux exportations #####
 listeStations <- data %>% distinct(chmes_coderhj)
 listeCapteurs <- data %>% distinct(chmes_capteur)
 
 if(export == TRUE){
-dbD <- BDD.ouverture("Data")
-HER <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.hydrographie_hydroecoregions;")
-DBI::dbDisconnect(dbD)
+  dbD <- BDD.ouverture("Data")
+  HER <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.hydrographie_hydroecoregions;")
+  DBI::dbDisconnect(dbD)
 }
 
 if(export == TRUE & dep39 == TRUE){
@@ -196,13 +180,34 @@ if(export == TRUE & dep39 == "autre"){
   Commentaires <- chronique.ouverture("Commentaires", "Thermie", fnameCommentaires)
   
   if(exportDCE == TRUE){
-  fnameSuivi <- tk_choose.files(caption = "Fichier de suivi de terrain")
-  SuiviTerrain <- chronique.ouverture("Suivis", "Thermie", fnameSuivi)
+    fnameSuivi <- tk_choose.files(caption = "Fichier de suivi de terrain")
+    SuiviTerrain <- chronique.ouverture("Suivis", "Thermie", fnameSuivi)
+    
+    fnameCapteurs <- tk_choose.files(caption = "Fichier des capteurs")
+    Capteurs <- chronique.ouverture("Capteurs", "Thermie", fnameCapteurs)
   }
   
   fnameDonnesbrutes <- tk_choose.dir(caption = "Répertoire des chroniques") # On interroge tout de suite l'opérateur pour ne pas le déranger ensuite seulement pour le répertoire des données brutes
   
 }
+
+#### Analyse des données ####
+DataTravail <- 
+  data %>%
+  group_split(chmes_coderhj, chmes_anneebiol, chmes_typemesure) %>% 
+    purrr::map_dfr(~ chronique.analyse(.)) %>% 
+    ungroup()
+# ça pourra crasher par ici lorsqu'on fera un essai mixant chmes_typemesure == "Thermie" avec un autre chmes_typemesure à cause de la jointure à réaliser et un nb de champ différent (absence de TRF$DateDebutDegresJours et la suite)
+
+DataTravail <- 
+  DataTravail %>% 
+    group_by(Coderhj, Typemesure) %>% 
+    summarise(min = min(AnneeVMM),
+              max = max(AnneeVMM)) %>% 
+    mutate(PeriodeTotale = paste0(min, " - ", max)) %>% 
+    select(-min,-max) %>% 
+    left_join(DataTravail, by = c("Coderhj", "Typemesure")) %>% 
+  ungroup()
 
 ##### Sortie stations #####
 if(export == TRUE & dep39 == "autre"){
@@ -251,7 +256,7 @@ if(export == TRUE & dep39 == "autre"){
   DataTravailSIG <- DataTravailSIG %>% st_join(HER) %>% select(-id)
   DataTravailSIG <- DataTravailSIG %>% 
   {if("chsta_codecontextepdpg" %in% names(DataTravailSIG)) mutate(., hycont_contexte_code = chsta_codecontextepdpg) %>% select(., -chsta_codecontextepdpg) else .} %>%
-  {if(!("chsta_codecontextepdpg" %in% names(DataTravailSIG))) mutate(., hycont_contexte_code = NA_character_) else .}
+  {if(!("chsta_codecontextepdpg" %in% names(DataTravailSIG))) mutate(., hycont_contexte_code = NA_character_) else .} %>% 
   {if(!("chsta_milieu" %in% names(DataTravailSIG))) mutate(., chsta_milieu = NA_character_) else .}
   DataTravailSIG <- DataTravailSIG %>% left_join(Commentaires %>% select(chres_coderhj, chres_typemesure, chres_anneebiol, chres_commentaire), by = c('chsta_coderhj' = "chres_coderhj", "AnneeVMM" = "chres_anneebiol", "Typemesure" = "chres_typemesure"))
   SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", format(now(), format="%Y-%m-%d"), "_Resultats"), shp = F)
@@ -274,13 +279,13 @@ if(export == TRUE & dep39 == TRUE){
 if(export == TRUE & dep39 == "autre"){
   data %>%
     group_split(chmes_coderhj) %>% # Permet d'éclater le dataframe en x dataframe, x étant le nb de modalités de chmes_coderhj
-    purrr::map(~ chronique.DCE(data = ., projet = projet, export = T, dep39 = "autre", fichierStations = fnameStations, fichierSuivis = fnameSuivi))
+    purrr::map(~ chronique.DCE(data = ., projet = projet, export = T, dep39 = "autre", fichierStations = fnameStations, fichierSuivis = fnameSuivi, fichierCapteurs = fnameCapteurs))
 }
 
 if(export == TRUE & dep39 == FALSE){
   data %>%
     group_split(chmes_coderhj) %>% # Permet d'éclater le dataframe en x dataframe, x étant le nb de modalités de chmes_coderhj
-    purrr::map(~ chronique.DCE(data = ., projet = projet, export = T, dep39 = F, fichierStations = fnameStations, fichierSuivis = fnameSuivi))
+    purrr::map(~ chronique.DCE(data = ., projet = projet, export = T, dep39 = F, fichierStations = fnameStations, fichierSuivis = fnameSuivi, fichierCapteurs = fnameCapteurs))
 }
 }
 
@@ -493,6 +498,11 @@ if(export == TRUE & dep39 == "autre" & exportDCE == T){
 ## Commentaires #####
 if(export == TRUE & dep39 == "autre"){
   file_move(fnameCommentaires, glue('./{projet}/Entrées/Commentaires/'))
+}
+
+## Capteurs #####
+if(export == TRUE & dep39 == "autre"){
+  file_move(fnameCapteurs, glue('./{projet}/Entrées/Capteurs/'))
 }
   
 ## Données brutes ##

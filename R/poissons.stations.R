@@ -5,7 +5,7 @@
 #' @param Nom de la station
 #' @keywords stations
 #' @import DBI 
-#' @import dplyr
+#' @import tidyverse
 #' @export
 #' @examples
 #' Stations <- poissons.stations()

@@ -14,7 +14,8 @@ chronique.DCE(
   export = T,
   dep39 = F,
   fichierStations = NA_character_,
-  fichierSuivis = NA_character_
+  fichierSuivis = NA_character_,
+  fichierCapteurs = NA_character_
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ chronique.DCE(
 \item{fichierStations}{Permet de passer automatiquement la localisation du fichier de stations si on le souhaite, sinon le demandera}
 
 \item{fichierSuivis}{Permet de passer automatiquement la localisation du fichier de suivis si on le souhaite, sinon le demandera}
+
+\item{fichierCapteurs}{Permet de passer automatiquement la localisation du fichier des capteurs si on le souhaite, sinon le demandera}
 }
 \description{
 Permet de réaliser un export de données thermiques au format DCE AE-OFB

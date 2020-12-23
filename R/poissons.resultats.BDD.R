@@ -2,10 +2,10 @@
 #'
 #' Récupère l'ensemble des données de résultats de Maxifish dans un dataframe
 #' @name poissons.resultats.BDD
+#' @param periode Permet de limiter la durée des données traitées : 10ans (par défaut), 20ans, Complet , 4campagnes
 #' @keywords donnees
 #' @import DBI
-#' @import dplyr
-#' @param periode Permet de limiter la durée des données traitées : 10ans (par défaut), 20ans, Complet , 4campagnes
+#' @import tidyverse
 #' @export
 #' @examples
 #' poissons.resultats.BDD()

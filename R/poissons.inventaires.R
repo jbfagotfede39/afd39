@@ -6,8 +6,7 @@
 #' @param all Affichage de tous les paramètres de la table - \code{FALSE} (par défault) 
 #' @keywords poissons
 #' @import DBI
-#' @import dplyr
-#' @import lubridate
+#' @import tidyverse
 #' @export
 #' @examples
 #' poissons.inventaires()

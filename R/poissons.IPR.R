@@ -6,8 +6,7 @@
 #' @param expertise \code{TRUE} par défault
 #' @keywords poissons
 #' @import DBI
-#' @import dplyr
-#' @import lubridate
+#' @import tidyverse
 #' @export
 #' @examples
 #' poissons.IPR()

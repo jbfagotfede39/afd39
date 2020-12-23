@@ -6,7 +6,6 @@
 #' @param x Variable dont on cherche le suivi (MO, opérateur, Station, Date, Capteur)
 #' @param Recherche Type de donnée de suivi
 #' @param Sortie Forme du dataframe de sortie - \code{Complet} (par défault - tous les champs), \code{Propre} ou \code{Simple}
-#' @import lubridate
 #' @import tidyverse
 #' @export
 #' @examples

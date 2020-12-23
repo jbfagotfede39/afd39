@@ -1,21 +1,27 @@
 Package: afd39
 Title: Outils pour la FJPPMA
-Version: 0.0.2
+Version: 0.0.3
 Authors@R: person("Jean-Baptiste", "Fagot", email = "jean-baptiste.fagot@peche-jura.com", role = c("aut", "cre"))
 Description: Outils d'aide à la gestion des données de la Fédération du Jura pour la Pêche et la Protection du Milieu Aquatique
 Imports:
+    aquatools,
     DBI,
+    fs,
     FSA,
-    ggplot2,
+    glue,
+    gridExtra,
+    keyring,
     knitr,
     lubridate,
-    magrittr,
+    openxlsx,
     RcppRoll,
     reshape2,
-    rvest,
+    RPostgreSQL,
     sf,
-    stringr,
-    tidyverse
+    stringi,
+    testit,
+    tidyverse,
+    zip
 License: `use_mit_license()`, `use_gpl3_license()` or friends to
     pick a license
 URL: https://github.com/jbfagotfede39/afd39

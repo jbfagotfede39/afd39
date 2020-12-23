@@ -8,8 +8,6 @@
 #' @keywords poissons
 #' @import DBI
 #' @import knitr
-#' @import lubridate
-#' @import stringr
 #' @export
 #' @examples
 #' poissons.fiche("SOR10-2", "2015-05-19", commentaires = FALSE)

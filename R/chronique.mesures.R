@@ -4,8 +4,7 @@
 #' 
 #' @name chronique.mesures
 #' @keywords chronique
-#' @import lubridate 
-#' @import stringr
+#' @import RPostgreSQL
 #' @import tidyverse
 #' @param CodeStation Code RHJ de la station
 #' @param Type Type de chronique recherchée : Thermie (par défaut), piézométrie, Hydrologie, O2, pluviométrie ou toutes les données

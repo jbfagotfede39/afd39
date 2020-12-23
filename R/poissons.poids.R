@@ -3,8 +3,8 @@
 #' Calcule, à partir d'une jeu de données de captures, les poids attendus pour des tailles données
 #' @name poissons.poids
 #' @keywords donnees
-#' @import dplyr
 #' @import FSA
+#' @import tidyverse
 #' @export
 #' @examples
 #' poissons.poids(Captures)

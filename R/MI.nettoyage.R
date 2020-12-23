@@ -5,9 +5,8 @@
 #' @param data Chronique à valider
 #' @param larve Si \code{FALSE} (par défault), n'ajoute pas le stade larvaire si non complété
 #' @keywords MI
-#' @import dplyr 
 #' @import DBI
-#' @import stringr
+#' @import tidyverse
 #' @export
 #' @examples
 #' MI.nettoyage(data)

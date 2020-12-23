@@ -5,10 +5,9 @@
 #' @param Synthese Type de synthèse. Présence par défaut (pas d'autres types pour l'instant)
 #' @param Territoire Territoire concerné : issu de stations.territoire
 #' @param Maille Maille de synthèse des données : commune (par défaut), canton, communauté de communes, département, région, contexte de PDPG, Hydro-écorégion, entité GEMAPI, Maître d'ouvrage, Milieu, Bassin versant, Sous-bassin versant, maille INPN
-#' @import dbplyr
-#' @import dplyr
 #' @import keyring
 #' @import RPostgreSQL
+#' @import tidyverse
 #' @export
 #' @examples
 #' poissons.synthese("Présence", Territoire, "Commune")

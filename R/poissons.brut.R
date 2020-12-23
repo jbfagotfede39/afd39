@@ -5,11 +5,10 @@
 #' @param station Code RHJ de la station
 #' @param date Date de la pêche
 #' @keywords poissons
-#' @import dplyr 
 #' @import glue
 #' @import gridExtra
-#' @import lubridate
 #' @import openxlsx 
+#' @import tidyverse
 #' @export
 #' @examples
 #' poissons.brut("SOR10-2", "2015-05-19")

@@ -6,10 +6,7 @@
 #' @param station Code RHJ de la station
 #' @param date Date de la pêche
 #' @param commentaires \code{FALSE} par défault. Permet d'extraire le commentaire associé à la pêche
-#' @import dplyr
-#' @import lubridate 
 #' @import sf
-#' @import stringr
 #' @import tidyverse
 #' @export
 #' @examples

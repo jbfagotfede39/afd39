@@ -4,11 +4,10 @@
 #' @name iam.resultats
 #' @param ListeStations Dataframe contenant un colonne "Nom" avec le code de la station (RHJ)
 #' @param Sortie Forme du dataframe de sortie - \code{Simple} (par défault), \code{Propre} (format diffusable, avec stations) ou \code{Complet} (tous les champs)
+#' @param periode Permet de limiter la durée des données traitées : 5ans, 10ans (par défaut), 20ans, Complet, 4campagnes
 #' @keywords donnees
 #' @import DBI
-#' @import dplyr
-#' @import lubridate
-#' @param periode Permet de limiter la durée des données traitées : 5ans, 10ans (par défaut), 20ans, Complet, 4campagnes
+#' @import tidyverse
 #' @export
 #' @examples
 #' iam.resultats()

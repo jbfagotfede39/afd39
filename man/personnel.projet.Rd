@@ -4,7 +4,21 @@
 \alias{personnel.projet}
 \title{Extraction des données de temps de travail par projet}
 \usage{
-personnel.projet(projet = NA_character_)
+personnel.projet(
+  projet = NA_character_,
+  projection = TRUE,
+  anciennebase = FALSE,
+  export = TRUE
+)
+}
+\arguments{
+\item{projet}{Intitulé du projet que l'on souhaite calculer}
+
+\item{projection}{Si \code{TRUE} (par défaut), va chercher les données projetées.}
+
+\item{anciennebase}{Si \code{TRUE}, va chercher les données détaillées également dans l'ancienne base en plus d'Opentime}
+
+\item{export}{Si \code{TRUE} (par défaut), exporte les résultats}
 }
 \description{
 Extrait au format excel les données plus ou moins détaillées des coûts du personnel par projet

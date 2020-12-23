@@ -6,7 +6,7 @@
 #' @param Sortie Format de la sortie
 #' @param Couleurs Présence de couleurs dans le formatage du statut des espèces (\code{FALSE} par défault)
 #' @import DBI 
-#' @import dplyr
+#' @import tidyverse
 #' @export
 #' @examples
 #' poissons.especes()

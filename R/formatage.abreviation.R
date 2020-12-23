@@ -8,6 +8,7 @@
 #' @param export Si \code{TRUE}, exporte le glossaire. Si \code{FALSE} (par défault), ne l'exporte pas.
 #' @param exportformat Format d'exportation des acronymes : \code{.xlsx} (par défault), \code{.pdf} ou \code{.tex}.
 #' @import DBI
+#' @import glue
 #' @import stringi
 #' @import tidyverse
 #' @export

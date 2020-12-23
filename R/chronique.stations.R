@@ -6,8 +6,8 @@
 #' @param Echelle Échelle spatiale de la synthèse (commune, canton, communauté de communes, département, région, contexte de PDPG, Hydro-écorégion, entité GEMAPI, Maître d'ouvrage, Milieu, Bassin versant, Sous-bassin versant, Polygone autre)
 #' @param Sortie Forme du dataframe de sortie - \code{Simple}, \code{Propre} (format diffusable, avec stations) ou \code{Complet} (par défault - tous les champs)
 #' @keywords stations
-#' @import dplyr
 #' @import sf
+#' @import tidyverse
 #' @export
 #' @examples
 #' chronique.stations("CD39","MO")

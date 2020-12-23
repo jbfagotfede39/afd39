@@ -5,8 +5,7 @@
 #' @param listeOperations Dataframe contenant un colonne "Station" avec le code de la station (RHJ) et une colonne "Date"
 #' @keywords donnees
 #' @import DBI
-#' @import dplyr
-#' @import lubridate
+#' @import tidyverse
 #' @export
 #' @examples
 #' MI.captures()

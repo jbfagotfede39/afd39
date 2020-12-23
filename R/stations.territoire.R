@@ -6,12 +6,11 @@
 #' @param Territoire Territoire concerné. Unique ou sous forme de vecteur (c("Villerserine", "Villers-Robert") par exemple)
 #' @param Liste \code{FALSE} par défault. Permet d'afficher une liste dans laquelle choisir le territoire concerné
 #' @keywords stations
-#' @import dbplyr
-#' @import dplyr
 #' @import keyring
 #' @import RPostgreSQL
 #' @import sf
 #' @import tcltk
+#' @import tidyverse
 #' @export
 #' @examples
 #' stations.territoire(data)

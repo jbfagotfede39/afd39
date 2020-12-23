@@ -4,17 +4,16 @@
 #' @name BDD.format
 #' @param data Chronique à valider
 #' @keywords data
-#' @import dplyr
 #' @import glue
-#' @import lubridate
 #' @import sf
-#' @import stringr
+#' @import testit
+#' @import tidyverse
 #' @export
 #' @examples
 #' BDD.format(data)
 
 ###### À faire #####
-# Ajout d'un test pour les suivi de chronique : si le champ fonctionnement contient perdue, alors le champ action ne peut être que disparue, sinon stop et signalement
+# Ajout d'un test pour les suivis de chronique : si le champ fonctionnement contient perdue, alors le champ action ne peut être que disparue, sinon stop et signalement
 # 
 ####################
 
@@ -173,6 +172,9 @@ BDD.format <- function(
                                                                                                                                         "POSIXt"), tzone = "")), row.names = 1L, class = c("tbl_df", 
                                                                                                                                                                                            "tbl", "data.frame"))
   
+  # MesuresGroupees <- 
+    test <- tbl(dbD, in_schema("fd_production", "chroniques_mesuresgroupees")) %>% collect(n = Inf)
+  
   # Mesures #
   if(all(colnames(data) %in% colnames(Mesures))) {
     
@@ -190,6 +192,14 @@ BDD.format <- function(
     data$id <- row_number(data$chmes_valeur) + as.numeric(tbl(dbD,in_schema("fd_production", "chroniques_mesures")) %>% summarise(max = max(id, na.rm = TRUE)) %>% collect()) # Pour incrémenter les id à partir du dernier
     if(dim(filter(data, is.na(id)))[1] > 0 & dim(filter(data, is.na(chmes_validation)))[1] == 0) data$id <- row_number(data$chmes_validation) + as.numeric(tbl(dbD,in_schema("fd_production", "chroniques_mesures")) %>% summarise(max = max(id, na.rm = TRUE)) %>% collect())
     if(dim(filter(data, is.na(id)))[1] > 0) stop("Tous les id ne sont pas complétés")
+  }
+  
+  # Mesures groupées #
+  if(all(colnames(data) %in% colnames(MesuresGroupees))) {
+    
+    # Ajout des ID
+    data$id <- row_number(data$chmesgr_coderhj_id) + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_production.chroniques_mesuresgroupees;")) # Pour incrémenter les id à partir du dernier
+    data <- data %>% arrange(id)
   }
   
   # SuiviTerrain #

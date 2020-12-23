@@ -6,7 +6,6 @@
 #' @param Nom du cours d'eau
 #' @param shp Si \code{FALSE} (par défault), n'exporte pas de shp dans le répertoire courant.
 #' @keywords stations
-#' @import lubridate
 #' @import sf
 #' @import tidyverse
 #' @export

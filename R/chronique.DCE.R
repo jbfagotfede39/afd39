@@ -10,7 +10,8 @@
 #' @param dep39 Si \code{FALSE} (par défault), ne va pas rechercher les données de stations dans la base locale et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations
 #' @param fichierStations Permet de passer automatiquement la localisation du fichier de stations si on le souhaite, sinon le demandera
 #' @param fichierSuivis Permet de passer automatiquement la localisation du fichier de suivis si on le souhaite, sinon le demandera
-#' @import lubridate 
+#' @param fichierCapteurs Permet de passer automatiquement la localisation du fichier des capteurs si on le souhaite, sinon le demandera
+#' @import glue
 #' @import openxlsx
 #' @import sf
 #' @import tcltk
@@ -27,7 +28,8 @@ chronique.DCE <- function(
   export = T,
   dep39 = F,
   fichierStations = NA_character_,
-  fichierSuivis = NA_character_
+  fichierSuivis = NA_character_,
+  fichierCapteurs = NA_character_
 )
 {
   
@@ -50,10 +52,12 @@ chronique.DCE <- function(
     collect() %>% 
     mutate(chsta_codepointprlvmt = NA_character_) # manquant
   SuiviTerrain <- chronique.suivi(unique(data$chmes_coderhj), Recherche = "Station")
+  Capteurs <- chronique.capteurs(unique(data$chmes_capteur), Recherche = "Numéro")
   DBI::dbDisconnect(dbD)
   }
   
   if(dep39 == "autre"){
+    ### Stations ###
     listeStations <- data %>% distinct(chmes_coderhj)
     if(!is.na(fichierStations)) fnameStations <- fichierStations
     if(is.na(fichierStations)) fnameStations <- tk_choose.files(caption = "Fichier de stations")
@@ -67,6 +71,12 @@ chronique.DCE <- function(
       Stations %>% 
       filter(chsta_coderhj %in% listeStations$chmes_coderhj) %>% 
       mutate(chsta_codepointprlvmt = NA_character_) # manquant
+    
+    ### Capteurs ###
+    listeCapteurs <- data %>% distinct(chmes_capteur)
+    if(!is.na(fichierCapteurs)) fnameCapteurs <- fichierCapteurs
+    if(is.na(fichierCapteurs)) fnameCapteurs <- tk_choose.files(caption = "Fichier des capteurs")
+    Capteurs <- chronique.ouverture("Capteurs", "Thermie", fnameCapteurs)
   }
 
   ##### Mise au format DCE #####
@@ -76,10 +86,11 @@ chronique.DCE <- function(
     rowwise() %>% 
     mutate(tpcomm_commune_libelle = aquatools::BV.ComByCoordL93(chsta_coord_x,chsta_coord_y) %>% select(name) %>% as.character()) %>% 
     ungroup() %>% 
-    select(chsta_codesie, chsta_codepointprlvmt, chsta_codemo, chsta_milieu, tpcomm_commune_libelle, chsta_coderhj, chsta_coord_x, chsta_coord_y, chsta_detailsloc) %>% 
+    mutate(chsta_detailsloc = glue('{chsta_rive} - {chsta_detailsloc}')) %>% 
+    select(chsta_codesie, chsta_codepointprlvmt, chsta_codemo, chsta_milieu, tpcomm_commune_libelle, chsta_coderhj, chsta_coord_x, chsta_coord_y, chsta_detailsloc, chsta_ombrage, chsta_facies) %>% 
     {if(nrow(SuiviTerrain) != 0) right_join(., SuiviTerrain %>% 
                  mutate(chsvi_date = format(chsvi_date, format="%d/%m/%Y")) %>% 
-                 mutate(chsvi_profondeur = NA_character_) %>% # manquant
+                 mutate(chsvi_profondeur = ifelse(chsvi_profondeur > 10, chsvi_profondeur / 10, chsvi_profondeur)) %>%
                  mutate(chsvi_remarques = paste0(chsvi_action, " - ", chsvi_remarques)) %>% 
                  select(chsvi_coderhj, chsvi_capteur, chsvi_date, chsvi_profondeur, chsvi_valeur, chsvi_operateurs, chsvi_remarques),
                by = c('chsta_coderhj' = 'chsvi_coderhj')
@@ -90,7 +101,12 @@ chronique.DCE <- function(
     {if(nrow(SuiviTerrain) == 0) mutate(., chsvi_valeur = NA_character_) else .} %>% 
     {if(nrow(SuiviTerrain) == 0) mutate(., chsvi_operateurs = NA_character_) else .} %>% 
     {if(nrow(SuiviTerrain) == 0) mutate(., chsvi_remarques = NA_character_) else .} %>% 
-    select(chsta_codesie, chsta_codepointprlvmt, chsta_codemo, chsta_milieu, tpcomm_commune_libelle, chsta_coderhj, chsta_coord_x, chsta_coord_y, chsvi_capteur, chsvi_date, chsvi_profondeur, chsvi_valeur, chsvi_operateurs, chsta_detailsloc, chsvi_remarques) %>% 
+    {if(nrow(Capteurs) != 0 & nrow(SuiviTerrain) != 0) right_join(., Capteurs %>% 
+                                              select(chcap_numerocapteur, chcap_modelecapteur),
+                                            by = c('chsvi_capteur' = 'chcap_numerocapteur')
+    ) else .} %>% 
+    {if(nrow(Capteurs) == 0 & nrow(SuiviTerrain) == 0) mutate(., chcap_modelecapteur = NA_character_) else .} %>% 
+    select(chsta_codesie, chsta_codepointprlvmt, chsta_codemo, chsta_milieu, tpcomm_commune_libelle, chsta_coderhj, chsta_coord_x, chsta_coord_y, chsvi_capteur, chcap_modelecapteur, chsvi_date, chsta_detailsloc, chsta_ombrage, chsta_facies, chsvi_profondeur, chsvi_valeur, chsvi_operateurs, chsvi_remarques) %>% 
     rename(CODE_STA_SANDRE = chsta_codesie, 
            CODE_PT_PRELEVT_SANDRE = chsta_codepointprlvmt,
            COD_STA_METIER = chsta_codemo, 
@@ -100,11 +116,14 @@ chronique.DCE <- function(
            X_93 = chsta_coord_x, 
            Y_93 = chsta_coord_y, 
            COD_SONDE = chsvi_capteur,
+           MODEL_SONDE = chcap_modelecapteur,
            DATE_POSE = chsvi_date,
+           EMPLACEMENT_POSE = chsta_detailsloc,
+           OMBRAGE = chsta_ombrage,
+           FACIES_POSE = chsta_facies,
            PROF_POSE = chsvi_profondeur,
            T_POSE = chsvi_valeur,
            AGENT_POSE = chsvi_operateurs,
-           EMPLACEMENT_POSE = chsta_detailsloc,
            RQ_POSE = chsvi_remarques)
   
   ### Chronique ###

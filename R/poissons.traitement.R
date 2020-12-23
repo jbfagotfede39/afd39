@@ -8,7 +8,6 @@
 #' @param archivage Si Aucun (par défault), ne va pas créer une archives .zip du répertoire de sortie. Si Partiel, créé une archive et conserve le répertoire. Si Complet, créé une archive et supprimer le répertoire.
 #' @keywords poissons
 #' @export
-#' @import ggplot2
 #' @import tidyverse
 #' @examples
 #' poissons.traitement(data)

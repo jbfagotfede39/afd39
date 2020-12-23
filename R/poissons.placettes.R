@@ -5,9 +5,8 @@
 #' @param station Code de la station
 #' @param complet Données simplifiées \code{FALSE} (par défault) ou complètes \code{TRUE}
 #' @keywords poissons
-#' @import dplyr
 #' @import DBI
-#' @import lubridate
+#' @import tidyverse
 #' @export
 #' @examples
 #' poissons.placettes()
