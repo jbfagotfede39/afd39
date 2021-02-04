@@ -61,6 +61,8 @@ poissons.traitement <- function(
     dir.create(paste0("./",Contexte$Nom,"/PoissonsHistogramme/Annee/Classe/"), showWarnings = FALSE, recursive = FALSE)
     dir.create(paste0("./",Contexte$Nom,"/PoissonsHistogramme/Annee/SansClasse/"), showWarnings = FALSE, recursive = FALSE)
     dir.create(paste0("./",Contexte$Nom,"/PoissonsHistogramme/Interannuelle/"), showWarnings = FALSE, recursive = FALSE)
+    dir.create(paste0("./",Contexte$Nom,"/PoissonsHistogramme/Interannuelle/Classe/"), showWarnings = FALSE, recursive = FALSE)
+    dir.create(paste0("./",Contexte$Nom,"/PoissonsHistogramme/Interannuelle/SansClasse/"), showWarnings = FALSE, recursive = FALSE)
   }
 }
   

@@ -32,7 +32,7 @@ poissons.CAA <- function(
     poissons.resultats(data.frame(Nom = station), Sortie = "Complet", periode = periode) %>% 
     filter(modedepeche != "CMN")%>% 
     mutate(modedepeche = ifelse(modedepeche == "EX1" | modedepeche == "EX2" | modedepeche == "EX3", "EX", modedepeche)) %>% # EX1 et EX2 et EX3 sont fusionnés pour éviter les biais
-    select(nom,modedepeche,datedebut.x, codeespece, coderdt, coteabondancenumerique, coteabondanceponderale, typetheorique) %>%
+    dplyr::select(nom,modedepeche,datedebut.x, codeespece, coderdt, coteabondancenumerique, coteabondanceponderale, typetheorique) %>%
     arrange(nom, datedebut.x, codeespece) %>% 
     rowwise() %>% # Pour grouper les données par ligne pour avoir le min
     mutate(CA = min(coteabondancenumerique, coteabondanceponderale)) %>% 
@@ -44,10 +44,10 @@ poissons.CAA <- function(
 
   ## Contexte global ##
   Contexte <-
-    Resultats %>% select(coderdt) %>% distinct() %>% ungroup() %>% 
-    add_column(station = Resultats %>% select(nom) %>% distinct() %>% pull()) %>% 
-    add_column(Ntypo = Resultats %>% select(typetheorique) %>% distinct() %>% pull()) %>% 
-    add_column(NbrModedepeche = Resultats %>% select(NbrModedepeche) %>% distinct() %>% pull())
+    Resultats %>% dplyr::select(coderdt) %>% distinct() %>% ungroup() %>% 
+    add_column(station = Resultats %>% dplyr::select(nom) %>% distinct() %>% pull()) %>% 
+    add_column(Ntypo = Resultats %>% dplyr::select(typetheorique) %>% distinct() %>% pull()) %>% 
+    add_column(NbrModedepeche = Resultats %>% dplyr::select(NbrModedepeche) %>% distinct() %>% pull())
   
   #### Import ntt_ca REF ####
   #Récupération des données #
@@ -59,7 +59,7 @@ poissons.CAA <- function(
     rename(typetheorique = ntt_ntt) %>% 
     rename(codeespece = ntt_espece) %>% 
     rename(CA = ntt_ca) %>% 
-    select(coderdt:CA)
+    dplyr::select(coderdt:CA)
     
   DBI::dbDisconnect(dbD)
   
@@ -70,7 +70,7 @@ poissons.CAA <- function(
       BddNTT <- 
         BddNTT %>% 
         mutate(datedebut.y  = "NTT") %>%
-        select(datedebut.y, codeespece, coderdt, typetheorique, CA) %>%
+        dplyr::select(datedebut.y, codeespece, coderdt, typetheorique, CA) %>%
         filter(coderdt %in% Contexte$coderdt) %>% 
         filter(typetheorique %in% Contexte$Ntypo) %>% 
         mutate(coderdt = "Référence")
@@ -79,7 +79,7 @@ poissons.CAA <- function(
 
       Resultatsvue <- 
         Resultats %>%
-        select(codeespece, datedebut.x, coderdt, typetheorique, CA)%>%
+        dplyr::select(codeespece, datedebut.x, coderdt, typetheorique, CA)%>%
         mutate(Annee = year(ymd(datedebut.x)))
       
     ## Le NTT existe dans les stations de multifish
@@ -88,7 +88,7 @@ poissons.CAA <- function(
         Resultatsvue %>% 
         bind_rows(BddNTT) %>% 
         mutate(Annee = ifelse(is.na(Annee), datedebut.y, Annee)) %>% 
-        select(-datedebut.y)
+        dplyr::select(-datedebut.y)
     }
     
     ## Le NTT n'existe pas dans les stations de multifish
@@ -110,7 +110,7 @@ poissons.CAA <- function(
     BddNTT <- 
       BddNTT %>% 
       mutate(datedebut.y = "NTT") %>%
-      select(datedebut.y,codeespece,coderdt,typetheorique,CA) %>%
+      dplyr::select(datedebut.y,codeespece,coderdt,typetheorique,CA) %>%
       filter(coderdt %in% Contexte$coderdt) %>% 
       filter(typetheorique %in% Contexte$Ntypo) %>% 
       mutate(typetheorique = "Référence")
@@ -122,7 +122,7 @@ poissons.CAA <- function(
     ResultatFalse <- 
       Resultats %>% 
       filter(modedepeche == "ECD") %>%
-      select(codeespece,datedebut.x,coderdt,typetheorique,CA)
+      dplyr::select(codeespece,datedebut.x,coderdt,typetheorique,CA)
     
     # Traitement autre que ECD + jointure #
     ResultatTrue <-
@@ -132,10 +132,10 @@ poissons.CAA <- function(
       mutate(CAcorrigé = max(CA)) %>%
       ungroup() %>%
       mutate(datedebutcorrigé = max(datedebut.x)) %>%
-      select(-CA,-datedebut.x) %>%
+      dplyr::select(-CA,-datedebut.x) %>%
       rename("CA"="CAcorrigé") %>%
       rename("datedebut.x"="datedebutcorrigé") %>%
-      select(codeespece, datedebut.x, coderdt, typetheorique, CA) %>%
+      dplyr::select(codeespece, datedebut.x, coderdt, typetheorique, CA) %>%
       distinct() %>% 
       bind_rows(ResultatFalse)
     
@@ -146,7 +146,7 @@ poissons.CAA <- function(
       bind_rows(BddNTT)%>% 
       mutate(datedebut.x = ifelse(is.na (datedebut.x), paste0("NTT ", typetheorique ),datedebut.x)) %>% 
       mutate(Annee = ifelse(is.na(Annee), datedebut.y, Annee)) %>% 
-      select(-datedebut.y) 
+      dplyr::select(-datedebut.y) 
   }
 
   ##### Complément des CAA des écrevisses #####

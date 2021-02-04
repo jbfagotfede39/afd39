@@ -1,6 +1,6 @@
 #' Exportation des résultats bruts de pêche
 #'
-#' Cette fonction permet d'exporter les résultats bruts et élaborés de pêche au format excel
+#' Cette fonction permet d'exporter les résultats bruts et élaborés de pêche au format excel et png
 #' @name poissons.brut
 #' @param station Code RHJ de la station
 #' @param date Date de la pêche
@@ -19,7 +19,7 @@ poissons.brut <- function(
 {
 
   ##### TODO LIST #####
-  # Supprimer l'utilisation de xlsx
+  # 
   #####################
   
   ## Ouverture de la BDD ##
@@ -43,7 +43,7 @@ poissons.brut <- function(
   ## Simplification ##
   Captures <- 
     Captures %>%
-    select(nom, datedebut, numerodepassage, codeespece, tailleminimum, taillemaximum, nombre, poids) %>% 
+    dplyr::select(nom, datedebut, numerodepassage, codeespece, tailleminimum, taillemaximum, nombre, poids) %>% 
     filter(nom == station, datedebut == date) %>% 
     rename(Station = nom, Date = datedebut, Passage = numerodepassage, Espece = codeespece) %>% 
     arrange(Passage, Espece, nombre)
@@ -57,7 +57,7 @@ poissons.brut <- function(
   Bruts <-
     Resultats %>%
     filter(nom == station, datedebut.x == date) %>%
-    select(nom, datedebut.x, codeespece, n_sommecapturepassage1, n_sommecapturepassage2, n_sommecapturepassage3, nombretotalcaptures, densitenumeriquebrute, biomassetotalecapturee, densiteponderalebrute) %>%
+    dplyr::select(nom, datedebut.x, codeespece, n_sommecapturepassage1, n_sommecapturepassage2, n_sommecapturepassage3, nombretotalcaptures, densitenumeriquebrute, biomassetotalecapturee, densiteponderalebrute) %>%
     arrange(codeespece)
   
   Bruts$densitenumeriquebrute <- round(Bruts$densitenumeriquebrute,1)
@@ -77,16 +77,30 @@ poissons.brut <- function(
   temporaire$nom <- "TOTAL"
   Bruts <- merge(Bruts, temporaire, all=T)
   
-  Bruts <- Bruts %>% 
-    select(nom, datedebut.x, codeespece, n_sommecapturepassage1, n_sommecapturepassage2, n_sommecapturepassage3, nombretotalcaptures, densitenumeriquebrute, biomassetotalecapturee, densiteponderalebrute) %>%
-    dplyr::rename(Date = datedebut.x)
-    colnames(Bruts) <- c("Station", "Date","Espèce","P1","P2","P3","Nb total","Ind/10a", "Biomasse (g)", "g/ha")
+  Bruts <- 
+    Bruts %>% 
+    dplyr::select(nom, datedebut.x, codeespece, n_sommecapturepassage1, n_sommecapturepassage2, n_sommecapturepassage3, nombretotalcaptures, densitenumeriquebrute, biomassetotalecapturee, densiteponderalebrute) %>%
+    dplyr::rename(Date = datedebut.x) %>% 
+    mutate(biomassetotalecapturee = round(biomassetotalecapturee/1000, 1)) %>% # Passage en kg, arrondi 1 chiffre après la virgule
+    mutate(densiteponderalebrute = round(densiteponderalebrute/1000, 1)) # Passage en kg, arrondi 1 chiffre après la virgule
+
+  colnames(Bruts) <- c("Station", "Date","Espèce","P1","P2","P3","Nb total","Ind/10a", "Biomasse (kg)", "kg/ha")
+  
+  # Suppression des valeurs d'effectifs si toutes les valeurs du P2 sont nulles
+  if(length(unique(Bruts$P2)) == 1){
+    if(unique(Bruts$P2) == 0) Bruts$P2 <- ""
+  }
+  
+  # Suppression des valeurs d'effectifs si toutes les valeurs du P3 sont nulles
+  if(length(unique(Bruts$P3)) == 1){
+    if(unique(Bruts$P3) == 0) Bruts$P3 <- ""
+  }
   
   ## Résultats élaborés
   Elabores <-
     Resultats %>%
     filter(nom == station, datedebut.x == date) %>%
-    select(nom, datedebut.x, codeespece, n_sommecapturepassage1, n_sommecapturepassage2, n_sommecapturepassage3, estimationeffectifnumerique, densitenumeriqueestimee, intervalleconfiancedensitenum, estimationeffectifponderal, densiteponderaleestimee, intervalleconfiancedensitepond, coteabondancenumerique, coteabondanceponderale) %>%
+    dplyr::select(nom, datedebut.x, codeespece, n_sommecapturepassage1, n_sommecapturepassage2, n_sommecapturepassage3, estimationeffectifnumerique, densitenumeriqueestimee, intervalleconfiancedensitenum, estimationeffectifponderal, densiteponderaleestimee, intervalleconfiancedensitepond, coteabondancenumerique, coteabondanceponderale) %>%
     arrange(codeespece)
   
   Elabores$densitenumeriqueestimee <- round(Elabores$densitenumeriqueestimee,1)
@@ -108,12 +122,29 @@ poissons.brut <- function(
   temporaire$nom <- "TOTAL"
   Elabores <- merge(Elabores, temporaire, all=T)
   
+  # Modification des unités
+  Elabores <- 
+    Elabores %>% 
+    mutate(estimationeffectifponderal = round(estimationeffectifponderal/1000, 1)) %>%  # Passage en kg, arrondi 1 chiffre après la virgule
+    mutate(densiteponderaleestimee = round(densiteponderaleestimee/1000, 1)) %>% # Passage en kg, arrondi 1 chiffre après la virgule
+    mutate(intervalleconfiancedensitepond = round(intervalleconfiancedensitepond/1000, 3)) # Passage en kg, arrondi 3 chiffre après la virgule
+
   # Remise en ordre des colonnes et renommage #
+  Elabores <- 
+    Elabores %>% 
+    dplyr::select(nom, datedebut.x, codeespece, n_sommecapturepassage1, n_sommecapturepassage2, n_sommecapturepassage3, estimationeffectifnumerique, densitenumeriqueestimee, intervalleconfiancedensitenum, estimationeffectifponderal, densiteponderaleestimee, intervalleconfiancedensitepond, coteabondancenumerique, coteabondanceponderale) %>% 
+    dplyr::rename(Date = datedebut.x)
+  colnames(Elabores)<-c("Station", "Date","Espèce","P1","P2","P3","Effectif estimé","Ind/10a","IC Ind/10a","Biomasse estimée (kg)","kg/ha","IC kg/ha", "CAN", "CAP")
   
-  Elabores <- Elabores %>% 
-  select(nom, datedebut.x, codeespece, n_sommecapturepassage1, n_sommecapturepassage2, n_sommecapturepassage3, estimationeffectifnumerique, densitenumeriqueestimee, intervalleconfiancedensitenum, estimationeffectifponderal, densiteponderaleestimee, intervalleconfiancedensitepond, coteabondancenumerique, coteabondanceponderale) %>% 
-  dplyr::rename(Date = datedebut.x)
-  colnames(Elabores)<-c("Station", "Date","Espèce","P1","P2","P3","Effectif estimé","Ind/10a","IC Ind/10a","Biomasse estimée (g)","g/ha","IC g/ha", "CAN", "CAP")
+  # Suppression des valeurs d'effectifs si toutes les valeurs du P2 sont nulles
+  if(length(unique(Elabores$P2)) == 1){
+    if(unique(Elabores$P2) == 0) Elabores$P2 <- ""
+  }
+  
+  # Suppression des valeurs d'effectifs si toutes les valeurs du P3 sont nulles
+  if(length(unique(Elabores$P3)) == 1){
+    if(unique(Elabores$P3) == 0) Elabores$P3 <- ""
+  }
   
   ###### Écriture des fichiers ######
   ## Captures excel ##
@@ -134,10 +165,28 @@ poissons.brut <- function(
   saveWorkbook(SortieResultats, glue('{station}_{date}_résultats.xlsx'), overwrite = T) # save workbook
   
   ## Résultats calculés png ##
-  Elabores <- Elabores %>% mutate(Date = format(Date, format="%Y-%m-%d"))
-  Elabores <- Elabores %>% mutate_all(funs(replace(., is.na(.), "")))
+  Elabores <- 
+    Elabores %>% 
+    mutate(Date = format(Date, format="%Y-%m-%d")) %>% 
+    mutate_all(funs(replace(., is.na(.), ""))) %>% 
+    mutate(Station = ifelse(row_number() == 1 | row_number() == max(row_number()), Station, ""))%>% 
+    mutate(Date = ifelse(row_number() == 1, Date, ""))
+  
+  matriceGrasItalique <- matrix(c("plain", "plain", "plain", "plain", "plain", "plain", "plain", "bold", "plain", "plain", "bold", "plain", "bold", "bold"), ncol = ncol(Elabores), nrow = nrow(Elabores), byrow = TRUE)
+  matriceGrasItalique[nrow(Elabores),] <- "bold.italic"
+  
+  tt1 <- 
+    ttheme_minimal(
+      core = list(
+        bg_params = list(fill = blues9[1:2], col=NA),
+        fg_params = list(fontface = matriceGrasItalique)
+      ),
+      colhead = list(fg_params=list(col="navyblue", fontface=4L)),
+      rowhead = list(fg_params=list(col="white", fontface=3L))
+    )
+  
   png(paste0(station, "_", date, "_résultats.png", sep=""), height = 25*nrow(Elabores), width = 60*ncol(Elabores))
-  grid.table(Elabores, rows = NULL)
+  grid.table(Elabores, theme = tt1, rows = NULL)
   dev.off()
-
+  
 } # Fin de la fonction

@@ -12,7 +12,7 @@ poissons.brut(station = "AIN18-4", date = "2011-09-07")
 \item{date}{Date de la pêche}
 }
 \description{
-Cette fonction permet d'exporter les résultats bruts et élaborés de pêche au format excel
+Cette fonction permet d'exporter les résultats bruts et élaborés de pêche au format excel et png
 }
 \examples{
 poissons.brut("SOR10-2", "2015-05-19")

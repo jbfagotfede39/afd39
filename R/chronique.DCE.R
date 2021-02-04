@@ -84,15 +84,15 @@ chronique.DCE <- function(
   OngletPoseReleve <-
     listeStations %>% 
     rowwise() %>% 
-    mutate(tpcomm_commune_libelle = aquatools::BV.ComByCoordL93(chsta_coord_x,chsta_coord_y) %>% select(name) %>% as.character()) %>% 
+    mutate(tpcomm_commune_libelle = aquatools::BV.ComByCoordL93(chsta_coord_x,chsta_coord_y) %>% dplyr::select(name) %>% as.character()) %>% 
     ungroup() %>% 
     mutate(chsta_detailsloc = glue('{chsta_rive} - {chsta_detailsloc}')) %>% 
-    select(chsta_codesie, chsta_codepointprlvmt, chsta_codemo, chsta_milieu, tpcomm_commune_libelle, chsta_coderhj, chsta_coord_x, chsta_coord_y, chsta_detailsloc, chsta_ombrage, chsta_facies) %>% 
+    dplyr::select(chsta_codesie, chsta_codepointprlvmt, chsta_codemo, chsta_milieu, tpcomm_commune_libelle, chsta_coderhj, chsta_coord_x, chsta_coord_y, chsta_detailsloc, chsta_ombrage, chsta_facies) %>% 
     {if(nrow(SuiviTerrain) != 0) right_join(., SuiviTerrain %>% 
                  mutate(chsvi_date = format(chsvi_date, format="%d/%m/%Y")) %>% 
                  mutate(chsvi_profondeur = ifelse(chsvi_profondeur > 10, chsvi_profondeur / 10, chsvi_profondeur)) %>%
                  mutate(chsvi_remarques = paste0(chsvi_action, " - ", chsvi_remarques)) %>% 
-                 select(chsvi_coderhj, chsvi_capteur, chsvi_date, chsvi_profondeur, chsvi_valeur, chsvi_operateurs, chsvi_remarques),
+                 dplyr::select(chsvi_coderhj, chsvi_capteur, chsvi_date, chsvi_profondeur, chsvi_valeur, chsvi_operateurs, chsvi_remarques),
                by = c('chsta_coderhj' = 'chsvi_coderhj')
     ) else .} %>% 
     {if(nrow(SuiviTerrain) == 0) mutate(., chsvi_capteur = NA_character_) else .} %>% 
@@ -102,11 +102,11 @@ chronique.DCE <- function(
     {if(nrow(SuiviTerrain) == 0) mutate(., chsvi_operateurs = NA_character_) else .} %>% 
     {if(nrow(SuiviTerrain) == 0) mutate(., chsvi_remarques = NA_character_) else .} %>% 
     {if(nrow(Capteurs) != 0 & nrow(SuiviTerrain) != 0) right_join(., Capteurs %>% 
-                                              select(chcap_numerocapteur, chcap_modelecapteur),
+                                              dplyr::select(chcap_numerocapteur, chcap_modelecapteur),
                                             by = c('chsvi_capteur' = 'chcap_numerocapteur')
     ) else .} %>% 
     {if(nrow(Capteurs) == 0 & nrow(SuiviTerrain) == 0) mutate(., chcap_modelecapteur = NA_character_) else .} %>% 
-    select(chsta_codesie, chsta_codepointprlvmt, chsta_codemo, chsta_milieu, tpcomm_commune_libelle, chsta_coderhj, chsta_coord_x, chsta_coord_y, chsvi_capteur, chcap_modelecapteur, chsvi_date, chsta_detailsloc, chsta_ombrage, chsta_facies, chsvi_profondeur, chsvi_valeur, chsvi_operateurs, chsvi_remarques) %>% 
+    dplyr::select(chsta_codesie, chsta_codepointprlvmt, chsta_codemo, chsta_milieu, tpcomm_commune_libelle, chsta_coderhj, chsta_coord_x, chsta_coord_y, chsvi_capteur, chcap_modelecapteur, chsvi_date, chsta_detailsloc, chsta_ombrage, chsta_facies, chsvi_profondeur, chsvi_valeur, chsvi_operateurs, chsvi_remarques) %>% 
     rename(CODE_STA_SANDRE = chsta_codesie, 
            CODE_PT_PRELEVT_SANDRE = chsta_codepointprlvmt,
            COD_STA_METIER = chsta_codemo, 
@@ -136,7 +136,7 @@ chronique.DCE <- function(
     mutate(chmes_capteur = ifelse("chmes_capteur" %in% names(.), chmes_capteur, NA_character_)) %>% 
     mutate(chmes_validation = ifelse("chmes_validation" %in% names(.), chmes_validation, NA_character_)) %>% 
     mutate(chmes_mode_acquisition = ifelse("chmes_mode_acquisition" %in% names(.), chmes_mode_acquisition, "Mesuré")) %>% 
-    select(chsta_codesie, chsta_codepointprlvmt, chsta_codemo, chmes_coderhj, chmes_capteur, chmes_date, chmes_heure, chmes_valeur, chmes_validation, chmes_mode_acquisition) %>% 
+    dplyr::select(chsta_codesie, chsta_codepointprlvmt, chsta_codemo, chmes_coderhj, chmes_capteur, chmes_date, chmes_heure, chmes_valeur, chmes_validation, chmes_mode_acquisition) %>% 
     rename(CODE_STA_SANDRE = chsta_codesie, 
            CODE_PT_PRELEVT_SANDRE = chsta_codepointprlvmt,
            COD_STA_METIER = chsta_codemo, 

@@ -172,8 +172,18 @@ BDD.format <- function(
                                                                                                                                         "POSIXt"), tzone = "")), row.names = 1L, class = c("tbl_df", 
                                                                                                                                                                                            "tbl", "data.frame"))
   
-  # MesuresGroupees <- 
-    test <- tbl(dbD, in_schema("fd_production", "chroniques_mesuresgroupees")) %>% collect(n = Inf)
+  # MesuresGroupees
+  MesuresGroupees <- structure(list(id = integer(0), chmesgr_coderhj_id = integer(0), 
+                                    chmesgr_capteur_id = integer(0), chmesgr_date = structure(numeric(0), class = "Date"), 
+                                    chmesgr_periodicite = character(0), chmesgr_typeagregation = character(0), 
+                                    chmesgr_valeur = numeric(0), chmesgr_unite = character(0), 
+                                    chmesgr_typemesure = character(0), chmesgr_validation = character(0), 
+                                    chmesgr_mode_acquisition = character(0), chmesgr_mode_integration = character(0), 
+                                    chmesgr_source = character(0), chmesgr_remarques = character(0), 
+                                    `_modif_utilisateur` = character(0), `_modif_type` = character(0), 
+                                    `_modif_date` = structure(numeric(0), tzone = "", class = c("POSIXct", 
+                                                                                                "POSIXt"))), row.names = integer(0), class = c("tbl_df", 
+                                                                                                                                               "tbl", "data.frame"))
   
   # Mesures #
   if(all(colnames(data) %in% colnames(Mesures))) {
@@ -183,6 +193,9 @@ BDD.format <- function(
     
     # Complément des heures #
     data$chmes_heure <- ifelse(nchar(data$chmes_heure) == 5, paste0(data$chmes_heure, ":00"), data$chmes_heure) 
+    
+    # Correction des unités #
+    data$chmes_unite <- ifelse(data$chmes_typemesure == "Piézométrie NGF", "NGF", data$chmes_unite)
     
     # Transformation des formats
     data$id <- as.integer(data$id)

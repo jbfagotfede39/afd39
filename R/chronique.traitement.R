@@ -163,7 +163,7 @@ if(export == TRUE){
 
 if(export == TRUE & dep39 == TRUE){
   dbD <- BDD.ouverture("Data")
-  listeStations <- sf::st_read(dbD, query = "SELECT * FROM fd_production.chroniques_stations;") %>% filter(chsta_coderhj %in% listeStations$chmes_coderhj) %>% collect() %>% select(chsta_coderhj:chsta_departement, chsta_coord_x:chsta_coord_type, chsta_fonctionnement:chsta_reseauthermietype, chsta_altitude, chsta_distancesource, chsta_typetheorique)
+  listeStations <- sf::st_read(dbD, query = "SELECT * FROM fd_production.chroniques_stations;") %>% filter(chsta_coderhj %in% listeStations$chmes_coderhj) %>% collect() %>% dplyr::select(chsta_coderhj:chsta_departement, chsta_coord_x:chsta_coord_type, chsta_fonctionnement:chsta_reseauthermietype, chsta_altitude, chsta_distancesource, chsta_typetheorique)
   communes <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.topographie_communes WHERE (tpcomm_departement_insee = '39' OR tpcomm_departement_insee = '25' OR tpcomm_departement_insee = '01');")
   contextesPDPG <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.hydrographie_contextespdpg;")
   Commentaires <- tbl(dbD, in_schema("fd_production", "chroniques_commentaires")) %>% collect(n = Inf)
@@ -205,19 +205,19 @@ DataTravail <-
     summarise(min = min(AnneeVMM),
               max = max(AnneeVMM)) %>% 
     mutate(PeriodeTotale = paste0(min, " - ", max)) %>% 
-    select(-min,-max) %>% 
+    dplyr::select(-min,-max) %>% 
     left_join(DataTravail, by = c("Coderhj", "Typemesure")) %>% 
   ungroup()
 
 ##### Sortie stations #####
 if(export == TRUE & dep39 == "autre"){
   ## Préparation format SIG ##
-  listeStations <- Stations %>% filter(chsta_coderhj %in% listeStations$chmes_coderhj) %>% select(chsta_coderhj:chsta_codecontextepdpg, chsta_coord_x:chsta_coord_type, chsta_fonctionnement:chsta_reseauthermietype, chsta_altitude, chsta_distancesource, chsta_typetheorique)
+  listeStations <- Stations %>% filter(chsta_coderhj %in% listeStations$chmes_coderhj) %>% dplyr::select(chsta_coderhj:chsta_codecontextepdpg, chsta_coord_x:chsta_coord_type, chsta_fonctionnement:chsta_reseauthermietype, chsta_altitude, chsta_distancesource, chsta_typetheorique)
   listeStations <-
     listeStations %>% 
     rowwise() %>% 
-    mutate(tpcomm_commune_libelle = aquatools::BV.ComByCoordL93(chsta_coord_x,chsta_coord_y) %>% select(name) %>% as.character()) %>% 
-    mutate(chsta_departement = aquatools::BV.ComByCoordL93(chsta_coord_x,chsta_coord_y) %>% select(codeDepartement) %>% as.character()) %>% 
+    mutate(tpcomm_commune_libelle = aquatools::BV.ComByCoordL93(chsta_coord_x,chsta_coord_y) %>% dplyr::select(name) %>% as.character()) %>% 
+    mutate(chsta_departement = aquatools::BV.ComByCoordL93(chsta_coord_x,chsta_coord_y) %>% dplyr::select(codeDepartement) %>% as.character()) %>% 
     ungroup() %>% 
     sf::st_as_sf(coords = c("chsta_coord_x","chsta_coord_y")) %>% 
     st_set_crs(2154)
@@ -243,22 +243,22 @@ if(export == TRUE & dep39 == TRUE){
 ##### Sortie résultats élaborés #####
 if(export == TRUE & dep39 == TRUE){
 DataTravailSIG <- listeStations %>% left_join(DataTravail %>% mutate(intervalMax = as.numeric(sub(",", ".", IntervalleMax))), by = c("chsta_coderhj" = "Coderhj"))
-DataTravailSIG <- DataTravailSIG %>% left_join(communes %>% st_drop_geometry() %>% select(tpcomm_commune_insee, tpcomm_commune_libelle), by = c('chsta_commune' = "tpcomm_commune_insee"))
-DataTravailSIG <- DataTravailSIG %>% st_join(HER) %>% select(-id)
-DataTravailSIG <- DataTravailSIG %>% st_join(contextesPDPG %>% select(hycont_contexte_code))
-DataTravailSIG <- DataTravailSIG %>% left_join(Commentaires %>% select(chres_coderhj, chres_typemesure, chres_anneebiol, chres_commentaire), by = c('chsta_coderhj' = "chres_coderhj", "AnneeVMM" = "chres_anneebiol", "Typemesure" = "chres_typemesure"))
+DataTravailSIG <- DataTravailSIG %>% left_join(communes %>% st_drop_geometry() %>% dplyr::select(tpcomm_commune_insee, tpcomm_commune_libelle), by = c('chsta_commune' = "tpcomm_commune_insee"))
+DataTravailSIG <- DataTravailSIG %>% st_join(HER) %>% dplyr::select(-id)
+DataTravailSIG <- DataTravailSIG %>% st_join(contextesPDPG %>% dplyr::select(hycont_contexte_code))
+DataTravailSIG <- DataTravailSIG %>% left_join(Commentaires %>% dplyr::select(chres_coderhj, chres_typemesure, chres_anneebiol, chres_commentaire), by = c('chsta_coderhj' = "chres_coderhj", "AnneeVMM" = "chres_anneebiol", "Typemesure" = "chres_typemesure"))
 SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", format(now(), format="%Y-%m-%d"), "_Resultats"), shp = F)
 SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", "Atlas_Resultats"), shp = F, excel = F, kml = F)
 }
 
 if(export == TRUE & dep39 == "autre"){
   DataTravailSIG <- listeStations %>% left_join(DataTravail %>% mutate(intervalMax = as.numeric(sub(",", ".", IntervalleMax))), by = c("chsta_coderhj" = "Coderhj"))
-  DataTravailSIG <- DataTravailSIG %>% st_join(HER) %>% select(-id)
+  DataTravailSIG <- DataTravailSIG %>% st_join(HER) %>% dplyr::select(-id)
   DataTravailSIG <- DataTravailSIG %>% 
-  {if("chsta_codecontextepdpg" %in% names(DataTravailSIG)) mutate(., hycont_contexte_code = chsta_codecontextepdpg) %>% select(., -chsta_codecontextepdpg) else .} %>%
+  {if("chsta_codecontextepdpg" %in% names(DataTravailSIG)) mutate(., hycont_contexte_code = chsta_codecontextepdpg) %>% dplyr::select(., -chsta_codecontextepdpg) else .} %>%
   {if(!("chsta_codecontextepdpg" %in% names(DataTravailSIG))) mutate(., hycont_contexte_code = NA_character_) else .} %>% 
   {if(!("chsta_milieu" %in% names(DataTravailSIG))) mutate(., chsta_milieu = NA_character_) else .}
-  DataTravailSIG <- DataTravailSIG %>% left_join(Commentaires %>% select(chres_coderhj, chres_typemesure, chres_anneebiol, chres_commentaire), by = c('chsta_coderhj' = "chres_coderhj", "AnneeVMM" = "chres_anneebiol", "Typemesure" = "chres_typemesure"))
+  DataTravailSIG <- DataTravailSIG %>% left_join(Commentaires %>% dplyr::select(chres_coderhj, chres_typemesure, chres_anneebiol, chres_commentaire), by = c('chsta_coderhj' = "chres_coderhj", "AnneeVMM" = "chres_anneebiol", "Typemesure" = "chres_typemesure"))
   SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", format(now(), format="%Y-%m-%d"), "_Resultats"), shp = F)
   SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", "Atlas_Resultats"), shp = F, excel = F, kml = F)
 }
@@ -416,7 +416,7 @@ if (exportfigures == TRUE) {
       data %>% 
       chronique.cle(formatcle = "SAT") %>% 
       filter(Cle %in% dataaconserver$Cle) %>% 
-      select(-Cle)
+      dplyr::select(-Cle)
     
     # Vérification de la quantité
     if(nrow(datafiltrees) != 0) data <- datafiltrees # Cas général
