@@ -79,8 +79,10 @@ if(dim(ListeStations)[1] != 0){
   if(periode == "10ans") limitetemporelle <- now()-years(10)
   if(periode == "20ans") limitetemporelle <- now()-years(20)
   if(periode == "Complet") limitetemporelle <- now()-years(100)
-  if(periode == "4campagnes") limitetemporelle <- Resultats %>% distinct(datedebut.x) %>% arrange(desc(datedebut.x)) %>% pull() %>% nth(4)
   Resultats <- Resultats %>% filter(datedebut.x >= limitetemporelle)
+  
+  if(periode == "4campagnes") warning("Attention, pas de distinction par station dans le cas où il y en a plusieurs : à développer")
+  if(periode == "4campagnes") limitetemporelle <- Resultats %>% distinct(datedebut.x) %>% arrange(desc(datedebut.x)) %>% pull() %>% nth(4)
   
   ##### Simplification #####
 if(dim(ListeStations)[1] == 0 & Sortie == "Simple"){
@@ -90,18 +92,10 @@ if(dim(ListeStations)[1] == 0 & Sortie == "Simple"){
    select(Station, Date, codeespece)
 }
   
-  if(dim(ListeStations)[1] == 0 & Sortie == "Propre"){
-    stop("Paramétrage de la sortie à développer")
-    # Resultats <-
-    #   Resultats %>%
-    #   select(Nom, DateDebut, Codeespece, TailleMinimum, TailleMaximum, Nombre, Poids)
-  }
-  
-  if(dim(ListeStations)[1] != 0 & Sortie == "Propre"){
-    stop("Paramétrage de la sortie à développer")
-    # Resultats <-
-    #   Resultats %>%
-    #   select(Nom, DateDebut, Codeespece, TailleMinimum, TailleMaximum, Nombre, Poids)
+  if(Sortie == "Propre"){
+    Resultats <-
+      Resultats %>%
+      select(nomecosysteme, nom, codesiermc, xlambert, ylambert, datedebut.x, modeechantillonnage, codeespece, n_sommecapturepassage1, n_sommecapturepassage2, n_sommecapturepassage3, m_sommecapturepassage1, m_sommecapturepassage2, m_sommecapturepassage3, nombretotalcaptures, biomassetotalecapturee, estimationeffectifnumerique, estimationeffectifponderal, intervalleconfiancenumerique, intervalleconfianceponderal, densitenumeriqueestimee, densiteponderaleestimee, coteabondancenumerique, coteabondanceponderale)
   }
 
   return(Resultats)

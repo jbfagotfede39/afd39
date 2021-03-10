@@ -22,7 +22,6 @@ projet.calculInitial <- function(
   if(dim(distinct(NomProjet, tpswrecap_programmation))[1] != 1) stop("Plusieurs statuts de programmation dans le dataframe d'entrée")
   
   dbD <- BDD.ouverture("Data")
-  TpsW <- tbl(dbD, in_schema("fd_production", "tpstravail_detail")) %>% collect()
   RecapTpsW <- tbl(dbD, in_schema("fd_production", "tpstravail_recapitulatif")) %>% collect()
   CoutAnnuel <- tbl(dbD, in_schema("fd_referentiels", "gestion_coutsannuels")) %>% collect()
   CoutTypePrestation <- tbl(dbD, in_schema("fd_referentiels", "gestion_coutsunitaires")) %>% collect()
