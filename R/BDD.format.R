@@ -4,6 +4,7 @@
 #' @name BDD.format
 #' @param data Chronique à valider
 #' @keywords data
+#' @import DBI
 #' @import glue
 #' @import sf
 #' @import testit
@@ -36,45 +37,80 @@ BDD.format <- function(
   if(traitementforce == TRUE & Type == "MI") Testtraitementforce <- 1
   if(traitementforce == FALSE & Type == "MI") Testtraitementforce <- 1
   if(Testtraitementforce == 1){
+    
   ## Connexion à la BDD ##
-  dbMI <- BDD.ouverture("Macroinvertébrés")
+  dbD <- BDD.ouverture("Data")
   
   ## Récupération des données ##
-  HabitatsReference <- head(tbl(dbMI,"HabitatsReference"), 10) %>% collect()
-  Habitats <- head(tbl(dbMI,"Habitats"), 10) %>% collect()
-  Prelevements <- head(tbl(dbMI,"Prelevements"), 10) %>% collect()
-  Captures <- head(tbl(dbMI,"Captures"), 10) %>% collect()
+  Habitats <- structure(list(id = integer(0), mihab_miop_id = integer(0), mihab_mihabref_id = integer(0), 
+                             mihab_recouvrement = numeric(0), mihab_margdom = character(0), 
+                             mihab_remarques = character(0), `_modif_utilisateur` = character(0), 
+                             `_modif_type` = character(0), `_modif_date` = structure(numeric(0), tzone = "", class = c("POSIXct", 
+                                                                                                                       "POSIXt"))), row.names = integer(0), class = c("tbl_df", 
+                                                                                                                                                                      "tbl", "data.frame"))
+  Prelevements <- structure(list(id = integer(0), miprlvt_miop_id = integer(0), 
+                                 miprlvt_numech_dce = integer(0), miprlvt_numech_mag20 = integer(0), 
+                                 miprlvt_numech_commun = integer(0), miprlvt_mihabref_id_substrat = integer(0), 
+                                 miprlvt_mihabref_id_vitesse = integer(0), miprlvt_mihabref_id_hauteur = integer(0), 
+                                 miprlvt_phasedce = character(0), miprlvt_ibgn = logical(0), 
+                                 miprlvt_intensitecolmatage = numeric(0), miprlvt_stabilite = character(0), 
+                                 miprlvt_naturevegetation = character(0), miprlvt_micapt_abondancevegetation = numeric(0), 
+                                 miprlvt_remarques = character(0), `_modif_utilisateur` = character(0), 
+                                 `_modif_type` = character(0), `_modif_date` = structure(numeric(0), tzone = "", class = c("POSIXct", 
+                                                                                                                           "POSIXt"))), row.names = integer(0), class = c("tbl_df", 
+                                                                                                                                                                          "tbl", "data.frame"))
+  Captures <- structure(list(id = integer(0), micapt_miprlvt_id = integer(0), 
+                             micapt_taxon = character(0), micapt_abondance = numeric(0), 
+                             micapt_typeabondance = character(0), micapt_volumeabondance = character(0), 
+                             micapt_stade = character(0), micapt_sexe = character(0), 
+                             micapt_remarques = character(0), `_modif_utilisateur` = character(0), 
+                             `_modif_type` = character(0), `_modif_date` = structure(numeric(0), tzone = "", class = c("POSIXct", 
+                                                                                                                       "POSIXt"))), row.names = integer(0), class = c("tbl_df", 
+                                                                                                                                                                      "tbl", "data.frame"))
   
   # Travail sur les habitats #
   if(all(colnames(data) %in% colnames(Habitats))) {
     
     # Ajout des ID
-    data$HabitatID <- row_number(data$OperationID) + as.numeric(tbl(dbMI,"Habitats") %>% summarise(max = max(HabitatID, na.rm = TRUE)) %>% collect()) # Pour incrémenter les HabitatID à partir du dernier
+    data <-
+      data %>% 
+      mutate(id = row_number() + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_production.macroinvertebres_habitats;")))
   }
   
   # Travail sur les prélèvements #
   if(all(colnames(data) %in% colnames(Prelevements))) {
 
     # Transformation des formats
-    data$OperationID <- as.integer(data$OperationID)
-    data$NumEchMAG20 <- as.integer(data$NumEchMAG20)
-    data$NumEchCommun <- as.integer(data$NumEchCommun)
+    data <- 
+      data %>% 
+      mutate(id = as.integer(id)) %>% 
+      mutate(miprlvt_miop_id = as.integer(miprlvt_miop_id)) %>% 
+      mutate(miprlvt_numech_dce = as.integer(miprlvt_numech_dce)) %>% 
+      mutate(miprlvt_numech_mag20 = as.integer(miprlvt_numech_mag20)) %>% 
+      mutate(miprlvt_numech_commun = as.integer(miprlvt_numech_commun))
     
     # Ajout des ID
-    data$PrelevementID <- row_number(data$OperationID) + max(Prelevements$PrelevementID, na.rm = TRUE) # Pour incrémenter les MesureID à partir du dernier
+    data <-
+      data %>% 
+      mutate(id = row_number() + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_production.macroinvertebres_prelevements;")))
   }
   
   # Travail sur les captures #
   if(all(colnames(data) %in% colnames(Captures))) {
 
     # Transformation des formats
-    data$CaptureID <- as.integer(data$CaptureID)
-    data$PrelevementID <- as.integer(data$PrelevementID)
-    data$Abondance <- as.integer(data$Abondance)
+    data <- 
+      data %>% 
+      mutate(id = as.integer(id)) %>% 
+      mutate(micapt_miprlvt_id = as.integer(micapt_miprlvt_id)) %>% 
+      mutate(micapt_abondance = as.integer(micapt_abondance))
     
     # Ajout des ID
-    data$CaptureID <- row_number(data$PrelevementID) + as.numeric(tbl(dbMI,"Captures") %>% summarise(max = max(CaptureID, na.rm = TRUE)) %>% collect()) # Pour incrémenter les CaptureID à partir du dernier
+    data <-
+      data %>% 
+      mutate(id = row_number() + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_production.macroinvertebres_captures;")))
   } # Fin de travail sur les captures
+  DBI::dbDisconnect(dbD)
   } # Fin de travail sur les MI
   
   ###### Chroniques ######
