@@ -453,7 +453,7 @@ if (exportfigures == TRUE) {
   } # Fin de Sortie graphique profil longitudinal
   
   ## Sortie graphique preferendums thermiques des espèces ##
-  if (all(export) == TRUE) {
+  # if (all(export) == TRUE) {
     # Toutes espèces #
     dataaconserver %>% # Le filtrage général est réalisé plus en amont avec ce qui remplit dataaconserver
       chronique.cle(formatcle = "SAT") %>% 
@@ -466,7 +466,7 @@ if (exportfigures == TRUE) {
     #   chronique.cle(formatcle = "SAT") %>% 
     #   group_split(Cle) %>%
     # purrr::map_dfr(~ chronique.figure.preferendums(staderecherche = "Adulte", tmm30j = .$VMaxMoy30J, listeEspeces = c("Toutes espèces"), Titre = as.character(glue('{unique(.$chsta_coderhj)} - unique(.$Annee)}')), save = T, projet = projet, format = ".png"))
-  } # Fin de Sortie preferendums thermiques des espèces
+  # } # Fin de Sortie preferendums thermiques des espèces
 
 } # Fin de exportfigures == T
   
@@ -501,7 +501,7 @@ if(export == TRUE & dep39 == "autre"){
 }
 
 ## Capteurs #####
-if(export == TRUE & dep39 == "autre"){
+if(export == TRUE & dep39 == "autre" & exportDCE == T){
   file_move(fnameCapteurs, glue('./{projet}/Entrées/Capteurs/'))
 }
   

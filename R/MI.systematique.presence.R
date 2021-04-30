@@ -4,60 +4,79 @@
 #' @name MI.systematique.presence
 #' @param data Jeu de données à compléter
 #' @keywords MI
+#' @import DBI
+#' @import dplyr
 #' @import tidyverse
 #' @export
 #' @examples
 #' MI.systematique.presence(data)
 
 ###### À faire #####
-# 
+# Revoir la très sale section # Assemblage des morceaux de systématique
 ####################
 
 MI.systematique.presence <- function(data)
 {
   
   ## Connexion à la BDD ##
-  dbMI <- BDD.ouverture(Type = "Macroinvertébrés")
+  dbD <- BDD.ouverture("Data")
   
   ## Récupération des données ##
-  HabitatsReference <- tbl(dbMI,"HabitatsReference") %>% collect(n = Inf)
-  Prelevements <- tbl(dbMI,"Prelevements") %>% collect(n = Inf)
-  EspecesReference <- tbl(dbMI,"EspecesReference") %>% collect(n = Inf)
-  GenresReference <- tbl(dbMI,"GenresReference") %>% collect(n = Inf)
-  SousFamillesReference <- tbl(dbMI,"SousFamillesReference") %>% collect(n = Inf)
-  FamillesReference <- tbl(dbMI,"FamillesReference") %>% collect(n = Inf)
-  OrdresReference <- tbl(dbMI,"OrdresReference") %>% collect(n = Inf)
+  Prelevements <- tbl(dbD, in_schema("fd_production", "macroinvertebres_prelevements")) %>% collect(n = Inf)
+  HabitatsReference <- tbl(dbD, in_schema("fd_referentiels", "macroinvertebres_habitats_reference")) %>% collect(n = Inf)
+  EspecesReference <- tbl(dbD, in_schema("fd_referentiels", "systematique_especes")) %>% collect(n = Inf)
+  GenresReference <- tbl(dbD, in_schema("fd_referentiels", "systematique_genres")) %>% collect(n = Inf)
+  SousFamillesReference <- tbl(dbD, in_schema("fd_referentiels", "systematique_sousfamilles")) %>% collect(n = Inf)
+  FamillesReference <- tbl(dbD, in_schema("fd_referentiels", "systematique_familles")) %>% collect(n = Inf)
+  OrdresReference <- tbl(dbD, in_schema("fd_referentiels", "systematique_ordres")) %>% collect(n = Inf)
+  
+  Captures <- structure(list(id = integer(0), micapt_miprlvt_id = integer(0), 
+                             micapt_taxon = character(0), micapt_abondance = numeric(0), 
+                             micapt_typeabondance = character(0), micapt_volumeabondance = character(0), 
+                             micapt_stade = character(0), micapt_sexe = character(0), 
+                             micapt_remarques = character(0), `_modif_utilisateur` = character(0), 
+                             `_modif_type` = character(0), `_modif_date` = structure(numeric(0), tzone = "", class = c("POSIXct", 
+                                                                                                                       "POSIXt"))), row.names = integer(0), class = c("tbl_df", 
+                                                                                                                                                                      "tbl", "data.frame"))
   
   ## Fermeture de la BDD ##
-  DBI::dbDisconnect(dbMI)
-  
+  DBI::dbDisconnect(dbD)
+
   # Assemblage des morceaux de systématique
-  Systematique <- full_join(EspecesReference, GenresReference, "GenreID")
-  Systematique <- bind_rows(Systematique, Systematique %>% filter(!is.na(Espece)) %>% select(3:9))
-  Systematique <- full_join(Systematique, SousFamillesReference, "SousFamilleID")
-  Systematique$FamilleID <- ifelse(!is.na(Systematique$FamilleID.x), Systematique$FamilleID.x, Systematique$FamilleID.y) # Pour tout remettre les FamilleID dans la même colonne
-  Systematique <- select(Systematique, -FamilleID.x, -FamilleID.y)
+  Systematique <- full_join(EspecesReference, GenresReference, by = c("sysesp_genre_id" = "id"))
+  Systematique <- bind_rows(Systematique, Systematique %>% filter(!is.na(sysesp_ranglibelle)) %>% select(-contains('_modif'), -contains('_remarques')))
+  # Systematique <- bind_rows(Systematique, Systematique %>% filter(!is.na(sysesp_ranglibelle)) %>% select(3:9))
+  Systematique <- full_join(Systematique, SousFamillesReference, by = c("sysgen_sousfamille_id" = "id"))
+  Systematique$famille_id <- ifelse(!is.na(Systematique$sysgen_famille_id), Systematique$sysgen_famille_id, Systematique$sysssfam_famille_id) # Pour tout remettre les FamilleID dans la même colonne
+  Systematique <- select(Systematique, -sysgen_famille_id, -sysssfam_famille_id)
   #Systematique <- bind_rows(Systematique, Systematique %>% filter(!is.na(Genre)) %>% select(3:9))
-  Systematique <- full_join(Systematique, FamillesReference, "FamilleID")
-  Systematique <- bind_rows(Systematique, Systematique %>% filter(!is.na(Genre)) %>% select(10:17))
-  Systematique <- full_join(Systematique, OrdresReference, "OrdreID")
-  Systematique <- bind_rows(Systematique, Systematique %>% filter(!is.na(Ordre)) %>% select(18:23))
+  Systematique <- full_join(Systematique, FamillesReference, by = c("famille_id" = "id"))
+  Systematique <- bind_rows(Systematique, Systematique %>% filter(!is.na(sysgen_ranglibelle)) %>% select(-contains('_modif'), -contains('_remarques')))
+  Systematique <- full_join(Systematique, OrdresReference, by = c("sysfam_ordre_id" = "id"))
+  Systematique <- bind_rows(Systematique, Systematique %>% filter(!is.na(sysord_ranglibelle)) %>% select(18:23))
+  Systematique <- Systematique %>% select(-contains('_modif'), -contains('_remarques'))
   
-  Systematique <- distinct(Systematique)
+  Systematique <- distinct(Systematique) %>% filter(!is.na(sysord_ranglibelle))
   
   # Travail sur les captures #
   if(all(colnames(data) %in% colnames(Captures))) {
     
     # Vérification de l'existence des taxons dans la BDD #
-    Absents <- setdiff(unique(data$Taxon), Systematique$Espece)
-    Absents <- setdiff(Absents, Systematique$Genre)
-    Absents <- setdiff(Absents, Systematique$SousFamille) #
-    Absents <- setdiff(Absents, Systematique$Famille)
-    Absents <- setdiff(Absents, Systematique$Ordre)
-    if(length(Absents) > 0)  Absents <- sort(Absents)
+    Absents <- setdiff(unique(data$micapt_taxon), Systematique$sysesp_ranglibelle)
+    Absents <- setdiff(Absents, Systematique$sysgen_ranglibelle)
+    Absents <- setdiff(Absents, Systematique$sysssfam_ranglibelle) #
+    Absents <- setdiff(Absents, Systematique$sysfam_ranglibelle)
+    Absents <- setdiff(Absents, Systematique$sysord_ranglibelle)
+    
+    #### Sortie des résultats ####
+    if(length(Absents) > 0){
+      Absents <- sort(Absents)
+      return(Absents)
+    }
+    if(length(Absents) == 0){
+      print("Aucun taxon absent des données de référence")
+    }
     
   }
-  
-  return(Absents)
   
 } # Fin de la fonction

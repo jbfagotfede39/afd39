@@ -10,6 +10,7 @@
 #' @import glue
 #' @import openxlsx
 #' @import RPostgreSQL
+#' @import stringr
 #' @import tidyverse
 #' @export
 #' @examples
@@ -83,7 +84,8 @@ personnel.projet <- function(
     if(!grepl("AERMC", projet)){ # Cas où ce n'est pas une convention avec l'AE
       TpsWOTfiltre <- 
         TpsWOT %>% 
-        mutate(tpswot_activite = ifelse(tpswot_activite == "APD Bonlieu", "APD Bonlieu 2018", tpswot_activite)) %>% 
+        mutate(tpswot_activite = ifelse(grepl("APD Bonlieu", tpswot_activite), "APD Bonlieu 2018", tpswot_activite)) %>% 
+        mutate(tpswot_activite = ifelse(grepl("Suivi qualité temps réel", tpswot_activite) & tpswot_date <= ymd("2021-04-15"), "Suivi thermique Vouglans - Volet 2018-2019", tpswot_activite)) %>%
         filter(tpswot_activite %in% projet)
       
       if(dim(TpsWOTfiltre)[1] == 0) stop(glue('Pas de données détaillées OpenTime au niveau tpswot_activite pour le projet {projet}')) # Sans doute nécessaire d'ajouter ultérieurement un sélecteur pour affiner la recherche dans ce scénario
@@ -98,7 +100,10 @@ personnel.projet <- function(
         select(-tpswdetail_personnelcomplet) %>% 
         mutate(tpswdetail_poste = ifelse(tpswdetail_poste == "Responsable du Pôle Technique & Développement", "Ingénieur responsable du pôle technique", tpswdetail_poste)) %>% 
         rename(tpswdetail_projet = tpswdetail_activite) %>% 
-        rename(tpswdetail_detail = tpswdetail_remarques) %>% 
+        # rename(tpswdetail_detail = tpswdetail_remarques) %>% # Ancienne version avant 2021-04-14
+        mutate(tpswdetail_detail = glue("{tpswdetail_sous_projet} - {tpswdetail_remarques}")) %>% # Nouvelle version avant 2021-04-14
+        mutate(tpswdetail_detail = str_replace(tpswdetail_detail, " - NA", "")) %>% # Nouvelle version avant 2021-04-14
+        mutate(tpswdetail_detail = str_replace(tpswdetail_detail, "NA - ", "")) %>% # Nouvelle version avant 2021-04-14
         mutate(tpswdetail_temps = tpswdetail_duree/7) %>% 
         rename(tpswdetail_id = id) %>% 
         mutate(tpswdetail_statut = NA_character_) %>% 

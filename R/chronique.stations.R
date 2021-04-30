@@ -18,6 +18,8 @@
 #' chronique.stations("39","Département")
 
 ##### TODO LIST #####
+# La commande chronique.stations("39", "Département") génère des doublons de ligne avec la jointure avec les communes : à reprendre
+# Permettre le fonctionnement lorsqu'on envoie un polygone issu de stations.territoire("ContextePDPG", c("39.19", "39.33", "39.62", "39.16", "39.17", "39.21", "39.24", "39.18", "39.22", "39.23", "39.18", "39.18", "39.25"))
 # Ajouter un paramètre dplyr::filter(chsta_fonctionnement == "En cours")
 # Il y a un ou deux champs qui ne veulent pas être sortis en shp : à supprimer dans le format complet
 #####################
@@ -55,7 +57,8 @@ chronique.stations <- function(Territoire = NA_character_,
   }
   
   if(Echelle == "Bassin" | Echelle == "Sous-bassin" | Echelle == "Commune" | Echelle == "Canton" | Echelle == "ComCom" | Echelle == "Département" | Echelle == "Région" | Echelle == "ContextePDPG" | Echelle == "HER" | Echelle == "GEMAPI" | Echelle == "Polygone"){ 
-    TerritoireRecherche <- stations.territoire(Echelle = Echelle, Territoire = Territoire)
+    if(Echelle != "Polygone"){TerritoireRecherche <- stations.territoire(Echelle = Echelle, Territoire = Territoire)}
+    if(Echelle == "Polygone"){TerritoireRecherche <- Territoire}
     Vue <-
     Stations %>% 
     st_join(TerritoireRecherche, left = FALSE) %>% 

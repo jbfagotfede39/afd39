@@ -46,7 +46,7 @@ formatage.sapl <- function(
     mutate_at(vars(contains("sapl")), ~(ifelse(grepl("CLAIRVAUX|Clairvaliens|clairvaliens", .), "Les Pêcheurs Clairvaliens", .))) %>% 
     mutate_at(vars(contains("sapl")), ~(ifelse(grepl("CORNOD|La Truite Valousienne", .), "La Truite Valousienne", .))) %>% 
     mutate_at(vars(contains("sapl")), ~(ifelse(grepl("CROTENAY|Crotenay", .), "Société de pêche de Crotenay", .))) %>% 
-    mutate_at(vars(contains("sapl")), ~(ifelse(grepl("DOLE|Bas Jura", .), "La Gaule du Bas Jura", .))) %>% 
+    mutate_at(vars(contains("sapl")), ~(ifelse(grepl("DOLE|Bas Jura|Bas-Jura", .), "La Gaule du Bas Jura", .))) %>% 
     mutate_at(vars(contains("sapl")), ~(ifelse(grepl("Fédération|FJPPMA", .), "FJPPMA", .))) %>% 
     mutate_at(vars(contains("sapl")), ~(ifelse(grepl("FONCINE-LE-BAS|FONCINE LE BAS|La Sainette", .), "La Sainette", .))) %>% 
     mutate_at(vars(contains("sapl")), ~(ifelse(grepl("FONCINE-LE-HAUT|FONCINE LE HAUT|La Truite de la Baume", .), "La Truite de la Baume", .))) %>% 
