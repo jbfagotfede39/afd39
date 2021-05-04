@@ -56,16 +56,29 @@ general.emergence <- function(
     collect()
   
   #### Transformation ####
+  if(piecejointes == T){
   valeurs <-
     tbl(dbD, in_schema("fd_production", "general_observations")) %>% 
     filter(galobs_application_id == 2) %>% 
     select(-id, -galobs_application_id, -(galobs_piecejointe2:`_modif_date`)) %>% 
-    collect() %>%
+    collect()
+  }
+  if(piecejointes == F){
+    valeurs <-
+      tbl(dbD, in_schema("fd_production", "general_observations")) %>% 
+      filter(galobs_application_id == 2) %>% 
+      select(-id, -galobs_application_id, -(galobs_piecejointe1:`_modif_date`)) %>% 
+      collect()
+  }
+  valeurs <- 
+    valeurs %>% 
     left_join(glossaire, by = c('galobs_parametre_id' = 'id')) %>% 
     select(galobs_operateur_id:galobs_observation_id, galobsparam_parametre_intitulelong, everything()) %>%
     select(-galobs_parametre_id) %>% 
     left_join(qualification, by = c('galobs_observation_id' = 'galobsqu_observation_id')) %>% 
     mutate(valeur = ifelse(is.na(galobs_valeur_texte), galobs_valeur_numerique, galobs_valeur_texte)) %>%
+    {if(!("galobs_piecejointe1nom" %in% names(.))) mutate(., galobs_piecejointe1nom = NA_character_) else .} %>% 
+    {if(!("galobs_piecejointe1" %in% names(.))) mutate(., galobs_piecejointe1 = NA_character_) else .} %>% 
     mutate(valeur = ifelse(is.na(valeur), galobs_piecejointe1nom, valeur)) %>%
     select(galobs_observation_id, galobsqu_validite, galobsqu_interet, galobsqu_remarques, galobs_operateur_id, galobs_dateajout, galobs_observation_id, galobsparam_parametre_intitulelong, valeur, galobs_piecejointe1) 
   
@@ -80,7 +93,7 @@ general.emergence <- function(
     select(-operateur_identite) %>%
     mutate(type_observation = case_when(!is.na(`Continuité - Type`) ~ "Continuité",
                                         !is.na(`Morphologie - Type`) ~ "Morphologie",
-                                        !is.na(`Physico-chimie - Type`) ~ "Physico-chimie",
+                                        !is.na(`Physico-chimie - Type de pression`) ~ "Physico-chimie",
                                         !is.na(`Hydrologie - Type`) ~ "Hydrologie",
                                         !is.na(`Autre - Remarques`) ~ "Autre"
     )
