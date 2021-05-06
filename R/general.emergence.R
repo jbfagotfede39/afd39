@@ -116,7 +116,7 @@ general.emergence <- function(
       group_split(type_observation) %>%
       # purrr::pluck(2)
       # purrr::map_dfr(~ SIG.export(glue("{today()}_Table_synthèse_observations_émergence_projets_{unique(.$type_observation)}"), shp = F, kml = F))
-      purrr::map_dfr(~ st_write(data, dsn = glue("{today()}_Table_synthèse_observations_émergence_projets_{unique(.$type_observation)}.geojson"), driver = "GeoJSON", overwrite = TRUE))
+      purrr::map_dfr(~ st_write(., dsn = glue("{today()}_Table_synthèse_observations_émergence_projets_{unique(.$type_observation)}.geojson"), driver = "GeoJSON", overwrite = TRUE))
   }
   
   ### Pièces jointes ###
