@@ -90,6 +90,7 @@ general.emergence <- function(
     mutate(`Général - Opérateur` = as.character(`Général - Opérateur`)) %>% 
     left_join(operateurs %>% mutate(id = as.character(id)), by = c("Général - Opérateur" = "id")) %>%
     mutate(`Général - Opérateur` = operateur_identite) %>%
+    mutate(`Général - Heure` = as.character(format(ymd_hms(glue("{`Général - Date`}_{`Général - Heure`}")), format="%H:%M"))) %>% 
     select(-operateur_identite) %>%
     mutate(type_observation = case_when(!is.na(`Continuité - Type`) ~ "Continuité",
                                         !is.na(`Morphologie - Type`) ~ "Morphologie",
@@ -127,8 +128,8 @@ general.emergence <- function(
       select(galobs_observation_id, valeur, galobs_piecejointe1) %>% 
       mutate(nomfichier = glue("{galobs_observation_id}_{valeur}"))
     
-    dir_create(glue("{today()}_Pièces_jointes_observations_émergence_projets"))
-    setwd(glue("./{today()}_Pièces_jointes_observations_émergence_projets"))
+    dir_create(glue("Pièces_jointes_observations_émergence_projets"))
+    setwd(glue("./Pièces_jointes_observations_émergence_projets"))
     
     sortiefichiers %>% 
       group_split(nomfichier) %>% 
