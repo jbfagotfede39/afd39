@@ -57,6 +57,7 @@ personnel.formatAC <- function(
     mutate(tpswdetail_projet = projet) %>% 
     mutate(tpswdetail_sousactionaermc = ifelse(str_detect(tpswot_activite, "1.1"), 1.1, NA_character_)) %>%
     mutate(tpswdetail_sousactionaermc = ifelse(str_detect(tpswot_sous_projet, "1.1"), 1.1, tpswdetail_sousactionaermc)) %>%
+    mutate(tpswdetail_sousactionaermc = ifelse(str_detect(tpswot_activite, "AC AE") & tpswot_sous_projet == "Administratif", 1.1, tpswdetail_sousactionaermc)) %>% # 3 lignes en 2020 où il n'y avait que "AC AE 2019" ou "AC AE 2018" en activité et "Administratif" en sous-projet
     mutate(tpswdetail_sousactionaermc = ifelse(str_detect(tpswot_activite, "1.2"), 1.2, tpswdetail_sousactionaermc)) %>%
     mutate(tpswdetail_sousactionaermc = ifelse(str_detect(tpswot_sous_projet, "1.2"), 1.2, tpswdetail_sousactionaermc)) %>%
     mutate(tpswdetail_sousactionaermc = ifelse(str_detect(tpswot_activite, "1.3"), 1.3, tpswdetail_sousactionaermc)) %>%

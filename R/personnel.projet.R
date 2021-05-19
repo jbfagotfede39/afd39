@@ -45,7 +45,9 @@ personnel.projet <- function(
   
   ##### Vérification de l'existence de ce projet #####
   if(dim(Projets)[1] == 0) stop("Projet non répertorié")
-  if(anciennebase == T & dim(TpsW)[1] == 0) stop("Pas de données détaillées ancienne base pour ce projet")
+  if(anciennebase == T){
+    if(dim(TpsW)[1] == 0) stop("Pas de données détaillées ancienne base pour ce projet")
+  } 
   if(projection == T & dim(RecapTpsW)[1] == 0) stop("Pas de données récapitulatives (au moins projetées) pour ce projet")
   
   #### Calcul des données élaborées si absentes ####
@@ -61,6 +63,19 @@ personnel.projet <- function(
       filter(!is.na(tpswrecap_poste)) %>%
       filter(tpswrecap_poste != "") %>%
       distinct(tpswrecap_poste, tpswrecap_personnel, tpswrecap_coutunitaire)
+    } # Fin de if(projection = T)
+    
+    ## Recherche de coûts annuels réalisés génériques si absence de coûts réalisés propres à un projet précis :
+    if(projection == F){
+      if(nrow(CoutsAnnuels) == 0){
+        anneesrecherches <- year(today()) - 5
+        CoutsAnnuelsReelsGeneriques <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_coutsannuels")) %>% filter(gestctan_annee >= anneesrecherches) %>% filter(gestctan_type == "Réalisé N") %>% collect(n = Inf)
+        listeannees <- unique(CoutsAnnuelsReelsGeneriques$gestctan_annee)
+        # anneeachercher <- tcltk::tk_select.list(sort(listeannees), title = "Année de référence")
+        anneeachercher <- select.list(sort(listeannees), title = "Année de référence")
+        CoutsAnnuels <- CoutsAnnuelsReelsGeneriques %>% filter(gestctan_annee == anneeachercher)
+      }
+    }
     
     if(nrow(CoutsAnnuels) != 0){
     CoutPersonnelReel <- 
@@ -74,11 +89,14 @@ personnel.projet <- function(
       select(tpswrecap_poste, tpswrecap_personnel, tpswrecap_coutunitaire)
     }
     
-    if((nrow(CoutsAnnuels) != 0) & (nrow(CoutPersonnelReel) != 0)) CoutPersonnel <- CoutPersonnelReel
-    if(nrow(CoutPersonnel) == 0) CoutPersonnel <- CoutPersonnelAttendu
+    if(nrow(CoutPersonnelReel) != 0) CoutPersonnel <- CoutPersonnelReel
+    if(projection == T){
+      if(exists(CoutPersonnel)){
+        if(nrow(CoutPersonnel) == 0) CoutPersonnel <- CoutPersonnelAttendu
+      }
+    }
     
     if(nrow(CoutPersonnelReel) == 0) stop("Pas de coûts unitaires réalisés <-> N+1")
-    } # Fin de if(projection = T)
     
     ### Recherche et éventuel regroupement de données détaillées
     if(!grepl("AERMC", projet)){ # Cas où ce n'est pas une convention avec l'AE
@@ -172,6 +190,7 @@ personnel.projet <- function(
   ### Nouvelle méthode à partir de 2020 avec OpenTime
   
   if(grepl("AERMC",projet)){ # Cas où c'est une convention de l'AE
+    ## Calcul à proprement parler ##
     DataToAdd <- 
       TpsWOT %>% 
       personnel.formatAC(., projet) %>% 
@@ -196,8 +215,8 @@ personnel.projet <- function(
       mutate(tpswrecap_quantite = as.numeric(NA)) %>%  
       mutate(tpswrecap_quantitepersonnel = as.numeric(NA))
       
-      bug <- DataToAdd %>% filter(is.na(tpswdetail_sousactionaermc))
-      if(nrow(bug) != 0) stop(glue('Il y a des actions/sous-actions AERMC non reconnues : {bug %>% distinct(tpswot_activite)}'))
+      bug <- TpsWOT %>% personnel.formatAC(., projet) %>% filter(is.na(tpswdetail_sousactionaermc))
+      if(nrow(bug) != 0) stop(glue('Il y a des actions/sous-actions AERMC non reconnues : id {bug %>% distinct(id)}'))
   }
   
   colnames(DataToAdd) <- 
@@ -293,7 +312,7 @@ if(grepl("AERMC",projet)){
            contains("Réalisé_Responsable adminis"), contains("Réalisé_Ingénieur resp"), contains("Réalisé_Ingénieur hy"), contains("Réalisé_Charg"), contains("Réalisé_Technicien quali"), contains("Réalisé_Mat")
     )
 
-  colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses")
+  colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses")
   
   if(export == T){
   ## Création d'un classeur

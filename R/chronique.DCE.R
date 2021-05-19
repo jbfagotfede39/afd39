@@ -52,7 +52,7 @@ chronique.DCE <- function(
     collect() %>% 
     mutate(chsta_codepointprlvmt = NA_character_) # manquant
   SuiviTerrain <- chronique.suivi(unique(data$chmes_coderhj), Recherche = "Station")
-  Capteurs <- chronique.capteurs(unique(data$chmes_capteur), Recherche = "Numéro")
+  Capteurs <- unique(data$chmes_capteur) %>% purrr::map_dfr(~ chronique.capteurs(., Recherche = "Numéro"))
   DBI::dbDisconnect(dbD)
   }
   
