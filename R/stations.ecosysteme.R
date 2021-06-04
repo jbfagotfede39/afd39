@@ -169,7 +169,7 @@ stations.ecosysteme <- function(
 
   # Export shp
   if(shp == T){
-    SIG.exportSHP(Synthese %>% filter(TypeCoord == "L93"), paste0(format(now(), format="%Y-%m-%d"),"_",ecosysteme,"_Export_stations.shp"))
+    SIG.export(Synthese %>% filter(TypeCoord == "L93"), paste0(format(now(), format="%Y-%m-%d"),"_",ecosysteme,"_Export_stations.shp"))
   }
   
 } # Fin de la fonction

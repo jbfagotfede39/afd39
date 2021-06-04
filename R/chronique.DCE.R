@@ -105,7 +105,7 @@ chronique.DCE <- function(
                                               dplyr::select(chcap_numerocapteur, chcap_modelecapteur),
                                             by = c('chsvi_capteur' = 'chcap_numerocapteur')
     ) else .} %>% 
-    {if(nrow(Capteurs) == 0 & nrow(SuiviTerrain) == 0) mutate(., chcap_modelecapteur = NA_character_) else .} %>% 
+    {if(nrow(Capteurs) == 0 | nrow(SuiviTerrain) == 0) mutate(., chcap_modelecapteur = NA_character_) else .} %>% 
     dplyr::select(chsta_codesie, chsta_codepointprlvmt, chsta_codemo, chsta_milieu, tpcomm_commune_libelle, chsta_coderhj, chsta_coord_x, chsta_coord_y, chsvi_capteur, chcap_modelecapteur, chsvi_date, chsta_detailsloc, chsta_ombrage, chsta_facies, chsvi_profondeur, chsvi_valeur, chsvi_operateurs, chsvi_remarques) %>% 
     rename(CODE_STA_SANDRE = chsta_codesie, 
            CODE_PT_PRELEVT_SANDRE = chsta_codepointprlvmt,

@@ -6,6 +6,7 @@
 #' @param x Variable dont on cherche le suivi (MO, opérateur, Station, Date, Capteur)
 #' @param Recherche Type de donnée de suivi
 #' @param Sortie Forme du dataframe de sortie - \code{Complet} (par défault - tous les champs), \code{Propre} ou \code{Simple}
+#' @import lubridate
 #' @import tidyverse
 #' @export
 #' @examples
@@ -40,13 +41,11 @@ chronique.suivi <- function(
   #### Recherche sur x en tant que telle ####
   Vue <-
     tbl(dbD, in_schema("fd_production", "chroniques_suiviterrain")) %>% 
-    filter(case_when(Recherche == "MO" ~ chsvi_mo == x, # Traitement du MO
-                     Recherche == "Opérateur" ~ chsvi_operateurs == x, # Traitement d'un opérateur
-                     Recherche == "Station" ~ chsvi_coderhj == x, # Traitement d'une station
-                     Recherche == "Date" ~ chsvi_date == x, # Traitement d'une date
-                     Recherche == "Capteur" ~ chsvi_capteur == x # Traitement d'un capteur
-                     )
-    ) %>% 
+    {if(Recherche == "MO") filter(., chsvi_mo == x) else .} %>%  # Traitement du MO
+    {if(Recherche == "Opérateur") filter(., chsvi_operateurs == x) else .} %>%  # Traitement d'un opérateur
+    {if(Recherche == "Station") filter(., chsvi_coderhj == x) else .} %>%  # Traitement d'une station
+    {if(Recherche == "Date") filter(., chsvi_date == ymd(x)) else .} %>%  # Traitement d'une date
+    {if(Recherche == "Capteur") filter(., chsvi_capteur == x) else .} %>% # Traitement d'un capteur
     collect(n = Inf)
   
   #### Fermeture de la connexion ####

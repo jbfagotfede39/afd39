@@ -121,7 +121,7 @@ BDD.format <- function(
   if(Testtraitementforce == 1){
   
   ## Création des données type ##
-    structure(list(id = integer(0), chsta_coderhj = character(0), 
+    Stations <- structure(list(id = integer(0), chsta_coderhj = character(0), 
                    chsta_codemo = character(0), chsta_codesie = character(0), 
                    chsta_mo = character(0), chsta_milieu = character(0), chsta_milieucodehydro = logical(0), 
                    chsta_bassin = character(0), chsta_sousbassin = character(0), 
@@ -446,7 +446,7 @@ BDD.format <- function(
         rename_all(list(~ gsub("[[:punct:]]", "_", .))) %>%
         rename_all(list(~ tolower(.))) %>% 
         mutate(chres_aquatoolsversion = packageVersion("aquatools") %>% as.character()) %>% 
-        mutate(id = row_number() + as.numeric(dbGetQuery(dbD, "SELECT nextval('fd_production.chroniques_resultats_id_seq');"))) %>% # Pour incrémenter les id à partir du dernier
+        mutate(id = row_number() + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_production.chroniques_resultats"))) %>% # Pour incrémenter les id à partir du dernier
         mutate(`_modif_utilisateur` = NA_character_) %>% 
         mutate(`_modif_type` = "I") %>% 
         mutate(`_modif_date` = now()) %>% 

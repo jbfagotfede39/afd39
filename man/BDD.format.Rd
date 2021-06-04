@@ -11,7 +11,7 @@ BDD.format(
 )
 }
 \arguments{
-\item{data}{Chronique à valider}
+\item{data}{Jeu de données à mettre au format de la base de données}
 }
 \description{
 Cette fonction permet de formater les données pour les ajouter aux bases de données respectives

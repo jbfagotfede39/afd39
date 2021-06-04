@@ -1,6 +1,6 @@
 Package: afd39
 Title: Outils pour la FJPPMA
-Version: 0.0.6
+Version: 0.0.7
 Authors@R: 
     person(given = "Jean-Baptiste",
            family = "Fagot",
