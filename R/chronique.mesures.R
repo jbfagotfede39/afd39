@@ -7,7 +7,7 @@
 #' @import RPostgreSQL
 #' @import tidyverse
 #' @param CodeStation Code RHJ de la station
-#' @param Type Type de chronique recherchée : Thermie (par défaut), piézométrie, Hydrologie, O2, pluviométrie ou toutes les données
+#' @param Type Type de chronique recherchée : Thermie (par défaut), piézométrie, Hydrologie, Oxygénation, pluviométrie ou toutes les données
 #' @param annee Année biologique recherchée si spécifiée, sinon ensemble de la chronique (par défaut)
 #' @param Valide Validité des données (\code{TRUE} par défaut)
 #' @export
@@ -20,7 +20,7 @@
 
 chronique.mesures <- function(  
   CodeStation = character(0),
-  Type = c("Thermie", "Piézométrie", "Tout", "Hydrologie", "O2", "Pluviométrie"),
+  Type = c("Thermie", "Piézométrie", "Tout", "Hydrologie", "Oxygénation", "Pluviométrie"),
   annee = numeric(0),
   Valide = T)
   
