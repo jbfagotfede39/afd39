@@ -46,7 +46,7 @@ stations.territoire <- function(
   if(Echelle == "Commune"){
     dbD <- BDD.ouverture("Data")
     communes <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.topographie_communes WHERE (tpcomm_departement_insee = '39');")
-    DBI::dbDisconnect(dbD)
+    # DBI::dbDisconnect(dbD)
     if(Liste == F){
       if(class(Territoire) != "character"){stop("Liste de territoires pas au bon format")}
     }
@@ -96,7 +96,7 @@ stations.territoire <- function(
   if(Echelle == "Département"){
     dbD <- BDD.ouverture("Data")
     communes <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.topographie_communes WHERE (tpcomm_departement_insee = '39');")
-    DBI::dbDisconnect(dbD)
+    # DBI::dbDisconnect(dbD)
     if(Liste == F){
       if(class(Territoire) != "character"){stop("Liste de territoires pas au bon format")}
     }
@@ -112,7 +112,7 @@ stations.territoire <- function(
   if(Echelle == "Région"){
     dbD <- BDD.ouverture("Data")
     communes <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.topographie_communes WHERE (tpcomm_departement_insee = '39');")
-    DBI::dbDisconnect(dbD)
+    # DBI::dbDisconnect(dbD)
     if(Liste == F){
       if(class(Territoire) != "character"){stop("Liste de territoires pas au bon format")}
     }
@@ -128,7 +128,7 @@ stations.territoire <- function(
   if(Echelle == "ContextePDPG"){
     dbD <- BDD.ouverture("Data")
     contextesPDPG <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.hydrographie_contextespdpg;")
-    DBI::dbDisconnect(dbD)
+    # DBI::dbDisconnect(dbD)
     if(Liste == F){
       if(class(Territoire) != "character"){stop("Liste de territoires pas au bon format")}
     }
@@ -144,7 +144,7 @@ stations.territoire <- function(
   if(Echelle == "HER"){
     dbD <- BDD.ouverture("Data")
     HER <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.hydrographie_hydroecoregions;")
-    DBI::dbDisconnect(dbD)
+    # DBI::dbDisconnect(dbD)
     if(Liste == F){
       if(class(Territoire) != "character"){stop("Liste de territoires pas au bon format")}
     }
@@ -197,7 +197,7 @@ stations.territoire <- function(
     warning("Cours d'eau à développer")
     dbD <- BDD.ouverture("Data")
     plansdeau <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.hydrographie_plansdeau;")
-    DBI::dbDisconnect(dbD)
+    # DBI::dbDisconnect(dbD)
     if(Liste == F){
       if(class(Territoire) != "character"){stop("Liste de territoires pas au bon format")}
     }
@@ -213,7 +213,7 @@ stations.territoire <- function(
   if(Echelle == "Bassin"){
     dbD <- BDD.ouverture("Data")
     BV <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.hydrographie_bvthema;")
-    DBI::dbDisconnect(dbD)
+    # DBI::dbDisconnect(dbD)
     if(Liste == F){
       if(class(Territoire) != "character"){stop("Liste de territoires pas au bon format")}
     }
@@ -229,7 +229,7 @@ stations.territoire <- function(
   if(Echelle == "Sous-bassin"){
     dbD <- BDD.ouverture("Data")
     BV <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.hydrographie_bvthema;")
-    DBI::dbDisconnect(dbD)
+    # DBI::dbDisconnect(dbD)
     if(Liste == F){
       if(class(Territoire) != "character"){stop("Liste de territoires pas au bon format")}
     }

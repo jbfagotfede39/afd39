@@ -6,7 +6,8 @@
 \usage{
 chronique.mesures(
   CodeStation = character(0),
-  Type = c("Thermie", "Piézométrie", "Tout", "Hydrologie", "O2", "Pluviométrie"),
+  Type = c("Thermie", "Piézométrie", "Tout", "Hydrologie", "Oxygénation",
+    "Pluviométrie"),
   annee = numeric(0),
   Valide = T
 )
@@ -14,7 +15,7 @@ chronique.mesures(
 \arguments{
 \item{CodeStation}{Code RHJ de la station}
 
-\item{Type}{Type de chronique recherchée : Thermie (par défaut), piézométrie, Hydrologie, O2, pluviométrie ou toutes les données}
+\item{Type}{Type de chronique recherchée : Thermie (par défaut), piézométrie, Hydrologie, Oxygénation, pluviométrie ou toutes les données}
 
 \item{annee}{Année biologique recherchée si spécifiée, sinon ensemble de la chronique (par défaut)}
 
