@@ -10,26 +10,22 @@
 #' adresse.switch("NAS-DATA/Poissons/PDPG/Stations PDPG_V1.xlsx")
 #' fish <- read_excel(adresse.switch("NAS-JB/Études/2014_Les Rousses/Résultats/Poissons/ResultatsRoussestotal-28janvier2015.xlsx"), sheet = 2)
 
-##### TODO LIST #####
-# 
-#####################
-
 adresse.switch <- function(
   url="")
   
 {
   
   #### Test de la présence d'une URL ####
-  #if(nchar(url) == 0) stop("Attention : pas d'url saisie")
   if(nchar(url) == 0) url = readline(prompt = "Saisir une adresse de fichier : ")
   
   #### Transformation du format ####
-  if(file.exists(paste0("/Users/imac27/",url))) url <- paste0("/Users/imac27/",url) # Machine fixe JB
-  if(file.exists(paste0("/Volumes/Fixe-FD39/Ancien_NAS/",url))) url <- paste0("/Volumes/Fixe-FD39/Ancien_NAS/",url) # Machine portable JB
-  if(file.exists(paste0("/Volumes/Fixe-FD39/Nextcloud_FD/",url))) url <- paste0("/Volumes/Fixe-FD39/Nextcloud_FD/",url) # Machine portable JB
-  if(file.exists(paste0("/Users/jean-baptistefagot_FD39/",url))) url <- paste0("/Users/jean-baptistefagot_FD39/",url) # Machine portable JB
-  if(file.exists(paste0("/Users/adrienlavigne/",url))) url <- paste0("/Users/adrienlavigne/",url) # Machine Adrien
-  if(file.exists(paste0("/Users/quentinducreux/",url))) url <- paste0("/Users/quentinducreux/",url) # Machine portable Quentin
+  if(file.exists(paste0("/Users/imac27/", url))) url <- paste0("/Users/imac27/",url) # Machine fixe JB
+  if(file.exists(paste0("/Users/imac27/Nextcloud_FD/", url))) url <- paste0("/Users/imac27/Nextcloud_FD/",url) # Machine fixe JB
+  if(file.exists(paste0("/Volumes/Fixe-FD39/Ancien_NAS/", url))) url <- paste0("/Volumes/Fixe-FD39/Ancien_NAS/",url) # Machine portable JB
+  if(file.exists(paste0("/Volumes/Fixe-FD39/Nextcloud_FD/", url))) url <- paste0("/Volumes/Fixe-FD39/Nextcloud_FD/",url) # Machine portable JB
+  if(file.exists(paste0("/Users/jean-baptistefagot_FD39/", url))) url <- paste0("/Users/jean-baptistefagot_FD39/",url) # Machine portable JB
+  if(file.exists(paste0("/Users/adrienlavigne/", url))) url <- paste0("/Users/adrienlavigne/",url) # Machine Adrien
+  if(file.exists(paste0("/Users/quentinducreux/", url))) url <- paste0("/Users/quentinducreux/",url) # Machine portable Quentin
   
   #### Retour de l'adresse correcte ####
   return(url)
