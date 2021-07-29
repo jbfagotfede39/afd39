@@ -3,14 +3,11 @@
 #' Cette fonction permet de calculer les coûts d'un projet au moment de son montage. Elle s'appuie sur le format saisi dans la table tpstravail_recapitulatif et réalise les conversions à partir des volumes unitaires, et ordonne les sujets
 #' @name projet.calculInitial
 #' @param NomProjet Nom du dataframe contenant les données "attendues" à traiter, dans le format de tpstravail_recapitulatif
+#' @importFrom dplyr select
 #' @import tidyverse
 #' @export
 #' @examples
 #' RecapDataToAdd <- projet.calculInitial(NomProjet)
-
-##### TODO LIST #####
-# 
-#####################
 
 projet.calculInitial <- function(
   NomProjet
@@ -51,7 +48,7 @@ projet.calculInitial <- function(
     mutate(tpswrecap_personnel = tpswrecap_personnel_id) %>% 
     select(-tpswrecap_personnel_id, -contains("_modif"), -contains("gestop"))
   
-  if(NomProjet %>% filter(is.na(tpswrecap_detail)) %>% nrow() > 0)stop("Il y a des tpswrecap_detail non identifiés par leur identifiant")
+  if(NomProjet %>% filter(is.na(tpswrecap_detail)) %>% nrow() > 0) stop("Il y a des tpswrecap_detail non identifiés par leur identifiant")
   
   NomProjetFJPPMA <-
     NomProjet %>% 
@@ -90,12 +87,19 @@ projet.calculInitial <- function(
     rename(tpswrecap_coutunitaire = CoutUnitaire) %>% 
     select(-clepostepersonnel, -gestctunit_remarques, -gestctunit_poste_id, -gestctunit_quantitepersonnel, -Temps) %>% 
     mutate(tpswrecap_projet = as.numeric(tpswrecap_projet)) %>% 
-    dplyr::union(NomProjet %>% filter(tpswrecap_programmation == "Attendu") %>% filter(tpswrecap_moe != "FJPPMA")) %>% 
+    dplyr::union(
+      # On met les coûts unitaires et les sous-totaux pour ce qui n'est pas MOE FJPPMA
+      NomProjet %>% filter(tpswrecap_programmation == "Attendu") %>% filter(tpswrecap_moe != "FJPPMA") %>% 
+        left_join(CoutTypePrestation %>% select(gestctunit_prestation_id, gestctunit_coutunitaire), by = c('tpswrecap_detail' = 'gestctunit_prestation_id')) %>% 
+        mutate(tpswrecap_coutunitaire = gestctunit_coutunitaire) %>% select(-gestctunit_coutunitaire) %>% 
+        mutate(tpswrecap_argent = tpswrecap_coutunitaire * tpswrecap_quantite) #%>% view()
+      ) %>% 
     mutate("_modif_utilisateur" = NA) %>% 
     mutate("_modif_type" = NA) %>% 
     mutate("_modif_date" = NA) %>% 
     select(match(colnames(RecapTpsW),names(.))) %>% 
     mutate(id = NA) %>% 
+    
     # On remet les personnels en clair
     left_join((Operateurs %>% select(id, gestop_prenom, gestop_nom) %>% mutate(tpswrecap_personneltemporaire = paste0(gestop_prenom, " ", gestop_nom)) %>% rename(tpswrecap_personnel_id = id)), by = c("tpswrecap_personnel" = "tpswrecap_personnel_id")) %>% 
     mutate(tpswrecap_personnel = tpswrecap_personneltemporaire) %>% 
