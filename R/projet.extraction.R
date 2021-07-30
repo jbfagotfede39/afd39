@@ -47,7 +47,7 @@ projet.extraction <- function(
     select(-Champbis) %>%
     group_by(tpswrecap_natureprojet) %>%
     arrange(tpswrecap_detail) %>%
-    mutate(tpswrecap_argent = glue(tpswrecap_argent, " €")) %>%
+    mutate(tpswrecap_argent = glue("{tpswrecap_argent} €")) %>%
     rename("Détail" = "tpswrecap_detail") %>%
     rename("Total (TTC)" = "tpswrecap_argent") %>%
     rename("Phase du projet" = "tpswrecap_natureprojet") %>%
