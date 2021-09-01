@@ -2,7 +2,7 @@
 #'
 #' Cette fonction permet d'extraire les coûts d'un projet sous forme excel et png au moment de son montage. Elle s'appuie sur le format saisi dans la table tpstravail_recapitulatif et réalise les conversions à partir des volumes unitaires, et ordonne les sujets
 #' @name projet.extraction
-#' @param projet_id Id du projet concerné, à partir de la table fd_production.tpstravail_projets
+#' @param projet_id Id du projet concerné, à partir de la table fd_production.projets_liste
 #' @importFrom dplyr select
 #' @import tidyverse
 #' @export
@@ -19,13 +19,13 @@ projet.extraction <- function(
   dbD <- BDD.ouverture("Data")
   
   ## Récupération des données ##
-  Projets <- tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_projets")) %>% filter(id == projet_id) %>% collect()
+  Projets <- tbl(dbD, dbplyr::in_schema("fd_production", "projets_liste")) %>% filter(id == projet_id) %>% collect()
   Actions <- tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_recapitulatif")) %>% filter(tpswrecap_projet == projet_id) %>% filter(tpswrecap_programmation == "Attendu") %>% collect()
   tab_projet <- tbl(dbD, dbplyr::in_schema("fd_production", "general_observations_operations")) %>% select(-id, -contains('_modif')) %>% collect()
   DBI::dbDisconnect(dbD)
   
   ### Nettoyage des données utiles
-  NomProjet <- Projets %>% filter(id == projet_id) %>% select(tpswprj_projet) %>% pull()
+  NomProjet <- Projets %>% filter(id == projet_id) %>% select(prjlst_projet) %>% pull()
   
   ProjetFormate <-
     Actions %>%

@@ -36,7 +36,7 @@ personnel.projet <- function(
   ## Récupération des données ##
   if(anciennebase == T){TpsW <- tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_detail")) %>% filter(tpswdetail_projet == projet) %>% collect(n = Inf)}
   TpsWOT <- tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_opentime")) %>% collect(n = Inf)
-  Projets <- tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_projets")) %>% filter(tpswprj_projet == projet) %>% collect(n = Inf)
+  Projets <- tbl(dbD, dbplyr::in_schema("fd_production", "projets_liste")) %>% filter(prjlst_projet == projet) %>% collect(n = Inf)
   RecapTpsW <- tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_recapitulatif")) %>% filter(tpswrecap_projet %in% !! Projets$id) %>% collect(n = Inf)
   CoutsAnnuels <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_coutsannuels")) %>% filter(gestctan_projet_id %in% !! Projets$id) %>% collect(n = Inf)
   Personnels <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_operateurs")) %>% filter(gestop_mo == 3 & gestop_type == "Salarié") %>% select(id:gestop_qualite) %>% collect(n = Inf)
@@ -241,7 +241,7 @@ personnel.projet <- function(
   
 DataToAdd <-
   DataToAdd %>% 
-  left_join(Projets %>% ungroup() %>% select(id, tpswprj_projet, tpswprj_natureprojet), by = c("tpswrecap_projet" = "tpswprj_projet")) %>% # 
+  left_join(Projets %>% ungroup() %>% select(id, prjlst_projet, tpswprj_natureprojet), by = c("tpswrecap_projet" = "prjlst_projet")) %>% # 
   mutate(tpswrecap_natureprojet = tpswprj_natureprojet) %>% 
   mutate(tpswrecap_projet = id) %>% 
   mutate(id = row_number() + id_max) %>%  # Pour incrémenter les id à partir du dernier
@@ -268,7 +268,7 @@ SELECT setval('fd_production.tpstravail_recapitulatif_id_seq', COALESCE((SELECT 
 RecapTpsW <- 
     tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_recapitulatif")) %>% 
     filter(tpswrecap_projet %in% !! Projets$id) %>% 
-    {if(!grepl("AERMC", Projets$tpswprj_projet)) filter(., tpswrecap_programmation == "Réalisé") else .} %>%
+    {if(!grepl("AERMC", Projets$prjlst_projet)) filter(., tpswrecap_programmation == "Réalisé") else .} %>%
     collect(n = Inf)
 
 #### Extraction accord-cadre AERMC ####
@@ -318,7 +318,7 @@ if(grepl("AERMC",projet)){
   ## Création d'un classeur
   tempsprojet <- createWorkbook()
   ## Ajout d'une feuille
-  addWorksheet(tempsprojet, sheetName = glue('Récapitulatif_AC_{str_extract(Projets$tpswprj_projet, "[[:digit:]]+$")}'))
+  addWorksheet(tempsprojet, sheetName = glue('Récapitulatif_AC_{str_extract(Projets$prjlst_projet, "[[:digit:]]+$")}'))
   ## Ajout des données
   writeData(tempsprojet, 1, Recapitulatif, startCol = 1, startRow = 3, colNames = T) # writing content on the left-most column to be merged
   ## Ajout de cellules fusionnées

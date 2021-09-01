@@ -24,7 +24,7 @@ projet.calculInitial <- function(
   CoutTypePrestation <- tbl(dbD, in_schema("fd_referentiels", "gestion_coutsunitaires")) %>% collect()
   Poste <- tbl(dbD, in_schema("fd_referentiels", "gestion_postes")) %>% collect()
   Operateurs <- tbl(dbD, in_schema("fd_referentiels", "gestion_operateurs")) %>% collect()
-  Projets <- tbl(dbD, in_schema("fd_production", "tpstravail_projets")) %>% collect() %>% arrange(tpswprj_etat, tpswprj_datelancement)
+  Projets <- tbl(dbD, in_schema("fd_production", "projets_liste")) %>% collect() %>% arrange(tpswprj_etat, tpswprj_datelancement)
   TypologiePrestation <- tbl(dbD, in_schema("fd_referentiels", "gestion_typologieprestation")) %>% collect()
   
   DBI::dbDisconnect(dbD)

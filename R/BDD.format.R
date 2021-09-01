@@ -501,7 +501,7 @@ BDD.format <- function(
                                                                                                                              "tbl", "data.frame"))
     TpsW <- tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_detail")) %>% collect(n = 1)
     RecapTpsW <- tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_recapitulatif")) %>% collect(n = 1)
-    Projets <- tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_projets")) %>% collect(n = Inf)
+    Projets <- tbl(dbD, dbplyr::in_schema("fd_production", "projets_liste")) %>% collect(n = Inf)
     Personnels <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_operateurs")) %>% filter(gestop_mo == 3 & gestop_type == "Salarié") %>% select(id:gestop_qualite) %>% collect(n = Inf)
     
     ## Travail sur les données OpenTime ##

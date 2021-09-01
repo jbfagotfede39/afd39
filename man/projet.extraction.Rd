@@ -7,7 +7,7 @@
 projet.extraction(projet_id)
 }
 \arguments{
-\item{projet_id}{Id du projet concerné, à partir de la table fd_production.tpstravail_projets}
+\item{projet_id}{Id du projet concerné, à partir de la table fd_production.projets_liste}
 }
 \description{
 Cette fonction permet d'extraire les coûts d'un projet sous forme excel et png au moment de son montage. Elle s'appuie sur le format saisi dans la table tpstravail_recapitulatif et réalise les conversions à partir des volumes unitaires, et ordonne les sujets
