@@ -438,9 +438,12 @@ if (exportfigures == TRUE) {
   
   ## Sortie graphique profil longitudinal ##
   if (all(export & "chmes_typemesure" %in% colnames(data) & n_distinct(data$chmes_typemesure) == 1) == TRUE) {
+    if(DataTravailSIG %>% group_by(chsta_milieu) %>% st_drop_geometry() %>% distinct(chsta_coderhj) %>% group_by(chsta_milieu) %>% summarise(N = n()) %>% filter(N > 2) %>% nrow() != 0){ # Début de test s'il y a bien au moins un milieu à tester
     dataaconserver %>% # Le filtrage général est réalisé plus en amont avec ce qui remplit dataaconserver
+      st_drop_geometry() %>% 
       filter(chsta_milieu %in% (DataTravailSIG %>% 
                                   group_by(chsta_milieu) %>% 
+                                  st_drop_geometry() %>% 
                                   distinct(chsta_coderhj) %>% 
                                   group_by(chsta_milieu) %>% 
                                   summarise(N = n()) %>% 
@@ -450,6 +453,7 @@ if (exportfigures == TRUE) {
              ) %>% # Ici on filtre pour ne conserver que les milieux pour lesquels il y a au moins trois stations
       group_split(chsta_milieu) %>%
       purrr::map_dfr(~ chronique.figure.longitudinale(data = ., save = T, projet = projet, format = ".png"))
+    } # Fin de test s'il y a bien au moins un milieu à tester
   } # Fin de Sortie graphique profil longitudinal
   
   ## Sortie graphique preferendums thermiques des espèces ##

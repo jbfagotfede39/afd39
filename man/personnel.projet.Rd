@@ -8,6 +8,7 @@ personnel.projet(
   projet = NA_character_,
   projection = TRUE,
   anciennebase = FALSE,
+  envoi = FALSE,
   export = TRUE
 )
 }
@@ -17,6 +18,8 @@ personnel.projet(
 \item{projection}{Si \code{TRUE} (par défaut), va chercher les données projetées.}
 
 \item{anciennebase}{Si \code{TRUE}, va chercher les données détaillées également dans l'ancienne base en plus d'Opentime}
+
+\item{envoi}{Si \code{TRUE}, envoie les données calculées dans la table fd_production.tpstravail_recapitulatif (\code{FALSE} par défaut)}
 
 \item{export}{Si \code{TRUE} (par défaut), exporte les résultats}
 }
