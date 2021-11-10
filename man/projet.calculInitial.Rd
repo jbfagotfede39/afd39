@@ -4,14 +4,15 @@
 \alias{projet.calculInitial}
 \title{Calcul initial des coûts de projet}
 \usage{
-projet.calculInitial(NomProjet)
+projet.calculInitial(nom_projet)
 }
 \arguments{
-\item{NomProjet}{Nom du dataframe contenant les données "attendues" à traiter, dans le format de tpstravail_recapitulatif}
+\item{nom_projet}{Nom du dataframe contenant les données "attendues" à traiter, dans le format de tpstravail_recapitulatif}
 }
 \description{
 Cette fonction permet de calculer les coûts d'un projet au moment de son montage. Elle s'appuie sur le format saisi dans la table tpstravail_recapitulatif et réalise les conversions à partir des volumes unitaires, et ordonne les sujets
 }
 \examples{
-RecapDataToAdd <- projet.calculInitial(NomProjet)
+recap_data_to_add <- projet.calculInitial(nom_projet)
+tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_recapitulatif")) \%>\% filter(tpswrecap_projet == 212) \%>\% collect() \%>\% projet.calculInitial()
 }
