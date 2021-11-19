@@ -488,7 +488,7 @@ BDD.format <- function(
     dbD <- BDD.ouverture("Data")
     
     ## Récupération des données ##
-    TpsWOpenTime <- structure(list(jour = structure(numeric(0), tzone = "UTC", class = c("POSIXct", 
+    tps_w_opentime <- structure(list(jour = structure(numeric(0), tzone = "UTC", class = c("POSIXct", 
                                                                                  "POSIXt")), domaine = character(0), activité = character(0), 
                            `sous-projet` = character(0), statut = character(0), `date de lancement` = character(0), 
                            `date de clôture` = character(0), métier = character(0), 
@@ -499,13 +499,19 @@ BDD.format <- function(
                            `coût horaire (direct)` = numeric(0), `coût horaire (production)` = numeric(0), 
                            description = logical(0), de = character(0), à = character(0)), row.names = integer(0), class = c("tbl_df", 
                                                                                                                              "tbl", "data.frame"))
+    projets_comptabilite <- structure(list(projet_id = character(0), compte_id = character(0), 
+                                           num_mvt = character(0), journal = character(0), date = structure(numeric(0), class = "Date"), 
+                                           num_piece = character(0), libelle_ecriture = character(0), 
+                                           S = character(0), lett = character(0), ecriture_sens = character(0), 
+                                           valeur = numeric(0)), row.names = integer(0), class = c("tbl_df", 
+                                                                                                   "tbl", "data.frame"))
     TpsW <- tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_detail")) %>% collect(n = 1)
     RecapTpsW <- tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_recapitulatif")) %>% collect(n = 1)
     Projets <- tbl(dbD, dbplyr::in_schema("fd_production", "projets_liste")) %>% collect(n = Inf)
     Personnels <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_operateurs")) %>% filter(gestop_mo == 3 & gestop_type == "Salarié") %>% select(id:gestop_qualite) %>% collect(n = Inf)
     
     ## Travail sur les données OpenTime ##
-    if(all(colnames(data) %in% colnames(TpsWOpenTime))) {
+    if(all(colnames(data) %in% colnames(tps_w_opentime))) {
       
       # Transformation des formats
       data <-
@@ -531,7 +537,33 @@ BDD.format <- function(
           mutate(`_modif_type` = NA_character_) %>% 
           mutate(`_modif_date` = NA) %>% 
           select(id, everything(), `_modif_utilisateur`, `_modif_type`,`_modif_date`)
-    } # Fin de travail sur les mesures de temps de travail
+    } # Fin de travail sur les données OpenTime
+    
+    ## Travail sur les données de comptabilité ##
+    if(all(colnames(data) %in% colnames(projets_comptabilite))) {
+      
+      # Transformation des formats
+      data <-
+        data %>% 
+        # Nettoyage
+        rename(ecriture_id = num_mvt, piece = num_piece, ecriture_libelle = libelle_ecriture, ecriture_valeur = valeur, s_temporaire = S, lett_temporaire = lett) %>% 
+        select(projet_id, date, compte_id, ecriture_id, ecriture_libelle, piece, journal, ecriture_sens, ecriture_valeur) %>%
+        mutate(date = as_date(date)) %>% 
+        # Complément/modification
+        mutate(presencelogiciel = NA_character_, .after = ecriture_valeur) %>% 
+        mutate(prjcompta_remarques = NA_character_, .after = presencelogiciel) %>% 
+        # mise en forme 
+        rename_all(list(~ stringi::stri_trans_general(., "latin-ascii"))) %>% # Pour remplacer les caractères accentués par les mêmes sans accents
+        rename_all(list(~ paste0("prjcompta_", .))) %>%
+        rename_all(list(~ gsub("[[:punct:]]", "_", .))) %>%
+        rename_all(list(~ tolower(.))) %>% 
+        mutate(id = row_number() + as.numeric(dbGetQuery(dbD, "SELECT nextval('fd_production.projets_comptabilite_id_seq');"))) %>% # Pour incrémenter les id à partir du dernier
+        mutate(`_modif_utilisateur` = NA_character_) %>% 
+        mutate(`_modif_type` = NA_character_) %>% 
+        mutate(`_modif_date` = NA) %>% 
+        select(id, everything(), `_modif_utilisateur`, `_modif_type`,`_modif_date`)
+    } # Fin de travail sur les données de comptabilité
+    
   } # Fin de travail sur Temps de travail
   
   ##### Commun #####

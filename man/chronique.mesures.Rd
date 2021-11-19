@@ -30,5 +30,6 @@ chronique.mesures("DRO6-8", "Thermie", "2013")
 chronique.mesures("GCLzhaval", "Piézométrie", "2015", Valide = F)
 chronique.mesures("GCLzhaval", "Tout", "2015", Valide = F)
 Mesures <- Stations \%>\% group_split(chsta_coderhj) \%>\% purrr::map_dfr(~ chronique.mesures(.$chsta_coderhj, "Thermie"))
+c("GLA4-4", "GLA6-9") \%>\% purrr::map_dfr(~ chronique.mesures(., "Tout", Valide = F))
 }
 \keyword{chronique}

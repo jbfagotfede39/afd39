@@ -17,6 +17,7 @@
 #' chronique.mesures("GCLzhaval", "Piézométrie", "2015", Valide = F)
 #' chronique.mesures("GCLzhaval", "Tout", "2015", Valide = F)
 #' Mesures <- Stations %>% group_split(chsta_coderhj) %>% purrr::map_dfr(~ chronique.mesures(.$chsta_coderhj, "Thermie"))
+#' c("GLA4-4", "GLA6-9") %>% purrr::map_dfr(~ chronique.mesures(., "Tout", Valide = F))
 
 chronique.mesures <- function(  
   CodeStation = character(0),
@@ -81,7 +82,9 @@ if(length(as.character(annee)) != 0){
 }
 
 ##### Mise en forme #####
-Mesures <- Mesures %>% arrange(chmes_date, chmes_heure)
+Mesures <- 
+  Mesures %>% 
+  {if (nrow(Mesures) != 0) arrange(., chmes_date, chmes_heure) else .}
 
 ##### Sortie #####
 return(Mesures)
