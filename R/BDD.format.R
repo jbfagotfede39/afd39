@@ -33,6 +33,9 @@ BDD.format <- function(
   if(traitementforce == "TRUE"){Type <- match.arg(Type)} # Évaluation des choix
   if(Type == "MI") warning("Attention le type par défaut est MI")
   
+  #### Sauvegarde pour comparaison finale ####
+  data_saved <- data
+  
   ###### MI ######
   Testtraitementforce <- 0
   if(traitementforce == TRUE & Type == "MI") Testtraitementforce <- 1
@@ -566,9 +569,14 @@ BDD.format <- function(
     
   } # Fin de travail sur Temps de travail
   
-  ##### Commun #####
+##### Commun #####
+## Changement de formats ##
 data <- as.data.frame(data)
 
-  return(data)
+## Comparaison ##
+if(data %>% setequal(data_saved) == TRUE) warning("Attention : les deux dataframes d'entrée et de sortie ont exactement les mêmes noms de colonnes")
+
+## Sortie ##
+return(data)
   
 } # Fin de la fonction
