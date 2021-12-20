@@ -47,17 +47,12 @@ personnel.formatAC <- function(
   
   #### Réencodage ####
   anneeAC <- str_replace(Projets$prjlst_projet, "Convention-cadre AERMC-FD39-", "")
-  pattern <- c("^AC AE", glue("{Projets$id} - AC AE"))
+  pattern <- c(glue("^{Projets$id} - AC AE"))
   data <-
     data %>% 
     filter(year(tpswot_date) == anneeAC) %>% 
     filter(tpswot_domaine == "Projets") %>% 
     filter(str_detect(tpswot_activite, pattern)) %>% 
-    union(data %>% 
-            filter(year(tpswot_date) == anneeAC) %>% 
-            filter(tpswot_domaine == "Projets") %>% 
-            filter(grepl("1.1|1.2|1.3|2\\.1|2\\.2|2.3|2.4|2.5|3.1|4.1|4.2", tpswot_sous_projet))
-    ) %>% 
     filter(!is.na(tpswot_duree)) %>% 
     filter(tpswot_presenceenligne == "Présent") %>% 
     mutate(tpswdetail_projet = projet) %>% 

@@ -85,6 +85,8 @@ projet.calculInitial <- function(
     # Cas d'un item présent en prestation et ajouté en quantité dans le projet -> rebascule en nb de jours + suppression de la quantité
     mutate(tpswrecap_jours = ifelse(is.na(tpswrecap_jours) & !is.na(tpswrecap_poste) & !is.na(tpswrecap_quantite) & tpswrecap_moe == "FJPPMA", tpswrecap_quantite, tpswrecap_jours)) %>%
     mutate(tpswrecap_quantite = ifelse(!is.na(tpswrecap_jours) & !is.na(tpswrecap_poste) & !is.na(tpswrecap_quantite) & tpswrecap_moe == "FJPPMA" & tpswrecap_jours == tpswrecap_quantite, NA, tpswrecap_quantite)) %>%
+    # On filtre les éventuelles prestations qui contiennent également du tps de travail FD mais qui sortent ici en tant que prestation du fait d'une jointure
+    filter(!(is.na(tpswrecap_argent) & tpswrecap_detail == 76)) %>% 
     # On remet ce qui n'est pas MOE FJPPMA
     rename(tpswrecap_coutunitaire = cout_unitaire) %>% 
     select(-clepostepersonnel, -gestctunit_remarques, -gestctunit_poste_id, -gestctunit_quantitepersonnel, -Temps) %>% 
@@ -94,7 +96,7 @@ projet.calculInitial <- function(
       nom_projet %>% filter(tpswrecap_programmation == "Attendu") %>% filter(tpswrecap_moe != "FJPPMA") %>% 
         left_join(cout_type_prestation %>% select(gestctunit_prestation_id, gestctunit_coutunitaire), by = c('tpswrecap_detail' = 'gestctunit_prestation_id')) %>% 
         mutate(tpswrecap_coutunitaire = gestctunit_coutunitaire) %>% select(-gestctunit_coutunitaire) %>% 
-        mutate(tpswrecap_argent = tpswrecap_coutunitaire * tpswrecap_quantite) #%>% view()
+        mutate(tpswrecap_argent = ifelse(is.na(tpswrecap_argent), tpswrecap_coutunitaire * tpswrecap_quantite, tpswrecap_argent)) # Afin de préserver d'éventuels coûts unitaires saisis manuellement dans la table récap
       ) %>% 
     mutate("_modif_utilisateur" = NA) %>% 
     mutate("_modif_type" = NA) %>% 
@@ -102,7 +104,7 @@ projet.calculInitial <- function(
     select(match(colnames(recap_tps_w),names(.))) %>% 
     mutate(id = NA) %>% 
     
-    # On remet les prestation en clair + tri
+    # On remet les prestations en clair + tri
     left_join(typologie_prestation %>% select(id, gesttyppresta_libelle, gesttyppresta_ordre), by = c("tpswrecap_detail" = "id")) %>% 
     mutate(tpswrecap_detail = gesttyppresta_libelle) %>% 
     select(-gesttyppresta_libelle) %>% 
@@ -112,6 +114,8 @@ projet.calculInitial <- function(
     mutate(tpswrecap_argent = round(tpswrecap_argent, 2))
   
   if(length(which(recap_data_to_add == "STOP")) != 0) stop("Problème : vérification nécessaire")
+  if(recap_data_to_add %>% filter(is.na(tpswrecap_argent)) %>% nrow() != 0) stop("Problème : il y a des lignes sans valeur pécuniaire")
+  
   
 return(recap_data_to_add)
 
