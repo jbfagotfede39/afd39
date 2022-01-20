@@ -53,7 +53,7 @@ poisson.programmation <- function(
   poissons_programmation_synthese_1 <- 
     poissons_programmation_filtre %>% 
     left_join(poissons.stations(), by = c("poiprg_codestation_id" = "codestation")) %>% 
-    select(nom, id:poiprg_remarques, xlambert, ylambert, codesiermc,)
+    select(poiprg_codestation_id, nom, id:poiprg_remarques, xlambert, ylambert, codesiermc)
   
   operations_recentes <-
     poissons.resultats(poissons_programmation_synthese_1 %>% rename(Nom = nom)) %>% 
@@ -69,7 +69,7 @@ poisson.programmation <- function(
   poissons_programmation_synthese_3 <-
     poissons_programmation_synthese_2 %>% 
     left_join(poissons_moyens %>% select(-id,-contains("_modif")), by = c("nom" = "poissmoyens_nom")) %>% 
-    select(nomecosysteme, poiprg_projet_id, poiprg_objectif, nom, codesiermc, datedebut.x, poiprg_date, largeurlameeau, largeurlitmineur, nombreanodes, profondeur, gestionnaire, typelambert, xlambert, ylambert, poissmoyens_duree, poissmoyens_nb_professionnels, poissmoyens_nb_benevoles, poissmoyens_remarques, poiprg_pdm_pression, poiprg_commentaires, poiprg_remarques) %>% 
+    select(nomecosysteme, poiprg_projet_id, poiprg_objectif, nom, poiprg_codestation_id, codesiermc, datedebut.x, poiprg_date, largeurlameeau, largeurlitmineur, nombreanodes, profondeur, gestionnaire, typelambert, xlambert, ylambert, poissmoyens_duree, poissmoyens_nb_professionnels, poissmoyens_nb_benevoles, poissmoyens_remarques, poiprg_pdm_pression, poiprg_commentaires, poiprg_remarques) %>% 
     arrange(poiprg_date, nom)
 
   #### Nettoyage et mise en forme ####

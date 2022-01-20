@@ -66,6 +66,7 @@ chronique.traitement <- function(
   style <- match.arg(style)
   if(exportDCE == TRUE) export <- T
   if(export == FALSE) exportDCE <- F
+  if(exportfigures == TRUE) export <- T
   if(export == FALSE) exportfigures <- F
   if(export == FALSE) archivage <- "Aucun"
   
@@ -163,7 +164,7 @@ if(export == TRUE){
 
 if(export == TRUE & dep39 == TRUE){
   dbD <- BDD.ouverture("Data")
-  listeStations <- sf::st_read(dbD, query = "SELECT * FROM fd_production.chroniques_stations;") %>% filter(chsta_coderhj %in% listeStations$chmes_coderhj) %>% collect() %>% dplyr::select(chsta_coderhj:chsta_departement, chsta_coord_x:chsta_coord_type, chsta_fonctionnement:chsta_reseauthermietype, chsta_altitude, chsta_distancesource, chsta_typetheorique)
+  listeStations <- sf::st_read(dbD, query = "SELECT * FROM fd_production.chroniques_stations;") %>% filter(chsta_coderhj %in% listeStations$chmes_coderhj) %>% collect() %>% dplyr::select(chsta_coderhj:chsta_departement, chsta_coord_x:chsta_coord_type, chsta_fonctionnement:chsta_reseauthermietype, chsta_altitude, chsta_distancesource, chsta_typetheorique, chsta_sprep)
   communes <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.topographie_communes WHERE (tpcomm_departement_insee = '39' OR tpcomm_departement_insee = '25' OR tpcomm_departement_insee = '01');")
   contextesPDPG <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.hydrographie_contextespdpg;")
   Commentaires <- tbl(dbD, in_schema("fd_production", "chroniques_commentaires")) %>% collect(n = Inf)
@@ -212,7 +213,7 @@ DataTravail <-
 ##### Sortie stations #####
 if(export == TRUE & dep39 == "autre"){
   ## Préparation format SIG ##
-  listeStations <- Stations %>% filter(chsta_coderhj %in% listeStations$chmes_coderhj) %>% dplyr::select(chsta_coderhj:chsta_codecontextepdpg, chsta_coord_x:chsta_coord_type, chsta_fonctionnement:chsta_reseauthermietype, chsta_altitude, chsta_distancesource, chsta_typetheorique)
+  listeStations <- Stations %>% filter(chsta_coderhj %in% listeStations$chmes_coderhj) %>% dplyr::select(chsta_coderhj:chsta_codecontextepdpg, chsta_coord_x:chsta_coord_type, chsta_fonctionnement:chsta_reseauthermietype, chsta_altitude, chsta_distancesource, chsta_typetheorique, chsta_sprep)
   listeStations <-
     listeStations %>% 
     rowwise() %>% 
@@ -458,18 +459,13 @@ if (exportfigures == TRUE) {
   
   ## Sortie graphique preferendums thermiques des espèces ##
   # if (all(export) == TRUE) {
-    # Toutes espèces #
+    # Toutes espèces ou liste détaillé d'espèces #
     dataaconserver %>% # Le filtrage général est réalisé plus en amont avec ce qui remplit dataaconserver
       chronique.cle(formatcle = "SAT") %>% 
       filter(chsta_transmission == "Non") %>% # Temporaire = pour éliminer HER14-8 hydrologie suite à la jointure des résultats avec les stations, le temps qu'on travaille directement par ID
+      mutate(chsta_sprep = ifelse(is.na(chsta_sprep), "Toutes espèces", chsta_sprep)) %>% 
       group_split(Cle) %>%
-      purrr::map_dfr(~ chronique.figure.preferendums(staderecherche = "Adulte", tmm30j = .$VMaxMoy30J, listeEspeces = c("Toutes espèces"), Titre = as.character(glue('{unique(.$chsta_coderhj)} - {unique(.$Annee)}')), save = T, projet = projet, format = ".png"))
-    # Liste d'espèces #
-    # dataaconserver %>% # Le filtrage général est réalisé plus en amont avec ce qui remplit dataaconserver
-    #   filter(!is.na()) %>% # pour ne conserver que les stations comprenant une liste de référence d'espèces
-    #   chronique.cle(formatcle = "SAT") %>% 
-    #   group_split(Cle) %>%
-    # purrr::map_dfr(~ chronique.figure.preferendums(staderecherche = "Adulte", tmm30j = .$VMaxMoy30J, listeEspeces = c("Toutes espèces"), Titre = as.character(glue('{unique(.$chsta_coderhj)} - unique(.$Annee)}')), save = T, projet = projet, format = ".png"))
+      purrr::map_dfr(~ chronique.figure.preferendums(staderecherche = "Adulte", tmm30j = .$VMaxMoy30J, liste_especes = .$chsta_sprep, titre = as.character(glue('{unique(.$chsta_coderhj)} - {unique(.$Annee)}')), save = T, projet = projet, format = ".png"))
   # } # Fin de Sortie preferendums thermiques des espèces
 
 } # Fin de exportfigures == T

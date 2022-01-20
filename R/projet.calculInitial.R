@@ -87,6 +87,7 @@ projet.calculInitial <- function(
     mutate(tpswrecap_quantite = ifelse(!is.na(tpswrecap_jours) & !is.na(tpswrecap_poste) & !is.na(tpswrecap_quantite) & tpswrecap_moe == "FJPPMA" & tpswrecap_jours == tpswrecap_quantite, NA, tpswrecap_quantite)) %>%
     # On filtre les éventuelles prestations qui contiennent également du tps de travail FD mais qui sortent ici en tant que prestation du fait d'une jointure
     filter(!(is.na(tpswrecap_argent) & tpswrecap_detail == 76)) %>% 
+    filter(!(is.na(tpswrecap_argent) & tpswrecap_detail == 8)) %>% 
     # On remet ce qui n'est pas MOE FJPPMA
     rename(tpswrecap_coutunitaire = cout_unitaire) %>% 
     select(-clepostepersonnel, -gestctunit_remarques, -gestctunit_poste_id, -gestctunit_quantitepersonnel, -Temps) %>% 
