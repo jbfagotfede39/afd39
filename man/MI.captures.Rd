@@ -4,20 +4,21 @@
 \alias{MI.captures}
 \title{Extraction des données des captures de MI}
 \usage{
-MI.captures(
-  listeOperations = data.frame(Station = character(0), Date = character(0))
-)
+MI.captures(id_operation = NA_integer_, sortie = c("Brute", "Complète"))
 }
 \arguments{
-\item{listeOperations}{Dataframe contenant un colonne "Station" avec le code de la station (RHJ) et une colonne "Date"}
+\item{id_operation}{id de l'opération recherchée}
+
+\item{sortie}{Forme du dataframe de sortie - \code{Brute} (par défault) ou \code{Complète} (avec données des prélèvements et de station)}
 }
 \description{
 Récupère les données de captures d'une opération de suivi MI
 }
 \examples{
 MI.captures()
-MI.captures(listeOperations)
-MI.captures(data.frame(Station = "BFE1-8", Date = ymd("2014-05-20")))
-MI.captures(data.frame(Station = "06084000", Date = ymd("2014-05-20")))
+MI.captures(12)
+c(12, 14) \%>\% purrr::map_dfr(~ MI.captures(.))
+captures <- operations \%>\% group_split(id) \%>\% purrr::map_dfr(~ MI.captures(.$id))
+c("GLA5-5", "GLA6-2") \%>\% purrr::map_dfr(~ MI.operations(., id_operation = T)) \%>\% group_split(id) \%>\% purrr::map_dfr(~ MI.captures(.$id))
 }
 \keyword{donnees}

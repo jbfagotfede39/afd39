@@ -5,27 +5,28 @@
 \title{Listing des opérations (MI) pour une station}
 \usage{
 MI.operations(
-  listeStations = data.frame(Nom = character(0)),
-  CodeOperation = F,
-  Sortie = c("Simple", "Propre", "Complet")
+  code_station = NA_character_,
+  id_operation = F,
+  sortie = c("Simple", "Propre", "Complet")
 )
 }
 \arguments{
-\item{listeStations}{Dataframe contenant un colonne "Nom" avec le code de la station (RHJ)}
+\item{code_station}{Code RHJ de la station}
 
-\item{CodeOperation}{Affichage du CodeOperation - \code{FALSE} (par défault)}
+\item{id_operation}{Affichage de l'id des opérations - \code{FALSE} (par défault)}
 
-\item{Sortie}{Forme du dataframe de sortie - \code{Simple} (par défault), \code{Propre} (format diffusable, avec stations) ou \code{Complet} (tous les champs)}
+\item{sortie}{Forme du dataframe de sortie - \code{Simple} (par défault), \code{Propre} (format diffusable, avec stations) ou \code{Complet} (tous les champs)}
 }
 \description{
 Cette fonction permet de lister les différentes opérations pour une liste donnée de stations
 }
 \examples{
 MI.operations()
-MI.operations(CodeOperation = TRUE)
-MI.operations(data.frame(Nom = "BCH5-7"))
-MI.operations(data.frame(Nom = "BCH5-7"), CodeOperation = TRUE)
-MI.operations(listeStations, Sortie = Propre)
-MI.operations(data.frame(Nom = "BCH5-7"), Sortie = Complet)
+MI.operations(id_operation = TRUE)
+MI.operations("BCH5-7")
+MI.operations("BCH5-7", id_operation = TRUE)
+MI.operations("BCH5-7", sortie = "Complet")
+c("GLA5-5", "GLA6-2") \%>\% purrr::map_dfr(~ MI.operations(., sortie = "Propre", id_operation = T))
+captures <- Stations \%>\% group_split(chsta_coderhj) \%>\% purrr::map_dfr(~ MI.operations(.$chsta_coderhj, sortie = "Propre"))
 }
-\keyword{poissons}
+\keyword{macro-invertébrés}

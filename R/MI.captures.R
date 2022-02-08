@@ -2,68 +2,51 @@
 #'
 #' Récupère les données de captures d'une opération de suivi MI
 #' @name MI.captures
-#' @param listeOperations Dataframe contenant un colonne "Station" avec le code de la station (RHJ) et une colonne "Date"
+#' @param id_operation id de l'opération recherchée
+#' @param sortie Forme du dataframe de sortie - \code{Brute} (par défault) ou \code{Complète} (avec données des prélèvements et de station)
 #' @keywords donnees
 #' @import DBI
 #' @import tidyverse
 #' @export
 #' @examples
 #' MI.captures()
-#' MI.captures(listeOperations)
-#' MI.captures(data.frame(Station = "BFE1-8", Date = ymd("2014-05-20")))
-#' MI.captures(data.frame(Station = "06084000", Date = ymd("2014-05-20")))
+#' MI.captures(12)
+#' c(12, 14) %>% purrr::map_dfr(~ MI.captures(.))
+#' captures <- operations %>% group_split(id) %>% purrr::map_dfr(~ MI.captures(.$id))
+#' c("GLA5-5", "GLA6-2") %>% purrr::map_dfr(~ MI.operations(., id_operation = T)) %>% group_split(id) %>% purrr::map_dfr(~ MI.captures(.$id))
 
 MI.captures <- function(
-  listeOperations = data.frame(Station = character(0), Date = character(0)))
+  id_operation = NA_integer_,
+  sortie = c("Brute","Complète")
+)
 {
-  ##### Connexion à la BDD #####
-  ## Connexion à la BDD ##
-  dbMI <- BDD.ouverture(Type = "Macroinvertébrés")
+  #### Vérification ####
+  if(is.na(id_operation)) stop("Aucun identifiant d'opération fourni")
+  ## Évaluation des choix
+  sortie <- match.arg(sortie)
   
   ##### Récupération des données #####
-  Operations <- tbl(dbMI,"Operations") %>% collect(n = Inf)
-  Prelevements <- tbl(dbMI,"Prelevements") %>% collect(n = Inf)
-  Captures <- tbl(dbMI,"Captures") %>% collect(n = Inf)
+  ## Connexion à la BDD ##
+  dbD <- BDD.ouverture("Data")
   
-  # ## Fermeture de la BDD ##
-  # DBI::dbDisconnect(dbMI)
+  ## Promesse de données ##
+  suppressWarnings(operations <- tbl(dbD, dbplyr::in_schema("fd_production", "macroinvertebres_operations")))
+  prelevements <- tbl(dbD, dbplyr::in_schema("fd_production", "macroinvertebres_prelevements"))
+  captures <- tbl(dbD, dbplyr::in_schema("fd_production", "macroinvertebres_captures"))
   
-  ##### Synthèse des données #####
-  Prelevements <- left_join(Prelevements, Operations, by = c("OperationID"))
+  ## Collecte ##
+  suppressWarnings(
+    resultat <- 
+      captures %>% 
+      left_join(prelevements, by = c("micapt_miprlvt_id" = "id")) %>% 
+      left_join(operations, by = c("miprlvt_miop_id" = "id")) %>% 
+      filter(miprlvt_miop_id == id_operation) %>% 
+      {if(sortie == "Brute") select(., id, micapt_miprlvt_id, micapt_taxon, micapt_abondance, micapt_typeabondance, micapt_volumeabondance, micapt_stade, micapt_sexe, micapt_remarques) else .} %>%
+      {if(sortie == "Complète") select(., everything(), -contains("modif_")) else .} %>%
+      collect(n = Inf)
+  )
 
-  CapturesTemp1 <- Captures %>% filter(!is.na(PrelevementID)) %>% select(-OperationID) %>% left_join(Prelevements, by = c("PrelevementID"))
-  CapturesTemp2 <- Captures %>% filter(is.na(PrelevementID)) %>% left_join(Operations, by = "OperationID")
-  Captures <- 
-    CapturesTemp1 %>% 
-    bind_rows(CapturesTemp2) %>% 
-    mutate(PhaseDCE = ifelse(VolumeAbondance == "Phase A", "A", PhaseDCE)) %>% 
-    mutate(PhaseDCE = ifelse(VolumeAbondance == "Phase B", "B", PhaseDCE)) %>% 
-    mutate(PhaseDCE = ifelse(VolumeAbondance == "Phase C", "C", PhaseDCE))
-  
-  ##### Transformation des formats de dates
-  Captures$Date <- ymd(Captures$Date)
-  
-  ##### Filtrage #####
-  if(dim(listeOperations)[1] != 0){
-  Captures <-
-    Captures %>% 
-    filter(CodeRHJ %in% listeOperations$Station, Date %in% listeOperations$Date) %>% 
-    arrange(NumEchCommun)
-  }
-  
-  if(dim(listeOperations)[1] == 0){
-    Captures <-
-      Captures %>% 
-      arrange(NumEchCommun)
-  }
-  
-  if(dim(Captures)[1] == 0){
-  Captures <-
-    Captures %>% 
-    filter(CodeSIE %in% listeOperations$Station, Date %in% listeOperations$Date) %>%
-    arrange(NumEchCommun)
-  }
-
-  return(Captures)
+  #### Sortie ####
+  return(resultat)
   
 } # Fin de la fonction

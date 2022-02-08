@@ -2,154 +2,147 @@
 #'
 #' Cette fonction permet de lister les différentes opérations pour une liste donnée de stations
 #' @name MI.operations
-#' @param listeStations Dataframe contenant un colonne "Nom" avec le code de la station (RHJ)
-#' @param CodeOperation Affichage du CodeOperation - \code{FALSE} (par défault)
-#' @param Sortie Forme du dataframe de sortie - \code{Simple} (par défault), \code{Propre} (format diffusable, avec stations) ou \code{Complet} (tous les champs)
-#' @keywords poissons
+#' @param code_station Code RHJ de la station
+#' @param id_operation Affichage de l'id des opérations - \code{FALSE} (par défault)
+#' @param sortie Forme du dataframe de sortie - \code{Simple} (par défault), \code{Propre} (format diffusable, avec stations) ou \code{Complet} (tous les champs)
+#' @keywords macro-invertébrés
 #' @import DBI
+#' @import sf
 #' @import tidyverse
 #' @export
 #' @examples
 #' MI.operations()
-#' MI.operations(CodeOperation = TRUE)
-#' MI.operations(data.frame(Nom = "BCH5-7"))
-#' MI.operations(data.frame(Nom = "BCH5-7"), CodeOperation = TRUE)
-#' MI.operations(listeStations, Sortie = Propre)
-#' MI.operations(data.frame(Nom = "BCH5-7"), Sortie = Complet)
-
-##### TODO LIST #####
-# 
-#####################
+#' MI.operations(id_operation = TRUE)
+#' MI.operations("BCH5-7")
+#' MI.operations("BCH5-7", id_operation = TRUE)
+#' MI.operations("BCH5-7", sortie = "Complet")
+#' c("GLA5-5", "GLA6-2") %>% purrr::map_dfr(~ MI.operations(., sortie = "Propre", id_operation = T))
+#' captures <- Stations %>% group_split(chsta_coderhj) %>% purrr::map_dfr(~ MI.operations(.$chsta_coderhj, sortie = "Propre"))
 
 MI.operations <- function(
-  listeStations = data.frame(Nom = character(0)),
-  CodeOperation = F,
-  Sortie = c("Simple","Propre","Complet")
+  code_station = NA_character_,
+  id_operation = F,
+  sortie = c("Simple","Propre","Complet")
 )
 {
 
   ## Évaluation des choix
-  Sortie <- match.arg(Sortie)
+  sortie <- match.arg(sortie)
   
   #### Ouverture de la BDD ####
   ## Connexion à la BDD
-  dbMI <- BDD.ouverture(Type = "Macroinvertébrés")
+  dbD <- BDD.ouverture("Data")
 
   #### Récupération des données ####
-  Operations <- tbl(dbMI,"Operations") %>% collect(n = Inf)
-  Captures <- tbl(dbMI,"Captures") %>% collect(n = Inf)
-  Prelevements <- tbl(dbMI,"Prelevements") %>% collect(n = Inf)
-  Habitats <- tbl(dbMI,"Habitats") %>% collect(n = Inf)
-  HabitatsReference <- tbl(dbMI,"HabitatsReference") %>% collect(n = Inf)
-  EspecesReference <- tbl(dbMI,"EspecesReference") %>% collect(n = Inf)
-  GenresReference <- tbl(dbMI,"GenresReference") %>% collect(n = Inf)
-  SousFamillesReference <- tbl(dbMI,"SousFamillesReference") %>% collect(n = Inf)
-  FamillesReference <- tbl(dbMI,"FamillesReference") %>% collect(n = Inf)
-  OrdresReference <- tbl(dbMI,"OrdresReference") %>% collect(n = Inf)
-  
-  Habitats$Recouvrement <- as.numeric(sub(",", ".", Habitats$Recouvrement))
+  operations <- sf::st_read(dbD, query = "select * from fd_production.macroinvertebres_operations") %>% collect(n = Inf)
+  captures <- tbl(dbD, dbplyr::in_schema("fd_production", "macroinvertebres_captures")) %>% collect(n = Inf)
+  prelevements <- tbl(dbD, dbplyr::in_schema("fd_production", "macroinvertebres_prelevements")) %>% collect(n = Inf)
+  habitats <- tbl(dbD, dbplyr::in_schema("fd_production", "macroinvertebres_habitats")) %>% collect(n = Inf)
+  habitats_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "macroinvertebres_habitats_reference")) %>% collect(n = Inf)
+  especes_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "systematique_especes")) %>% collect(n = Inf)
+  genres_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "systematique_genres")) %>% collect(n = Inf)
+  sous_familles_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "systematique_sousfamilles")) %>% collect(n = Inf)
+  familles_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "systematique_familles")) %>% collect(n = Inf)
+  ordres_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "systematique_ordres")) %>% collect(n = Inf)
   
   # ## Fermeture de la BDD ##
-  # DBI::dbDisconnect(dbMI)
-  
-  ## Format de Date ##
-  Operations$Date <- ymd(Operations$Date)
+  # DBI::dbDisconnect(dbD)
   
   ## Simplification ##
   
   #### Travail sur l'ensemble des stations ####
-  if(dim(listeStations)[1] == 0 & CodeOperation == F & Sortie == "Simple"){
-    Operations <- 
-      Operations %>%
-      select(CodeRHJ, Date) %>% 
-      dplyr::rename(Station = CodeRHJ) %>% 
-      arrange(Station, Date)}
+  if(is.na(code_station) & id_operation == F & sortie == "Simple"){
+    operations <- 
+      operations %>%
+      select(miop_coderhj, miop_date) %>% 
+      # # dplyr::rename(Station = miop_coderhj, Date = miop_date) %>% 
+      arrange(miop_coderhj, miop_date)}
   
-  if(dim(listeStations)[1] == 0 & CodeOperation == F & Sortie == "Propre"){
-    Operations <- 
-      Operations %>%
-      select(CodeRHJ, Date, X, Y, TypeCoord) %>% 
-      dplyr::rename(Station = CodeRHJ) %>% 
-      arrange(Station, Date)}
+  if(is.na(code_station) & id_operation == F & sortie == "Propre"){
+    operations <- 
+      operations %>%
+      select(miop_coderhj, miop_date, miop_coord_x, miop_coord_y) %>% 
+      # # dplyr::rename(Station = miop_coderhj, Date = miop_date) %>% 
+      arrange(miop_coderhj, miop_date)}
   
-  if(dim(listeStations)[1] == 0 & CodeOperation == F & Sortie == "Complet"){
-    Operations <- 
-      Operations %>%
-      dplyr::rename(Station = CodeRHJ) %>% 
-      arrange(Station, Date)}
+  if(is.na(code_station) & id_operation == F & sortie == "Complet"){
+    operations <- 
+      operations %>%
+      # # dplyr::rename(Station = miop_coderhj, Date = miop_date) %>% 
+      arrange(miop_coderhj, miop_date)}
   
-  if(dim(listeStations)[1] == 0 & CodeOperation == T & Sortie == "Simple"){
-    Operations <- 
-      Operations %>%
-      select(OperationID, CodeRHJ, Date) %>% 
-      dplyr::rename(Station = CodeRHJ) %>% 
-      arrange(Station, Date)}
+  if(is.na(code_station) & id_operation == T & sortie == "Simple"){
+    operations <- 
+      operations %>%
+      select(id, miop_coderhj, miop_date) %>% 
+      # dplyr::rename(Station = miop_coderhj, Date = miop_date) %>% 
+      arrange(miop_coderhj, miop_date)}
   
-  if(dim(listeStations)[1] == 0 & CodeOperation == T & Sortie == "Propre"){
-    Operations <- 
-      Operations %>%
-      select(OperationID, CodeRHJ, Date, X, Y, TypeCoord) %>% 
-      dplyr::rename(Station = CodeRHJ) %>% 
-      arrange(Station, Date)}
+  if(is.na(code_station) & id_operation == T & sortie == "Propre"){
+    operations <- 
+      operations %>%
+      select(id, miop_coderhj, miop_date, miop_coord_x, miop_coord_y) %>% 
+      # dplyr::rename(Station = miop_coderhj, Date = miop_date) %>% 
+      arrange(miop_coderhj, miop_date)}
   
-  if(dim(listeStations)[1] == 0 & CodeOperation == T & Sortie == "Complet"){
-    Operations <- 
-      Operations %>%
-      dplyr::rename(Station = CodeRHJ) %>% 
-      arrange(Station, Date)}
+  if(is.na(code_station) & id_operation == T & sortie == "Complet"){
+    operations <- 
+      operations %>%
+      # dplyr::rename(Station = miop_coderhj, Date = miop_date) %>% 
+      arrange(miop_coderhj, miop_date)}
   
   #### Travail sur une seule station ####
   # Test si le nom existe bien, sinon message d'erreur et arrêt de la fonction #
-  if(dim(listeStations)[1] != 0) {
-  if(dim(Operations %>% filter(Operations$CodeRHJ %in% listeStations$Nom))[1] == 0)
+  if(!is.na(code_station)) {
+  if(dim(operations %>% filter(operations$miop_coderhj %in% code_station))[1] == 0)
     warning("Attention : station(s) absente(s) des opérations de la base de données")}
   
-  if(dim(listeStations)[1] != 0 & CodeOperation == F & Sortie == "Simple"){
-    Operations <- 
-      Operations %>%
-      filter(CodeRHJ %in% listeStations$Nom) %>% 
-      select(CodeRHJ, Date) %>% 
-      dplyr::rename(Station = CodeRHJ) %>% 
-      arrange(Station, Date)}
+  if(!is.na(code_station) & id_operation == F & sortie == "Simple"){
+    operations <- 
+      operations %>%
+      filter(miop_coderhj %in% code_station) %>% 
+      select(miop_coderhj, miop_date) %>% 
+      # dplyr::rename(Station = miop_coderhj, Date = miop_date) %>% 
+      arrange(miop_coderhj, miop_date)}
   
-  if(dim(listeStations)[1] != 0 & CodeOperation == F & Sortie == "Propre"){
-    Operations <- 
-      Operations %>%
-      filter(CodeRHJ %in% listeStations$Nom) %>% 
-      select(CodeRHJ, Date, X, Y, TypeCoord) %>% 
-      dplyr::rename(Station = CodeRHJ) %>% 
-      arrange(Station, Date)}
+  if(!is.na(code_station) & id_operation == F & sortie == "Propre"){
+    operations <- 
+      operations %>%
+      filter(miop_coderhj %in% code_station) %>% 
+      select(miop_coderhj, miop_date, miop_coord_x, miop_coord_y) %>% 
+      # dplyr::rename(Station = miop_coderhj, Date = miop_date) %>% 
+      arrange(miop_coderhj, miop_date)}
   
-  if(dim(listeStations)[1] != 0 & CodeOperation == F & Sortie == "Complet"){
-    Operations <- 
-      Operations %>%
-      filter(CodeRHJ %in% listeStations$Nom) %>% 
-      dplyr::rename(Station = CodeRHJ) %>% 
-      arrange(Station, Date)}  
+  if(!is.na(code_station) & id_operation == F & sortie == "Complet"){
+    operations <- 
+      operations %>%
+      filter(miop_coderhj %in% code_station) %>% 
+      # # dplyr::rename(Station = miop_coderhj, Date = miop_date) %>% 
+      arrange(miop_coderhj, miop_date)}  
   
-  if(dim(listeStations)[1] != 0 & CodeOperation == T & Sortie == "Simple"){
-    Operations <- 
-      Operations %>%
-      select(Nom, Date, OperationID) %>% 
-      filter(CodeRHJ %in% listeStations$Nom) %>% 
-      dplyr::rename(Station = CodeRHJ) %>% 
-      arrange(Station, Date)}
+  if(!is.na(code_station) & id_operation == T & sortie == "Simple"){
+    operations <- 
+      operations %>%
+      select(id, miop_coderhj, miop_date) %>% 
+      filter(miop_coderhj %in% code_station) %>% 
+      # # dplyr::rename(Station = miop_coderhj, Date = miop_date) %>% 
+      arrange(miop_coderhj, miop_date)}
   
-  if(dim(listeStations)[1] != 0 & CodeOperation == T & Sortie == "Propre"){
-    Operations <- 
-      Operations %>%
-      filter(CodeRHJ %in% listeStations$Nom) %>% 
-      select(OperationID, CodeRHJ, Date, X, Y, TypeCoord) %>% 
-      dplyr::rename(Station = CodeRHJ) %>% 
-      arrange(Station, Date)}
+  if(!is.na(code_station) & id_operation == T & sortie == "Propre"){
+    operations <- 
+      operations %>%
+      filter(miop_coderhj %in% code_station) %>% 
+      select(id, miop_coderhj, miop_date, miop_coord_x, miop_coord_y) %>% 
+      # # dplyr::rename(Station = miop_coderhj, Date = miop_date) %>% 
+      arrange(miop_coderhj, miop_date)}
   
-  if(dim(listeStations)[1] != 0 & CodeOperation == T & Sortie == "Complet"){
-    Operations <- 
-      Operations %>%
-      filter(CodeRHJ %in% listeStations$Nom) %>% 
-      dplyr::rename(Station = CodeRHJ) %>% 
-      arrange(Station, Date)}
+  if(!is.na(code_station) & id_operation == T & sortie == "Complet"){
+    operations <- 
+      operations %>%
+      filter(miop_coderhj %in% code_station) %>% 
+      # # dplyr::rename(Station = miop_coderhj, Date = miop_date) %>% 
+      arrange(miop_coderhj, miop_date)}
 
-  return(Operations)
+  return(operations)
   
 } # Fin de la fonction
