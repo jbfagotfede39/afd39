@@ -22,7 +22,7 @@
 BDD.format <- function(
   data = data,
   traitementforce = FALSE,
-  Type = c("MI", "Chroniques", "PC", "Temps de travail")
+  Type = c("MI", "Chroniques", "PC", "Temps de travail", "Topographie")
   )
 {
   
@@ -32,9 +32,6 @@ BDD.format <- function(
   ###### Contexte ######
   if(traitementforce == "TRUE"){Type <- match.arg(Type)} # Évaluation des choix
   if(Type == "MI") warning("Attention le type par défaut est MI")
-  
-  #### Sauvegarde pour comparaison finale ####
-  data_saved <- data
   
   ###### MI ######
   Testtraitementforce <- 0
@@ -569,14 +566,34 @@ BDD.format <- function(
     
   } # Fin de travail sur Temps de travail
   
-##### Commun #####
-## Changement de formats ##
+  
+  ##### Topographie #####
+  Testtraitementforce <- 0
+  if(traitementforce == TRUE & Type == "Topographie") Testtraitementforce <- 1
+  if(traitementforce == FALSE & Type == "Topographie") Testtraitementforce <- 1
+  if(Testtraitementforce == 1){
+    ## Connexion à la BDD ##
+    dbD <- BDD.ouverture("Data")
+    
+    ## Récupération des données ##
+    leves <- tbl(dbD, in_schema("fd_production", "topographie_leves")) %>% collect(n = 10)
+    # Operations <- tbl(dbD, in_schema("fd_production", "physicochimie_suiviterrain")) %>% collect(n = 10)
+    
+    ## Travail sur les mesures de levés ##
+    if(all(colnames(data) %in% colnames(leves))) {
+      
+      # Transformation des formats
+      data <-
+        data %>% 
+        # mutate(pcmes_date = format(ymd(data$pcmes_date), format="%Y-%m-%d")) %>% # Car sinon transformation automatique des formats de date
+        # Ajout des ID
+        mutate(id = row_number() + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_production.topographie_leves;")))
+    } # Fin de travail sur les mesures de levés topographiques
+  } # Fin de travail sur topographie
+  
+  ##### Commun #####
 data <- as.data.frame(data)
 
-## Comparaison ##
-if(data %>% setequal(data_saved) == TRUE) warning("Attention : les deux dataframes d'entrée et de sortie ont exactement les mêmes noms de colonnes")
-
-## Sortie ##
-return(data)
+  return(data)
   
 } # Fin de la fonction

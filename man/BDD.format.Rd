@@ -7,7 +7,7 @@
 BDD.format(
   data = data,
   traitementforce = FALSE,
-  Type = c("MI", "Chroniques", "PC", "Temps de travail")
+  Type = c("MI", "Chroniques", "PC", "Temps de travail", "Topographie")
 )
 }
 \arguments{
