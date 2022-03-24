@@ -301,22 +301,32 @@ BDD.format <- function(
       #mutate(chsvi_coderhj = ifelse(chsvi_coderhj == "", "", chsvi_coderhj)) %>% 
     
     # Travail sur les dates #
-    if(!(mean(nchar(data$chsvi_date)) >= 4.5 & mean(nchar(data$chsvi_date)) <= 5.5)){ # Cas où les dates ressemblent vraiment à des dates, pas 43020 (issu du format de champ Date de excel)
+    if(mean(nchar(data$chsvi_date), na.rm = T) >= 6.5){ # Cas où toutes les dates ressemblent vraiment à des dates, pas 43020 (issu du format de champ Date de excel)
       if(testit::has_warning(ymd(data$chsvi_date)) == TRUE & testit::has_warning(dmy(data$chsvi_date)) == FALSE) data$chsvi_date <- as.character(format(dmy(data$chsvi_date), format="%Y-%m-%d"))
-      if(testit::has_warning(ymd(data$chsvi_date)) == TRUE & testit::has_warning(dmy(data$chsvi_date)) == TRUE){ # dans le cas où les formats de date sont mélangés
-        data <-
-          data %>% 
-          mutate(chsvi_datebis = chsvi_date) %>% 
-          mutate(chsvi_date = format(ymd(data$chsvi_date), format="%Y-%m-%d")) %>% 
-          mutate(chsvi_date = ifelse(is.na(chsvi_date), format(dmy(data$chsvi_date), format="%Y-%m-%d"), chsvi_date)) %>% 
-          select(-chsvi_datebis)
-      }
     }
-    if(mean(nchar(data$chsvi_date)) >= 4.5 & mean(nchar(data$chsvi_date)) <= 5.5){ # Cas où les dates ne ressemblent pas à des dates, comme 43020 (issu du format de champ Date de excel)
+    
+    if(mean(nchar(data$chsvi_date), na.rm = T) == 5){ # Cas où aucune date ne ressemble pas à des dates, comme 43020 (issu du format de champ Date de excel)
       data <-
         data %>% 
         mutate(chsvi_date = ymd("1899-12-30") + as.numeric(chsvi_date))
     }
+    
+    if(mean(nchar(data$chsvi_date), na.rm = T) >= 4.5 & mean(nchar(data$chsvi_date), na.rm = T) < 6.5 & mean(nchar(data$chsvi_date), na.rm = T) != 5){ # Cas où certaines dates ressemblent vraiment à des dates, mais pas toutes : certaines sont de la forme 43020 (issu du format de champ Date de excel)
+      if(testit::has_warning(ymd(data$chsvi_date)) == TRUE & testit::has_warning(dmy(data$chsvi_date)) == TRUE){
+        data <-
+          data %>% 
+          mutate(chsvi_datebis = chsvi_date) %T>% 
+          
+          {options(warn=-1)} %>% 
+          mutate(chsvi_date = format(ymd(.$chsvi_date), format="%Y-%m-%d")) %>% 
+          mutate(chsvi_date = ifelse(is.na(chsvi_date), format(dmy(.$chsvi_datebis), format="%Y-%m-%d"), chsvi_date)) %>% 
+          mutate(chsvi_date = ifelse(is.na(chsvi_date), format(ymd("1899-12-30") + as.numeric(chsvi_datebis), format="%Y-%m-%d"), chsvi_date)) %T>% 
+          {options(warn=0)} %>% 
+          
+          select(-chsvi_datebis)
+      }
+    }
+    if(data %>% filter(is.na(chsvi_date)) %>% nrow() > 0) stop("Présence de chsvi_date à la valeur NA")
     
     # Travail sur les heures #
     if(any(!is.na(data$chsvi_heure))){
@@ -356,8 +366,15 @@ BDD.format <- function(
 
     # Transformation des unités
     data <-
-      data %>% 
+      data %>%
       mutate(chsvi_unite = str_replace(chsvi_unite, "degré Celsius", "°C"))
+    
+    # Travail sur les profondeurs
+    data <-
+      data %>%
+      mutate(chsvi_profondeur = str_replace(chsvi_profondeur, "m", "")) %>% 
+      mutate(chsvi_profondeur = str_replace(chsvi_profondeur, " m", "")) %>% 
+      mutate(chsvi_profondeur = as.numeric(sub(",", ".", chsvi_profondeur)))
 
     # Transformation des actions
     data <-
@@ -366,13 +383,14 @@ BDD.format <- function(
       mutate(chsvi_action = dplyr::recode(chsvi_action,
                                        # "disparue" = "Disparue",
                                        "Sonde disparue" = "Disparue",
+                                       "Perdue" = "Disparue",
                                        "releve" = "Relève",
                                        # "relève" = "Relève",
                                        "Relève et repose" = "Relève",
                                        "Relevé" = "Relève",
                                        # "pose" = "Pose",
-                                       "Repose" = "Pose"
-                                       # "dépose" = "Dépose"
+                                       "Repose" = "Pose",
+                                       "Relève, dépose" = "Dépose"
                                        )
              )
 
