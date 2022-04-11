@@ -101,8 +101,8 @@ formatage.abreviation <- function(
           str_to_lower()
         
     acronymes %>% 
-      {if(exportformat == ".xlsx") openxlsx::write.xlsx(., "Glossaire.xlsx", sheetName = "Glossaire", row.names = F, showNA = F, colWidths="auto") else .} %>% 
-      {if(exportformat == ".tex") write(., file = glue("acronymes-{thematique}.tex")) else .}
+      {if(".xlsx" %in% exportformat) openxlsx::write.xlsx(., "Glossaire.xlsx", sheetName = "Glossaire", row.names = F, showNA = F, colWidths="auto") else .} %>% 
+      {if(".tex" %in% exportformat) write(., file = glue("acronymes-{thematique}.tex")) else .}
   }
   
   #### Retour du tableau complet ####
