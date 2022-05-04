@@ -9,19 +9,19 @@ chronique.traitement(
   projet = NA_character_,
   export = T,
   exportfigures = T,
+  exportfigures_cumul_degresjours = T,
+  exportfigures_boxplot_interannuel = T,
+  exportfigures_profil_longitudinal = T,
+  exportfigures_preferendums_especes = T,
   exportDCE = F,
   filtrage = F,
   filtrageanneevmm = TRUE,
   filtragedatefperiode = "07-15",
   filtragenbj = 75,
-  typemesure = c("Thermie", "Thermie barométrique", "Thermie piézométrique",
-    "Barométrie", "Piézométrie", "Piézométrie brute", "Piézométrie compensée",
-    "Piézométrie calée", "Piézométrie NGF", "Oxygénation", "Hydrologie",
-    "Pluviométrie"),
   dep39 = c(FALSE, TRUE, "autre"),
   archivage = c("Aucun", "Partiel", "Complet"),
   style = c("boxplot", "violon"),
-  log = c("Simple", "Verbeux")
+  log = c("Simple", "Verbeux", "Aucun")
 )
 }
 \arguments{
@@ -29,27 +29,33 @@ chronique.traitement(
 
 \item{projet}{Nom du projet}
 
-\item{export}{Si \code{TRUE} (par défault), exporte les résultats/figures. Si \code{FALSE}, ne les exporte pas.}
+\item{export}{Si \code{TRUE} (par défaut), exporte les résultats/figures. Si \code{FALSE}, ne les exporte pas.}
 
 \item{exportfigures}{Si \code{TRUE} (par défaut), exporte les figures. Si \code{FALSE}, ne les exporte pas.}
 
-\item{exportDCE}{Si \code{TRUE}, exporte les mesures au format DCE. Si \code{FALSE} (par défault), ne les exporte pas.}
+\item{exportfigures_cumul_degresjours}{Si \code{TRUE} (par défaut), exporte les cumuls de degrés-jours. Si \code{FALSE}, ne les exporte pas.}
 
-\item{filtrage}{Si \code{TRUE}, filtre les résultats avec chronique.resultats.filtrage pour ne conserver que les pertinents pour les représentations graphiques inter-annuelles/inter-sites. \code{FALSE} (par défault)}
+\item{exportfigures_boxplot_interannuel}{Si \code{TRUE} (par défaut), exporte les boxplots interannuels. Si \code{FALSE}, ne les exporte pas.}
 
-\item{filtrageanneevmm}{Si \code{TRUE} (par défault), ne conserve que les résultats dont l'année de fin de vmm30j est égale à l'année biologique du résultat}
+\item{exportfigures_profil_longitudinal}{Si \code{TRUE} (par défaut), exporte les figures de profils longitudinaux. Si \code{FALSE}, ne les exporte pas.}
 
-\item{filtragedatefperiode}{Ne conserver que les résultats dont la date de fin de période est postérieure à la date choisie ("07-15", soit le 15 juillet par défault)}
+\item{exportfigures_preferendums_especes}{Si \code{TRUE} (par défaut), exporte les figures de préférendums des espèces avec les Vmm30j. Si \code{FALSE}, ne les exporte pas.}
 
-\item{filtragenbj}{Nombre de journées minimales pour chaque résultat à conserver (75 par défault).}
+\item{exportDCE}{Si \code{TRUE}, exporte les mesures au format DCE. Si \code{FALSE} (par défaut), ne les exporte pas.}
 
-\item{typemesure}{Défini le type de données et modifie le traitement en fonction}
+\item{filtrage}{Si \code{TRUE}, filtre les résultats avec chronique.resultats.filtrage pour ne conserver que les pertinents pour les représentations graphiques inter-annuelles/inter-sites. \code{FALSE} (par défaut)}
 
-\item{dep39}{Si \code{FALSE} (par défault), ne va pas rechercher les données de stations dans la base locale et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations}
+\item{filtrageanneevmm}{Si \code{TRUE} (par défaut), ne conserve que les résultats dont l'année de fin de vmm30j est égale à l'année biologique du résultat}
 
-\item{archivage}{Si \code{Aucun} (par défault), ne va pas créer une archives .zip du répertoire de sortie. Si \code{Partiel}, créé une archive et conserve le répertoire. Si \code{Complet}, créé une archive et supprimer le répertoire.}
+\item{filtragedatefperiode}{Ne conserver que les résultats dont la date de fin de période est postérieure à la date choisie ("07-15", soit le 15 juillet par défaut)}
 
-\item{log}{Si \code{Simple} (par défault), le log ne sera pas très bavard. Si \code{Verbeux}, le log incluera tous les retours du tidyverse.}
+\item{filtragenbj}{Nombre de journées minimales pour chaque résultat à conserver (75 par défaut).}
+
+\item{dep39}{Si \code{FALSE} (par défaut), ne va pas rechercher les données de stations dans la base locale et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations}
+
+\item{archivage}{Si \code{Aucun} (par défaut), ne va pas créer une archives .zip du répertoire de sortie. Si \code{Partiel}, créé une archive et conserve le répertoire. Si \code{Complet}, créé une archive et supprimer le répertoire.}
+
+\item{log}{Si \code{Simple} (par défaut), le log ne sera pas très bavard. Si \code{Verbeux}, le log incluera tous les retours du tidyverse. Si \code{Aucun}, absence de log}
 }
 \description{
 Permet d'exécuter plusieurs opérations de traitement des données de chronique d'une station
