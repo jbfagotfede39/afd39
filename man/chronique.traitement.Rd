@@ -9,8 +9,10 @@ chronique.traitement(
   projet = NA_character_,
   export = T,
   exportfigures = T,
+  exportfigures_chronique_classique = T,
   exportfigures_cumul_degresjours = T,
   exportfigures_boxplot_interannuel = T,
+  exportfigures_classes_calendaires = T,
   exportfigures_profil_longitudinal = T,
   exportfigures_preferendums_especes = T,
   exportDCE = F,
@@ -33,9 +35,13 @@ chronique.traitement(
 
 \item{exportfigures}{Si \code{TRUE} (par défaut), exporte les figures. Si \code{FALSE}, ne les exporte pas.}
 
+\item{exportfigures_chronique_classique}{Si \code{TRUE} (par défaut), exporte les vues annuelles des chroniques. Si \code{FALSE}, ne les exporte pas.}
+
 \item{exportfigures_cumul_degresjours}{Si \code{TRUE} (par défaut), exporte les cumuls de degrés-jours. Si \code{FALSE}, ne les exporte pas.}
 
 \item{exportfigures_boxplot_interannuel}{Si \code{TRUE} (par défaut), exporte les boxplots interannuels. Si \code{FALSE}, ne les exporte pas.}
+
+\item{exportfigures_classes_calendaires}{Si \code{TRUE} (par défaut), exporte les vues sous forme de classes calendaires. Si \code{FALSE}, ne les exporte pas.}
 
 \item{exportfigures_profil_longitudinal}{Si \code{TRUE} (par défaut), exporte les figures de profils longitudinaux. Si \code{FALSE}, ne les exporte pas.}
 
