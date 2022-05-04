@@ -20,7 +20,8 @@ chronique.traitement(
     "Pluviométrie"),
   dep39 = c(FALSE, TRUE, "autre"),
   archivage = c("Aucun", "Partiel", "Complet"),
-  style = c("boxplot", "violon")
+  style = c("boxplot", "violon"),
+  log = c("Simple", "Verbeux")
 )
 }
 \arguments{
@@ -47,6 +48,8 @@ chronique.traitement(
 \item{dep39}{Si \code{FALSE} (par défault), ne va pas rechercher les données de stations dans la base locale et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations}
 
 \item{archivage}{Si \code{Aucun} (par défault), ne va pas créer une archives .zip du répertoire de sortie. Si \code{Partiel}, créé une archive et conserve le répertoire. Si \code{Complet}, créé une archive et supprimer le répertoire.}
+
+\item{log}{Si \code{Simple} (par défault), le log ne sera pas très bavard. Si \code{Verbeux}, le log incluera tous les retours du tidyverse.}
 }
 \description{
 Permet d'exécuter plusieurs opérations de traitement des données de chronique d'une station

@@ -45,6 +45,7 @@ formatage.abreviation <- function(
   #### Évaluation des choix ####
   thematique <- match.arg(thematique)
   formatage <- match.arg(formatage)
+  exportformat <- match.arg(exportformat)
   
   if(formatage == "Latex"){
     export <- T
@@ -97,11 +98,11 @@ formatage.abreviation <- function(
   if(export == T){
         thematique <- 
           thematique %>% 
-          stri_trans_general("latin-ascii") %>% 
+          stringi::stri_trans_general("latin-ascii") %>% 
           str_to_lower()
         
     acronymes %>% 
-      {if(".xlsx" %in% exportformat) openxlsx::write.xlsx(., "Glossaire.xlsx", sheetName = "Glossaire", row.names = F, showNA = F, colWidths="auto") else .} %>% 
+      {if(".xlsx" %in% exportformat) openxlsx::write.xlsx(., "Glossaire.xlsx", sheetName = "Glossaire", rowNames = F, showNA = F, colWidths="auto") else .} %>% 
       {if(".tex" %in% exportformat) write(., file = glue("acronymes-{thematique}.tex")) else .}
   }
   
