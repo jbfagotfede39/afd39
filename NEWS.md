@@ -19,10 +19,10 @@
   * correction d'une syntaxe afin d'être moins restrictif et de supprimer un warning
   * modification d'un nom de paramètre qui était deprecated dans une dépendance
 
-### Modifications 
+### Modifications
 - `BDD.format` : ré-écriture partielle du traitement des dates dans le suivi de chroniques
 - `adresse.switch` : ajout de la nouvelle machine de JB
 
 ## 0.0.13
-### Modifications 
+### Modifications
 - Correction des noms de champs des tables relatives aux macroinvertébrés afin de basculer de la base de données `sqlite` à la base `PostGIS`.
