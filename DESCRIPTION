@@ -1,11 +1,8 @@
 Package: afd39
 Title: Outils pour la FJPPMA
-Version: 0.0.13
+Version: 0.0.14
 Authors@R: 
-    person(given = "Jean-Baptiste",
-           family = "Fagot",
-           role = c("aut", "cre"),
-           email = "jean-baptiste.fagot@peche-jura.com")
+    person("Jean-Baptiste", "Fagot", , "jean-baptiste.fagot@peche-jura.com", role = c("aut", "cre"))
 Description: Outils d'aide à la gestion des données de la Fédération du
     Jura pour la Pêche et la Protection du Milieu Aquatique
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
@@ -13,6 +10,7 @@ License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
 URL: https://github.com/jbfagotfede39/afd39
 BugReports: https://github.com/jbfagotfede39/afd39/issues
 Imports:
+    aquatools,
     DBI,
     dbplyr,
     devtools,
@@ -23,6 +21,7 @@ Imports:
     gridExtra,
     keyring,
     knitr,
+    logr,
     lubridate,
     openxlsx,
     purrr,
@@ -38,9 +37,9 @@ Imports:
     tidyverse,
     wkb,
     zip
-Remotes:  
+Remotes: 
     jbfagotfede39/aquatools
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
