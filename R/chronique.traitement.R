@@ -99,7 +99,7 @@ chronique.traitement <- function(
   }
 
 #### Modification du projet avec la date #####
-projet <- glue('{format(now(), format="%Y-%m-%d")}_{projet}')
+projet <- glue('{today()}_{projet}')
 
 #### Vérification des répertoires ####
 if(export == TRUE){

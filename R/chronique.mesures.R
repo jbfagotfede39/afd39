@@ -86,6 +86,18 @@ Mesures <-
   Mesures %>% 
   {if (nrow(Mesures) != 0) arrange(., chmes_date, chmes_heure) else .}
 
+### Format compatible avec les jointures en cas d'absence de données ###
+if(nrow(Mesures) == 0) {
+  dbD <- BDD.ouverture("Data")
+  
+  Mesures <- 
+    tbl(dbD, in_schema("fd_production", "chroniques_mesures")) %>% 
+    collect(n = 1) %>% 
+    filter(row_number() == 0)
+  
+  RPostgreSQL::dbDisconnect(dbD)
+}
+
 ##### Sortie #####
 return(Mesures)
 
