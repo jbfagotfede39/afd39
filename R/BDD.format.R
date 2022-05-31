@@ -513,7 +513,7 @@ BDD.format <- function(
                            Utilisateur = character(0), `numéro de matricule` = logical(0), 
                            `temps (h)` = numeric(0), commentaire = character(0), Validé = character(0), 
                            `code analytique (domaine)` = logical(0), `code analytique` = logical(0), 
-                           `financeur(s)...16` = logical(0), `financeur(s)...17` = logical(0), 
+                           # `financeur(s)...16` = logical(0), `financeur(s)...17` = logical(0), 
                            `coût horaire (direct)` = numeric(0), `coût horaire (production)` = numeric(0), 
                            description = logical(0), de = character(0), à = character(0)), row.names = integer(0), class = c("tbl_df", 
                                                                                                                              "tbl", "data.frame"))

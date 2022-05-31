@@ -1,6 +1,6 @@
 Package: afd39
 Title: Outils pour la FJPPMA
-Version: 0.0.14
+Version: 0.0.15
 Authors@R: 
     person("Jean-Baptiste", "Fagot", , "jean-baptiste.fagot@peche-jura.com", role = c("aut", "cre"))
 Description: Outils d'aide à la gestion des données de la Fédération du
@@ -16,7 +16,6 @@ Imports:
     devtools,
     dplyr,
     fs,
-    FSA,
     glue,
     gridExtra,
     keyring,

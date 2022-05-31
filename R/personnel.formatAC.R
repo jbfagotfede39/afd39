@@ -34,7 +34,7 @@ personnel.formatAC <- function(
                                                                                        "POSIXt"))), row.names = integer(0), class = c("tbl_df", 
                                                                                                                                       "tbl", "data.frame"))
   Postes <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_postes")) %>% select(id, gestpost_poste_libelle) %>% collect(n = Inf) %>% rename(idposte = id)
-  Personnels <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_operateurs")) %>% filter(gestop_mo == 3 & gestop_type == "Salarié") %>% select(id:gestop_qualite) %>% collect(n = Inf) %>% left_join(Postes, by = c("gestop_qualite" = "gestpost_poste_libelle")) %>% mutate(gestop_qualite = idposte) %>% select(-idposte)
+  Personnels <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_operateurs")) %>% filter(gestop_mo == 3 & gestop_type == "Salarié") %>% filter(is.na(gestop_datefinactivite)) %>% select(id:gestop_qualite) %>% collect(n = Inf) %>% left_join(Postes, by = c("gestop_qualite" = "gestpost_poste_libelle")) %>% mutate(gestop_qualite = idposte) %>% select(-idposte)
   if(Personnels %>% filter(is.na(gestop_qualite)) %>% nrow() != 0) stop("Présence de personnels sans poste de travail clairement défini")
   
   if(is.na(projet)) stop("Pas de projet spécifié")
@@ -46,16 +46,24 @@ personnel.formatAC <- function(
   if(all(colnames(data) %in% colnames(TpsWOT)) == FALSE) stop("Données en entrée pas au format de la table tpstravail_opentime")
   
   #### Réencodage ####
+  projet_id <- Projets %>% select(id) %>% pull()
   anneeAC <- str_replace(Projets$prjlst_projet, "Convention-cadre AERMC-FD39-", "")
-  pattern <- c(glue("^{Projets$id} - AC AE"))
+  pattern_1 <- c("^AC AE")
+  pattern_2 <- c(glue("{Projets$id} - AC AE"))
   data <-
     data %>% 
     filter(year(tpswot_date) == anneeAC) %>% 
     filter(tpswot_domaine == "Projets") %>% 
-    filter(str_detect(tpswot_activite, pattern)) %>% 
+    filter(str_detect(tpswot_activite, pattern_1) | str_detect(tpswot_activite, pattern_2)) %>% 
+    # filter() %>% 
+    # union(data %>% 
+    #         filter(year(tpswot_date) == anneeAC) %>% 
+    #         filter(tpswot_domaine == "Projets") %>% 
+    #         filter(grepl("1.1|1.2|1.3|2\\.1|2\\.2|2.3|2.4|2.5|3.1|4.1|4.2", tpswot_sous_projet))
+    # ) %>% 
     filter(!is.na(tpswot_duree)) %>% 
     filter(tpswot_presenceenligne == "Présent") %>% 
-    mutate(tpswdetail_projet = projet) %>% 
+    mutate(tpswdetail_projet = projet_id) %>% 
     # rowwise() %>%
     mutate(tpswdetail_sousactionaermc = NA_character_) %>% 
     mutate(tpswdetail_sousactionaermc = ifelse(str_detect(tpswot_activite, "1.1"), 1.1, tpswdetail_sousactionaermc)) %>%
@@ -86,12 +94,6 @@ personnel.formatAC <- function(
     left_join(Personnels %>% mutate(tpswdetail_personnel = glue("{gestop_prenom} {gestop_nom}")), by = c("tpswot_personnel" = "id")) %>% 
     rename(tpswdetail_poste = gestop_qualite) %>% 
     select(-contains("gestop")) %>% 
-    # mutate(tpswdetail_poste = ifelse(tpswdetail_poste == "Responsable du Pôle Technique & Développement", "Ingénieur responsable du pôle technique", tpswdetail_poste)) %>% 
-    # mutate(tpswdetail_statut = case_when(.$tpswdetail_poste == "Ingénieur responsable du pôle technique" ~ "Expertise",
-    #                                      .$tpswdetail_poste == "Responsable administrative et financière" ~ "Expertise",
-    #                                      .$tpswdetail_poste == "Technicien qualifié PDPG" ~ "Expertise",
-    #                                      .$tpswdetail_poste == "Ingénieur hydrobiologiste" ~ "Expertise",
-    #                                      .$tpswdetail_poste == "Chargé de développement" ~ "Surveillance")) %>% 
     mutate(tpswdetail_statut = case_when(.$tpswdetail_poste %in% c(2, 3, 4, 5, 6, 7, 8) ~ "Expertise",
                                          .$tpswdetail_poste %in% c(1, 9, 10) ~ "Surveillance")) %>% 
     mutate(tpswdetail_detail = NA_character_) %>% 

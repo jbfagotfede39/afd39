@@ -16,6 +16,7 @@
 #' @export
 #' @examples
 #' personnel.projet("Étude Valouse")
+#' personnel.projet("Convention-cadre AERMC-FD39-2021")
 
 ###### À faire #####
 # Déplacer moe/client de tpswrecap vers tpswprj et ajouter moa (maître d'oeuvre vs maître d'ouvrage)
@@ -47,6 +48,7 @@ personnel.projet <- function(
   if(Personnels %>% filter(is.na(gestop_qualite)) %>% nrow() != 0) stop("Présence de personnels sans poste de travail clairement défini")
   
   id_max <- as.numeric(tbl(dbD,in_schema("fd_production", "tpstravail_recapitulatif")) %>% summarise(max = max(id, na.rm = TRUE)) %>% collect())
+  projet_id <- Projets %>% select(id) %>% pull()
   
   ##### Vérification de l'existence de ce projet #####
   if(dim(Projets)[1] == 0) stop("Projet non répertorié")
@@ -231,12 +233,12 @@ personnel.projet <- function(
   ### Calcul AC AE
   if(grepl("AERMC", Projets$prjlst_projet)){ # Cas où c'est une convention de l'AE
     ## Calcul à proprement parler ##
-    DataToAdd <- 
+    DataToAdd <-
       TpsWOT %>% 
       personnel.formatAC(., projet) %>% 
       mutate(tpswdetail_ecosysteme = NA_character_) %>% 
       mutate(tpswdetail_massedeau = NA_character_) %>% 
-      mutate(tpswdetail_projet = projet) %>% 
+      # mutate(tpswdetail_projet = projet) %>% 
       mutate(tpswdetail_temps = NA_character_) %>% 
       mutate(tpswdetail_annee = year(tpswot_date)) %>% 
       mutate(cle_cout_poste_personnel = glue('{tpswdetail_annee}-{tpswdetail_poste}-{tpswot_personnel}'), .before = 'tpswdetail_detail') %>% 
@@ -253,7 +255,6 @@ personnel.projet <- function(
       select(-cle_cout_poste_personnel, -tpswdetail_personnel) %>% 
       rename(tpswdetail_personnel = tpswdetail_personnel_id) %>% 
       mutate(tpswrecap_programmation = "Réalisé") %>% 
-      # mutate(tpswrecap_natureprojet = NA_character_) %>% 
       mutate(tpswrecap_natureprojet = "Convention") %>% 
       mutate(tpswrecap_moe = NA_character_) %>% 
       mutate(tpswrecap_client = NA_integer_) %>% 
@@ -314,6 +315,7 @@ SELECT setval('fd_production.tpstravail_recapitulatif_id_seq', COALESCE((SELECT 
 #} # fin de if(nRecapTpsW <= 5) = Calcul des données élaborées si absentes - Suppression temporaire pour test le 2021-10-27, en attente de voir si ça fonctionne bien sans
 
 #### Extraction des données élaborées ####
+### Données réalisées ###
 if(envoi == TRUE){
 RecapTpsW <- 
     tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_recapitulatif")) %>% 
@@ -327,6 +329,17 @@ if(envoi == FALSE){
     # } # Suppression temporaire pour test le 2021-10-27, en attente de voir si ça fonctionne bien sans
   }
 
+### Données attendues ###
+recap_tps_w_attendu <- 
+  tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_recapitulatif")) %>% 
+  filter(tpswrecap_projet %in% !! Projets$id) %>% 
+  filter(tpswrecap_programmation == "Attendu") %>% 
+  collect()
+
+RecapTpsW <-
+  RecapTpsW %>% 
+  union(recap_tps_w_attendu)
+
 #### Extraction accord-cadre AERMC ####
 if(grepl("AERMC", Projets$prjlst_projet)){
   Recapitulatif <- 
@@ -338,6 +351,9 @@ if(grepl("AERMC", Projets$prjlst_projet)){
   ## Remise en forme 
   Temps <-
     Recapitulatif %>% 
+    left_join(Postes, by = c("tpswrecap_poste" = "idposte")) %>% 
+    mutate(tpswrecap_poste = gestpost_poste_libelle) %>% 
+    select(-gestpost_poste_libelle) %>% 
     filter(!is.na(tpswrecap_jours)) %>% # pour supprimer les valeurs d'achat sans journées associées
     group_by(tpswrecap_programmation, tpswrecap_sousactionaermc, tpswrecap_poste) %>%
     summarise(tpswrecap_jours = sum(tpswrecap_jours)) %>% 
@@ -351,6 +367,9 @@ if(grepl("AERMC", Projets$prjlst_projet)){
     
   Argent <-
     Recapitulatif %>% 
+    left_join(Postes, by = c("tpswrecap_poste" = "idposte")) %>% 
+    mutate(tpswrecap_poste = gestpost_poste_libelle) %>% 
+    select(-gestpost_poste_libelle) %>% 
     mutate(tpswrecap_poste = ifelse(is.na(tpswrecap_poste), "Matériel", tpswrecap_poste)) %>% 
     group_by(tpswrecap_programmation, tpswrecap_sousactionaermc, tpswrecap_poste) %>%
     summarise(tpswrecap_argent = sum(tpswrecap_argent)) %>% 
@@ -366,14 +385,19 @@ if(grepl("AERMC", Projets$prjlst_projet)){
     Temps %>% 
     left_join(Argent, by="tpswrecap_sousactionaermc") %>% 
     select(tpswrecap_sousactionaermc, 
-            contains("Attendu_Responsable adminis"), contains("Attendu_Ingénieur resp"), contains("Attendu_Ingénieur hy"), contains("Attendu_Charg"), contains("Attendu_Technicien quali"), contains("Attendu_Mat"),
-            contains("Réalisé_Responsable adminis"), contains("Réalisé_Ingénieur resp"), contains("Réalisé_Ingénieur hy"), contains("Réalisé_Charg"), contains("Réalisé_Technicien quali"), contains("Réalisé_Mat")
+            # contains("Attendu_Responsable adminis"), contains("Attendu_Ingénieur resp"), contains("Attendu_Ingénieur hy"), contains("Attendu_Charg"), contains("Attendu_Technicien quali"), contains("Attendu_Mat"), # Sans apprenti
+            contains("Attendu_Responsable adminis"), contains("Attendu_Ingénieur resp"), contains("Attendu_Ingénieur hy"), contains("Attendu_Charg"), contains("Attendu_Technicien quali"), contains("Attendu_Appren"), contains("Attendu_Mat"), # Avec apprenti
+            # contains("Réalisé_Responsable adminis"), contains("Réalisé_Ingénieur resp"), contains("Réalisé_Ingénieur hy"), contains("Réalisé_Charg"), contains("Réalisé_Technicien quali"), contains("Réalisé_Mat") # Sans apprenti
+            contains("Réalisé_Responsable adminis"), contains("Réalisé_Ingénieur resp"), contains("Réalisé_Ingénieur hy"), contains("Réalisé_Charg"), contains("Réalisé_Technicien quali"), contains("Réalisé_Appren"), contains("Réalisé_Mat") # Avec apprenti
     )
   
   ## Renommage des colonnes
   if(ncol(Recapitulatif) == 11) colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses")
-  if(ncol(Recapitulatif) == 22) colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses")
+  if(ncol(Recapitulatif) == 22) colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses") # Sans apprenti
+  if(ncol(Recapitulatif) == 26) colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses") # Avec apprenti
     
+  stop("Attention : il reste à intégrer l'affichage des apprentis dans la partie ci-dessous")
+  
   ## Création d'un classeur
   tempsprojet <- createWorkbook()
   ## Ajout d'une feuille
@@ -465,14 +489,9 @@ SynthesePersonnel <- as.data.frame(SynthesePersonnel)
   Detail <- as.data.frame(Detail)
   
   ### Extraction des données théoriques/réalisées ###
-  Comparaison <- 
-    tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_recapitulatif")) %>% 
-    filter(tpswrecap_projet %in% !! Projets$id) %>% 
-    collect()
-  
-  if(Comparaison %>% nrow() != 0){
+  if(RecapTpsW %>% nrow() != 0){
     Comparaison <-
-      Comparaison %>% 
+      RecapTpsW %>% 
       group_by(tpswrecap_programmation, tpswrecap_poste, tpswrecap_detail) %>% 
       summarise(tpswrecap_jours = sum(tpswrecap_jours)) %>% 
       pivot_wider(

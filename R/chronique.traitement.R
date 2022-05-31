@@ -158,8 +158,7 @@ if(file.exists(paste0("./",projet, "/Sorties/")) == TRUE & file.exists(paste0(".
   dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_relatif-fixe/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_relatif-libre/"), showWarnings = FALSE, recursive = FALSE)
 }
-}
-  
+
 if(export == TRUE & dep39 != TRUE & file.exists(paste0("./",projet, "/Entrées/")) == FALSE){
   dir.create(paste0("./",projet, "/Entrées/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Entrées/Données/"), showWarnings = FALSE, recursive = FALSE)
@@ -169,7 +168,8 @@ if(export == TRUE & dep39 != TRUE & file.exists(paste0("./",projet, "/Entrées/"
   dir.create(paste0("./",projet, "/Entrées/Suivi/"), showWarnings = FALSE, recursive = FALSE)
 }
 if(log != "Aucun") put("Fin de la création des répertoires") # Log
-
+} # Fin de if(export == TRUE){}
+  
 #### Notices ####
 if(export == TRUE){
   formatage.abreviation(thematique = "Chronique", formatage = "Propre", export = T) # Export dans le répertoire courant

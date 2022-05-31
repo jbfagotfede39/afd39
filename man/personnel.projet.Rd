@@ -28,5 +28,6 @@ Extrait au format excel les données plus ou moins détaillées des coûts du pe
 }
 \examples{
 personnel.projet("Étude Valouse")
+personnel.projet("Convention-cadre AERMC-FD39-2021")
 }
 \keyword{personnel}
