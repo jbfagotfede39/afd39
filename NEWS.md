@@ -1,5 +1,24 @@
 # NEWS - afd39
 
+## 0.0.16
+### Ajouts
+- `BDD.format` : 
+  * Ajout d'un traitement pour les opérations de suivi physico-chimique
+  * Intégration de la structure des bases de données de référence en dur dans le code concernant la physico-chimie, sans passer par une requête de chargement de ces tables depuis la base de données.
+- `projet.calculInitial` : ajout du calcul des actions avec coût unitaire défini uniquement en temps de travail (MAG20 par exemple)
+
+### Corrections
+- `chronique.capteurs` : ajout en sortie d'un dataframe vide si aucune donnée trouvée (à partir de `data("chronique_structure")`), afin de ne pas casser la jointure dans le cas d'une utilisation dans un `map_dfr`.
+- `chronique.commentaires` : ajout en sortie d'un dataframe vide si aucune donnée trouvée (à partir de `data("chronique_structure")`), afin de ne pas casser la jointure dans le cas d'une utilisation dans un `map_dfr`.
+- `chronique.DCE` : 
+  * Suppression de la géométrie des stations qui faisaient planter l'export excel + très léger refactoring avec `glue` à la place de `paste0`.
+  * Ajout du calcul de la géométrie des stations dans le cas de données externes, qui sera ensuite supprimée (point précédent)
+- `chronique.mesures` : ajout en sortie d'un dataframe vide si aucune donnée trouvée (à partir de `data("chronique_structure")`), afin de ne pas casser la jointure dans le cas d'une utilisation dans un `map_dfr`.
+- `chronique.resultats` : ajout en sortie d'un dataframe vide si aucune donnée trouvée (à partir de `data("chronique_structure")`), afin de ne pas casser la jointure dans le cas d'une utilisation dans un `map_dfr`.
+- `formatage.noms_propres` : correction d'une coquille dans la description d'un paramètre
+- `poissons.operations` : correction d'une coquille dans un nom de variable dans un scénario de traitement
+- `projet.calculInitial` : court-circuit des valeurs unitaires pour les coûts type si une valeur est ajoutée manuellement directement dans le récapitulatif théorique
+
 ## 0.0.15 - 2022-05-31
 ### Ajouts
 - `formatage.noms_propres` : création

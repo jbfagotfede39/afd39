@@ -14,7 +14,7 @@ formatage.noms_propres(
 \arguments{
 \item{data}{Dataframe contenant les données à transformer}
 
-\item{Operation}{Type de transformation que l'on souhaite réaliser : \code{Nettoyage} par défaut (sortie sans article), \code{Développement possible (sortie avec article)}}
+\item{Operation}{Type de transformation que l'on souhaite réaliser : \code{Nettoyage} par défaut (sortie sans article), \code{Développement} possible (sortie avec article)}
 
 \item{ColonneEntree}{Champ contenant la donnée d'entrée}
 

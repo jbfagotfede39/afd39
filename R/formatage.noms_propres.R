@@ -3,7 +3,7 @@
 #' Cette fonction permet de reformater des noms propres (écosystèmes, communes, etc.) mal orthographiés
 #' @name formatage.noms_propres
 #' @param data Dataframe contenant les données à transformer
-#' @param Operation Type de transformation que l'on souhaite réaliser : \code{Nettoyage} par défaut (sortie sans article), \code{Développement possible (sortie avec article)}
+#' @param Operation Type de transformation que l'on souhaite réaliser : \code{Nettoyage} par défaut (sortie sans article), \code{Développement} possible (sortie avec article)
 #' @param ColonneEntree Champ contenant la donnée d'entrée
 #' @param ColonneSortie Champ recevant la donnée de sortie (peut être identique au champs d'entrée si on le souhaite)
 #' @import glue

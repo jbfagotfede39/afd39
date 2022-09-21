@@ -5,16 +5,13 @@
 #' @param Nom Nom recherché
 #' @param Recherche Type de données recherchées
 #' @keywords chronique
+#' @import aquatools
 #' @import tidyverse
 #' @export
 #' @examples
 #' chronique.commentaires("HER0-6","Station")
 #' chronique.commentaires("2017","Année biologique")
 #' Commentaires <- Stations$chsta_coderhj %>% map_dfr(~ chronique.commentaires(., Recherche = "Station"))
-
-##### TODO LIST #####
-# 
-#####################
 
 chronique.commentaires <- function(x = NA_character_ ,
                                Recherche = c("Station", "Année biologique")
@@ -50,6 +47,14 @@ if(Recherche == "Année biologique"){
     Vue <-
     Resultats %>% 
       {if (nrow(.) != 0) arrange(., chres_coderhj, chres_anneebiol) else .}
+    
+    ### Format compatible avec les jointures en cas d'absence de données ###
+    if(nrow(Vue) == 0) {
+
+      data(chronique_structure)
+      Vue <- commentaires_structure
+      
+    }
 
   #### Affichage des résultats ####
   return(Vue)

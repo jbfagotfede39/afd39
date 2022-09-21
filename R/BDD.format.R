@@ -482,11 +482,45 @@ BDD.format <- function(
   dbD <- BDD.ouverture("Data")
   
   ## Récupération des données ##
-  PC <- tbl(dbD, in_schema("fd_production", "physicochimie_mesures")) %>% collect(n = 10)
-  Operations <- tbl(dbD, in_schema("fd_production", "physicochimie_suiviterrain")) %>% collect(n = 10)
+  # pc <- tbl(dbD, in_schema("fd_production", "physicochimie_mesures")) %>% collect(n = 10)
+  # operations <- tbl(dbD, in_schema("fd_production", "physicochimie_suiviterrain")) %>% collect(n = 10)
+  
+  pc <- 
+    structure(list(id = integer(0), pcmes_coderhj = character(0), 
+                   pcmes_codesie = character(0), pcmes_milieu = character(0), 
+                   pcmes_date = character(0), pcmes_heure = character(0), pcmes_parametresandre = character(0), 
+                   pcmes_parametrenom = character(0), pcmes_valeur = character(0), 
+                   pcmes_unitenom = character(0), pcmes_unitesandre = character(0), 
+                   pcmes_supportnom = character(0), pcmes_supportsandre = integer(0), 
+                   pcmes_qualificationnom = character(0), pcmes_qualificationsandre = character(0), 
+                   pcmes_validationnom = character(0), pcmes_validationsandre = character(0), 
+                   pcmes_vraisemblancesandre = character(0), pcmes_profondeurlacustre = numeric(0), 
+                   pcmes_zonelacustre = character(0), pcmes_laboratoirenom = character(0), 
+                   pcmes_laboratoiresiret = character(0), pcmes_fractionnom = character(0), 
+                   pcmes_fractionsandre = character(0), pcmes_coderemarque = character(0), 
+                   pcmes_codeinsitu = character(0), pcmes_limitequantification = character(0), 
+                   pcmes_limitedetection = character(0), pcmes_methodenom = character(0), 
+                   pcmes_methodesandre = character(0), pcmes_accreditation = character(0), 
+                   pcmes_producteurnom = character(0), pcmes_producteursandre = character(0), 
+                   pcmes_origineproducteursandre = character(0), pcmes_remarques = character(0), 
+                   `_modif_utilisateur` = character(0), `_modif_type` = character(0), 
+                   `_modif_date` = structure(numeric(0), tzone = "", class = c("POSIXct", 
+                                                                               "POSIXt"))), class = c("tbl_df", "tbl", "data.frame"), row.names = integer(0))
+  
+  operations <-
+    structure(list(id = integer(0), pcsvi_mo = character(0), pcsvi_coderhj = character(0), 
+                   pcsvi_codesie = character(0), pcsvi_date = character(0), 
+                   pcsvi_heure = character(0), pcsvi_coord_x = numeric(0), pcsvi_coord_y = numeric(0), 
+                   pcsvi_coord_type = character(0), pcsvi_coord_precision = numeric(0), 
+                   pcsvi_operateurs = character(0), pcsvi_materiel = character(0), 
+                   pcsvi_meteo = character(0), pcsvi_hydrologie = character(0), 
+                   pcsvi_remarques = character(0), `_modif_utilisateur` = character(0), 
+                   `_modif_type` = character(0), `_modif_date` = structure(numeric(0), tzone = "", class = c("POSIXct", 
+                                                                                                             "POSIXt")), geom = character(0)), class = c("tbl_df", "tbl", 
+                                                                                                                                                         "data.frame"), row.names = integer(0))
 
   ## Travail sur les mesures de PC ##
-  if(all(colnames(data) %in% colnames(PC))) {
+  if(all(colnames(data) %in% colnames(pc))) {
     
     # Transformation des formats
     data <-
@@ -495,6 +529,17 @@ BDD.format <- function(
     # Ajout des ID
       mutate(id = row_number() + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_production.physicochimie_mesures;")))
   } # Fin de travail sur les mesures de PC
+  
+  if(all(colnames(data) %in% colnames(operations))) {
+    
+    # Transformation des formats
+    data <-
+      data %>% 
+      mutate(pcsvi_date = format(ymd(data$pcsvi_date), format="%Y-%m-%d")) %>% # Car sinon transformation automatique des formats de date
+      # Ajout des ID
+      mutate(id = row_number() + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_production.physicochimie_suiviterrain;")))
+  } # Fin de travail sur les opérations de PC
+  
   } # Fin de travail sur PC
   
   ##### Temps de travail ####

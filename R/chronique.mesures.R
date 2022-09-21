@@ -4,6 +4,7 @@
 #' 
 #' @name chronique.mesures
 #' @keywords chronique
+#' @import aquatools
 #' @import RPostgreSQL
 #' @import tidyverse
 #' @param CodeStation Code RHJ de la station
@@ -88,14 +89,8 @@ Mesures <-
 
 ### Format compatible avec les jointures en cas d'absence de données ###
 if(nrow(Mesures) == 0) {
-  dbD <- BDD.ouverture("Data")
-  
-  Mesures <- 
-    tbl(dbD, in_schema("fd_production", "chroniques_mesures")) %>% 
-    collect(n = 1) %>% 
-    filter(row_number() == 0)
-  
-  RPostgreSQL::dbDisconnect(dbD)
+  data(chronique_structure)
+  Mesures <- mesures_structure
 }
 
 ##### Sortie #####

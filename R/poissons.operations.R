@@ -17,10 +17,6 @@
 #' poissons.operations(listeStations, Sortie = "Propre")
 #' poissons.operations(data.frame(Nom = "SOR10-2"), Sortie = "Complet")
 
-##### TODO LIST #####
-# 
-#####################
-
 poissons.operations <- function(
   ListeStations = data.frame(Nom = character(0)),
   CodeOperation = FALSE,
@@ -86,7 +82,7 @@ poissons.operations <- function(
     Operations <- 
       Operations %>%
       select(nom, datedebut.x, codeoperation) %>% 
-      filter(Nom %in% ListeStations$Nom) %>% 
+      filter(nom %in% ListeStations$Nom) %>% 
       dplyr::rename(CodeOperation = codeoperation, Station = nom, Date = datedebut.x) %>% 
       arrange(Station, Date)}
   

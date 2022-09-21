@@ -7,6 +7,7 @@
 #' @param Sortie Forme du dataframe de sortie - \code{Complet} (par défault - tous les champs), \code{Propre} ou \code{Simple}
 #' @keywords capteurs
 #' @keywords chronique
+#' @import aquatools
 #' @import tidyverse
 #' @export
 #' @examples
@@ -17,10 +18,6 @@
 #' chronique.capteurs("PDPG","Projet")
 #' chronique.capteurs("OK","État")
 #' SuiviCapteurs <- listeCapteurs$chmes_capteur %>% map_dfr(~ chronique.capteurs(., Recherche = "Numéro"))
-
-##### TODO LIST #####
-
-#####################
 
 chronique.capteurs <- function(x = "CD39", 
                                Recherche = c("Propriétaire", "Type", "Modèle", "Numéro", "État", "Projet"),
@@ -56,6 +53,12 @@ chronique.capteurs <- function(x = "CD39",
     Vue %>% 
     {if (nrow(.) != 0) arrange(., chcap_numerocapteur) else .} %>% 
     {if(Sortie == "Propre") select(., -contains("modif")) else .}
+  
+  ### Format compatible avec les jointures en cas d'absence de données ###
+  if(nrow(Vue) == 0) {
+    data(chronique_structure)
+    Vue <- capteurs_structure
+  }
   
   #### Affichage des résultats ####
   return(Vue)

@@ -33,11 +33,6 @@ chronique.DCE <- function(
 )
 {
   
-  ##### -------------- A FAIRE -------------- #####
-  #
-  # 
-  # -------------- A FAIRE -------------- #  
-  
   #### Évaluation des choix ####
   typemesure <- match.arg(typemesure)
   
@@ -70,7 +65,11 @@ chronique.DCE <- function(
     listeStations <- 
       Stations %>% 
       filter(chsta_coderhj %in% listeStations$chmes_coderhj) %>% 
-      mutate(chsta_codepointprlvmt = NA_character_) # manquant
+      mutate(chsta_codepointprlvmt = NA_character_) %>% # manquant
+      sf::st_as_sf(coords = c("chsta_coord_x","chsta_coord_y")) %>% 
+      st_set_crs(2154) %>% 
+      mutate(chsta_coord_x = st_coordinates(.)[,1]) %>% 
+      mutate(chsta_coord_y = st_coordinates(.)[,2])
     
     ### Capteurs ###
     listeCapteurs <- data %>% distinct(chmes_capteur)
@@ -124,8 +123,9 @@ chronique.DCE <- function(
            PROF_POSE = chsvi_profondeur,
            T_POSE = chsvi_valeur,
            AGENT_POSE = chsvi_operateurs,
-           RQ_POSE = chsvi_remarques)
-  
+           RQ_POSE = chsvi_remarques) %>%
+    st_drop_geometry()
+
   ### Chronique ###
   OngletChronique <-
     data %>% 
@@ -149,7 +149,7 @@ chronique.DCE <- function(
   ##### Export à proprement parler #####
   if(export == TRUE){
   list_of_datasets <- list("Pose_relève" = OngletPoseReleve, "chronique de température" = OngletChronique)
-  openxlsx::write.xlsx(list_of_datasets, file = paste0("./",projet, "/Sorties/Données/DCE/", unique(data$chmes_coderhj), "_données_format_DCE.xlsx"))
+  openxlsx::write.xlsx(list_of_datasets, file = glue("./{projet}/Sorties/Données/DCE/{unique(data$chmes_coderhj)}_données_format_DCE.xlsx"))
   }
   if(export == FALSE){
     warning("La fonction export = F est à développer")
