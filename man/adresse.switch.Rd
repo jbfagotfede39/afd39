@@ -10,7 +10,7 @@ adresse.switch(url = "")
 \item{url}{Adresse du fichier à ouvrir}
 }
 \description{
-Cette fonction permet de retrouver automatique l'adresse d'un fichier entre l'ordi portable et l'ordi fixe
+Cette fonction permet de retrouver automatique l'adresse d'un fichier entre différentes machines
 }
 \examples{
 adresse.switch("NAS-JB/Études/2014_Les Rousses/Résultats/Poissons/ResultatsRoussestotal-28janvier2015.xlsx")

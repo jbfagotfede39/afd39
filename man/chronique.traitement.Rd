@@ -9,6 +9,7 @@ chronique.traitement(
   projet = NA_character_,
   export = T,
   exportfigures = T,
+  style = c("boxplot", "violon"),
   exportfigures_chronique_classique = T,
   exportfigures_cumul_degresjours = T,
   exportfigures_boxplot_interannuel = T,
@@ -21,8 +22,12 @@ chronique.traitement(
   filtragedatefperiode = "07-15",
   filtragenbj = 75,
   dep39 = c(FALSE, TRUE, "autre"),
+  localisation_stations = NA,
+  localisation_commentaires = NA,
+  localisation_suiviterrain = NA,
+  localisation_capteurs = NA,
+  localisation_donnees = NA,
   archivage = c("Aucun", "Partiel", "Complet"),
-  style = c("boxplot", "violon"),
   log = c("Simple", "Verbeux", "Aucun")
 )
 }
@@ -34,6 +39,8 @@ chronique.traitement(
 \item{export}{Si \code{TRUE} (par défaut), exporte les résultats/figures. Si \code{FALSE}, ne les exporte pas.}
 
 \item{exportfigures}{Si \code{TRUE} (par défaut), exporte les figures. Si \code{FALSE}, ne les exporte pas.}
+
+\item{style}{\code{boxplot} ou \code{violon}}
 
 \item{exportfigures_chronique_classique}{Si \code{TRUE} (par défaut), exporte les vues annuelles des chroniques. Si \code{FALSE}, ne les exporte pas.}
 
@@ -58,6 +65,16 @@ chronique.traitement(
 \item{filtragenbj}{Nombre de journées minimales pour chaque résultat à conserver (75 par défaut).}
 
 \item{dep39}{Si \code{FALSE} (par défaut), ne va pas rechercher les données de stations dans la base locale et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations}
+
+\item{localisation_stations}{Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier des stations}
+
+\item{localisation_commentaires}{Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier des commentaires}
+
+\item{localisation_suiviterrain}{Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier de suivi de terrain}
+
+\item{localisation_capteurs}{Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier des capteurs}
+
+\item{localisation_donnees}{Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier des données brutes}
 
 \item{archivage}{Si \code{Aucun} (par défaut), ne va pas créer une archives .zip du répertoire de sortie. Si \code{Partiel}, créé une archive et conserve le répertoire. Si \code{Complet}, créé une archive et supprimer le répertoire.}
 

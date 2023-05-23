@@ -4,6 +4,7 @@
 #' @name projet.calculInitial
 #' @param nom_projet Nom du dataframe contenant les données "attendues" à traiter, dans le format de tpstravail_recapitulatif
 #' @importFrom dplyr select
+#' @import glue
 #' @import tidyverse
 #' @export
 #' @examples
@@ -31,7 +32,8 @@ projet.calculInitial <- function(
   DBI::dbDisconnect(dbD)
   
   if(all(colnames(nom_projet) != colnames(recap_tps_w))) stop("Dataframe d'entrée différent de tpstravail_recapitulatif")
-  if(cout_annuel %>% filter(gestctan_annee == year(now())) %>% filter(gestctan_type == "Estimé N-1") %>% select(gestctan_poste_id, gestctan_coutjournaliermajore) %>% nrow() == 0) stop(paste0("Pas de coûts annuels estimés pour l'année ",year(now())))
+  if(all(month(today()) < 12 & cout_annuel %>% filter(gestctan_annee == year(today())) %>% filter(gestctan_type == "Estimé N-1") %>% select(gestctan_poste_id, gestctan_coutjournaliermajore) %>% nrow() == 0)) stop(glue("Pas de coûts annuels estimés pour l'année {year(today())}"))
+  if(all(month(today()) == 12 & cout_annuel %>% filter(gestctan_annee == 1+year(today())) %>% filter(gestctan_type == "Estimé N-1") %>% select(gestctan_poste_id, gestctan_coutjournaliermajore) %>% nrow() == 0)) stop(glue("Pas de coûts annuels estimés pour l'année {1+year(today())}"))
   
   ##### Préparation ####
   nom_projet <-
@@ -52,19 +54,21 @@ projet.calculInitial <- function(
     nom_projet_fjppma %>% 
     select(-tpswrecap_coutunitaire) %>% 
     # On prend en premier les tâches déjà définies dans cout_type_prestation #
-    bind_rows(cout_type_prestation %>% filter(gestctunit_prestation_id %in% nom_projet_fjppma$tpswrecap_detail) %>% rename(tpswrecap_detail = gestctunit_prestation_id) %>% rename(Temps = gestctunit_temps) %>% select(-id,-contains("_modif")) %>% left_join(nom_projet_fjppma %>% filter(is.na(tpswrecap_argent)) %>% select(tpswrecap_detail, tpswrecap_quantite, -contains("_modif")), by = "tpswrecap_detail")) %>%
+    bind_rows(cout_type_prestation %>% filter(gestctunit_prestation_id %in% nom_projet_fjppma$tpswrecap_detail) %>% rename(tpswrecap_detail = gestctunit_prestation_id) %>% rename(Temps = gestctunit_temps) %>% filter(!grepl("Externalisé", gestctunit_remarques)) %>% select(-id,-contains("_modif")) %>% left_join(nom_projet_fjppma %>% filter(is.na(tpswrecap_argent)) %>% select(tpswrecap_detail, tpswrecap_quantite, -contains("_modif")), by = "tpswrecap_detail")) %>%
+    # view()
     # On rebascule les postes/temps de travail nécessaire à partir des données cout_type_prestation
-    mutate(tpswrecap_poste = ifelse(is.na(tpswrecap_poste) & !is.na(gestctunit_poste_id), gestctunit_poste_id, tpswrecap_poste)) %>% # Ajout au 2022-06-14
-    mutate(tpswrecap_jours = ifelse(is.na(tpswrecap_jours) & !is.na(Temps), Temps, tpswrecap_jours)) %>% # Ajout au 2022-06-14
-    mutate(tpswrecap_quantitepersonnel = ifelse(is.na(tpswrecap_quantitepersonnel) & !is.na(gestctunit_quantitepersonnel), gestctunit_quantitepersonnel, tpswrecap_quantitepersonnel)) %>% # Ajout au 2022-06-14
-    # On ajoute le personnel concerné s'il n'est défini que par son poste : # Ajout au 2022-06-14
-    left_join(operateurs %>% filter(gestop_qualite != "Chargé de développement") %>% left_join(postes, by = c("gestop_qualite" = "gestpost_poste_libelle")), by = c("tpswrecap_poste" = "id_poste")) %>% # On élude les chargés de développement car traités ultérieurement, et pas d'autres cas avec plusieurs personnels sur un même poste # Ajout au 2022-06-14
-    mutate(tpswrecap_personnel = ifelse(is.na(tpswrecap_personnel) & !is.na(tpswrecap_poste), id_operateur, tpswrecap_personnel)) %>% # Ajout au 2022-06-14
+    mutate(tpswrecap_poste = ifelse(is.na(tpswrecap_poste) & !is.na(gestctunit_poste_id), gestctunit_poste_id, tpswrecap_poste)) %>%
+    mutate(tpswrecap_jours = ifelse(is.na(tpswrecap_jours) & !is.na(Temps), Temps, tpswrecap_jours)) %>%
+    mutate(tpswrecap_quantitepersonnel = ifelse(is.na(tpswrecap_quantitepersonnel) & !is.na(gestctunit_quantitepersonnel), gestctunit_quantitepersonnel, tpswrecap_quantitepersonnel)) %>%
+    # On ajoute le personnel concerné s'il n'est défini que par son poste :
+    left_join(operateurs %>% filter(gestop_qualite != "Chargé de développement" & gestop_qualite != "Ingénieur hydrobiologiste") %>% left_join(postes, by = c("gestop_qualite" = "gestpost_poste_libelle")), by = c("tpswrecap_poste" = "id_poste")) %>% # On élude les chargés de développement/ingénieurs car traités ultérieurement, et pas d'autres cas avec plusieurs personnels sur un même poste
+    mutate(tpswrecap_personnel = ifelse(is.na(tpswrecap_personnel) & !is.na(tpswrecap_poste), id_operateur, tpswrecap_personnel)) %>%
     select(-id_operateur, -contains("gestop_"), -gestpost_remarques) %>%
     # On joint avec les coûts unitaires par poste/opérateur via une clé #
-    mutate(clepostepersonnel = paste0(tpswrecap_poste, "-", tpswrecap_personnel)) %>% 
-    left_join(cout_annuel %>% filter(gestctan_annee == year(now())) %>% filter(gestctan_type == "Estimé N-1") %>% mutate(clepostepersonnel = paste0(gestctan_poste_id, "-", gestctan_operateur_id)) %>% select(clepostepersonnel, gestctan_coutjournaliermajore) %>% rename(cout_unitaire = gestctan_coutjournaliermajore), by = "clepostepersonnel") %>%
-    # Cas du coût unitaire des agents de développement, différents en fonction du personnel : on prend la valeur max
+    mutate(clepostepersonnel = glue("{tpswrecap_poste}-{tpswrecap_personnel}")) %>% 
+    {if(month(today()) < 12) left_join(., cout_annuel %>% filter(gestctan_annee == year(today())) %>% filter(gestctan_type == "Estimé N-1") %>% mutate(clepostepersonnel = glue("{gestctan_poste_id}-{gestctan_operateur_id}")) %>% select(clepostepersonnel, gestctan_coutjournaliermajore) %>% rename(cout_unitaire = gestctan_coutjournaliermajore), by = "clepostepersonnel") else .} %>%
+    {if(month(today()) == 12) left_join(., cout_annuel %>% filter(gestctan_annee == 1+year(today())) %>% filter(gestctan_type == "Estimé N-1") %>% mutate(clepostepersonnel = glue("{gestctan_poste_id}-{gestctan_operateur_id}")) %>% select(clepostepersonnel, gestctan_coutjournaliermajore) %>% rename(cout_unitaire = gestctan_coutjournaliermajore), by = "clepostepersonnel") else .} %>%
+    # Cas du coût unitaire des chargés de développement, différents en fonction du personnel, personnel qui n'est pas individuellement précisé : on prend la valeur max
     mutate(cout_unitaire = ifelse(tpswrecap_poste == 1 & is.na(tpswrecap_personnel), cout_annuel %>% filter(gestctan_annee == year(now()) & gestctan_type == "Estimé N-1" & gestctan_poste_id == 1) %>% summarise(cout_unitaire = max(gestctan_coutjournaliermajore)) %>% pull(), cout_unitaire)) %>% 
     # On regroupe les coûts unitaires #
     mutate(cout_unitaire = ifelse(is.na(cout_unitaire), gestctunit_coutunitaire, cout_unitaire)) %>%
@@ -74,7 +78,9 @@ projet.calculInitial <- function(
     # mutate(tpswrecap_natureprojet = ifelse(dim(distinct(nom_projet_fjppma, tpswrecap_natureprojet))[1] == 1, as.character(distinct(nom_projet_fjppma, tpswrecap_natureprojet)), "STOP")) %>% 
     mutate(tpswrecap_moe = ifelse(dim(distinct(nom_projet_fjppma, tpswrecap_moe))[1] == 1, as.character(distinct(nom_projet_fjppma, tpswrecap_moe)), "STOP")) %>% 
     mutate(tpswrecap_projet = ifelse(dim(distinct(nom_projet_fjppma, tpswrecap_projet))[1] == 1, as.character(distinct(nom_projet_fjppma, tpswrecap_projet)), "STOP")) %>% 
+    # On supprime des lignes générées en trop au moment des cout_type_prestation et unifiées avec le regroupement des coûts unitaires
     filter(!(!is.na(tpswrecap_quantite) & is.na(cout_unitaire) & is.na(tpswrecap_jours) & is.na(tpswrecap_argent))) %>%
+    # Rebascule de données dans les champs appropriés
     mutate(tpswrecap_quantitepersonnel = ifelse(is.na(tpswrecap_argent) & is.na(tpswrecap_quantitepersonnel) & !is.na(tpswrecap_jours), 1, tpswrecap_quantitepersonnel)) %>% # Si tpswrecap_argent et tpswrecap_quantitepersonnel vides et tpswrecap_jours rempli, alors un seul bonhomme
     mutate(tpswrecap_argent = ifelse(is.na(tpswrecap_argent), tpswrecap_jours * cout_unitaire * tpswrecap_quantitepersonnel * tpswrecap_quantite, tpswrecap_argent)) %>% # pour les tâches avec quantité
     mutate(tpswrecap_argent = ifelse(is.na(tpswrecap_argent), tpswrecap_jours * cout_unitaire * tpswrecap_quantitepersonnel, tpswrecap_argent)) %>% # pour les tâches sans quantité
@@ -101,7 +107,7 @@ projet.calculInitial <- function(
     select(match(colnames(recap_tps_w),names(.))) %>% 
     mutate(id = NA) %>% 
     
-    # On remet les prestation en clair + tri
+    # On remet les prestations en clair + tri
     left_join(typologie_prestation %>% select(id, gesttyppresta_libelle, gesttyppresta_ordre), by = c("tpswrecap_detail" = "id")) %>% 
     mutate(tpswrecap_detail = gesttyppresta_libelle) %>% 
     select(-gesttyppresta_libelle) %>% 

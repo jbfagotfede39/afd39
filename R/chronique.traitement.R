@@ -6,6 +6,7 @@
 #' @param data Data.frame issu de chronique.mesures, pouvant contenir différentes stations
 #' @param export Si \code{TRUE} (par défaut), exporte les résultats/figures. Si \code{FALSE}, ne les exporte pas.
 #' @param exportfigures Si \code{TRUE} (par défaut), exporte les figures. Si \code{FALSE}, ne les exporte pas.
+#' @param style \code{boxplot} ou \code{violon}
 #' @param exportfigures_chronique_classique Si \code{TRUE} (par défaut), exporte les vues annuelles des chroniques. Si \code{FALSE}, ne les exporte pas.
 #' @param exportfigures_cumul_degresjours Si \code{TRUE} (par défaut), exporte les cumuls de degrés-jours. Si \code{FALSE}, ne les exporte pas.
 #' @param exportfigures_boxplot_interannuel Si \code{TRUE} (par défaut), exporte les boxplots interannuels. Si \code{FALSE}, ne les exporte pas.
@@ -19,6 +20,11 @@
 #' @param filtragenbj Nombre de journées minimales pour chaque résultat à conserver (75 par défaut).
 #' @param projet Nom du projet
 #' @param dep39 Si \code{FALSE} (par défaut), ne va pas rechercher les données de stations dans la base locale et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations
+#' @param localisation_stations Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier des stations
+#' @param localisation_commentaires Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier des commentaires
+#' @param localisation_suiviterrain Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier de suivi de terrain
+#' @param localisation_capteurs Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier des capteurs
+#' @param localisation_donnees Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier des données brutes
 #' @param archivage Si \code{Aucun} (par défaut), ne va pas créer une archives .zip du répertoire de sortie. Si \code{Partiel}, créé une archive et conserve le répertoire. Si \code{Complet}, créé une archive et supprimer le répertoire.
 #' @param log Si \code{Simple} (par défaut), le log ne sera pas très bavard. Si \code{Verbeux}, le log incluera tous les retours du tidyverse. Si \code{Aucun}, absence de log
 #' @import fs
@@ -43,6 +49,7 @@ chronique.traitement <- function(
   projet = NA_character_,
   export = T,
   exportfigures = T,
+  style = c("boxplot","violon"),
   exportfigures_chronique_classique = T,
   exportfigures_cumul_degresjours = T,
   exportfigures_boxplot_interannuel = T,
@@ -55,8 +62,12 @@ chronique.traitement <- function(
   filtragedatefperiode = "07-15",
   filtragenbj = 75,
   dep39 = c(FALSE, TRUE, "autre"),
+  localisation_stations = NA,
+  localisation_commentaires = NA,
+  localisation_suiviterrain = NA,
+  localisation_capteurs = NA,
+  localisation_donnees = NA,
   archivage = c("Aucun","Partiel","Complet"),
-  style = c("boxplot","violon"),
   log = c("Simple", "Verbeux", "Aucun")
   )
 {
@@ -223,21 +234,27 @@ if(export == TRUE & dep39 == TRUE){
 }
 
 if(export == TRUE & dep39 == "autre"){
-  fnameStations <- tk_choose.files(caption = "Fichier de stations")
+
+  if(is.na(localisation_stations)) fnameStations <- tk_choose.files(caption = "Fichier de stations")
+  if(!is.na(localisation_stations)) fnameStations <- adresse.switch(localisation_stations)
   Stations <- chronique.ouverture("Stations", "Thermie", fnameStations)
   
-  fnameCommentaires <- tk_choose.files(caption = "Fichier de commentaires")
+  if(is.na(localisation_commentaires)) fnameCommentaires <- tk_choose.files(caption = "Fichier de commentaires")
+  if(!is.na(localisation_commentaires)) fnameCommentaires <- adresse.switch(localisation_commentaires)
   Commentaires <- chronique.ouverture("Commentaires", "Thermie", fnameCommentaires)
   
   if(exportDCE == TRUE){
-    fnameSuivi <- tk_choose.files(caption = "Fichier de suivi de terrain")
+    if(is.na(localisation_suiviterrain)) fnameSuivi <- tk_choose.files(caption = "Fichier de suivi de terrain")
+    if(!is.na(localisation_suiviterrain)) fnameSuivi <- adresse.switch(localisation_suiviterrain)
     SuiviTerrain <- chronique.ouverture("Suivis", "Thermie", fnameSuivi)
     
-    fnameCapteurs <- tk_choose.files(caption = "Fichier des capteurs")
+    if(is.na(localisation_capteurs)) fnameCapteurs <- tk_choose.files(caption = "Fichier des capteurs")
+    if(!is.na(localisation_capteurs)) fnameCapteurs <- adresse.switch(localisation_capteurs)
     Capteurs <- chronique.ouverture("Capteurs", "Thermie", fnameCapteurs)
   }
   
-  fnameDonnesbrutes <- tk_choose.dir(caption = "Répertoire des chroniques") # On interroge tout de suite l'opérateur pour ne pas le déranger ensuite seulement pour le répertoire des données brutes
+  if(is.na(localisation_donnees)) fnameDonnesbrutes <- tk_choose.dir(caption = "Répertoire des chroniques") # On interroge tout de suite l'opérateur pour ne pas le déranger ensuite seulement pour le répertoire des données brutes
+  if(!is.na(localisation_donnees)) fnameDonnesbrutes <- adresse.switch(localisation_donnees)
   
 }
 if(log != "Aucun") put("Fin de l'importation des données nécessaires aux exportations") # Log

@@ -1,5 +1,35 @@
 # NEWS - afd39
 
+## 0.0.17
+### Ajouts
+- `DESCRIPTION` :
+  * Ajout des champs `Maintainer` et `Depends`
+  * Mise à jour des dépendances
+- `adresse.switch` : 
+  * Ajout d'une modalité incluant le répertoire `Nextcloud` sur le poste de JB
+- `BDD.format` : 
+  * Ajout d'un traitement des données de prélèvements AEP
+  * Ajout d'un 0 en début de '9:00:00' pour le suivi des chroniques
+- `chronique.traitement` :
+  * Ajout de paramètres permettant d'indiquer les localisations de fichiers sources directement, sans applet
+  * Ajout du paramètre `style` dans la documentation, qui était absent bien qu'utilisé ensuite
+- `formatage.abreviation` 
+  * Ajout d'une modalité `Général`, qui était présente en base mais pas dans les sorties potentielles
+- `projet.calculInitial` :
+  * Calcul des coûts pour l'année N+1 si réalisé au mois de décembre
+  * Complément du test de disponibilité des coûts annuels N+1 si calcul au mois de décembre
+  * Ajout de commentaires afin d'expliciter quelques parties de codes
+
+### Corrections
+- `chronique.suivi` : ajout d'un format de sortie permettant les jointures s'il n'y a pas de données collectées (car format de date incompatible : `date` vs `character`)
+
+### Modifications
+- `adresse.switch` : 
+  * Remplacement de `paste0()` par des `glue()`
+- `projet.calculInitial` :
+  * Remplacement de `paste0()` par des `glue()`
+  * Prise en compte de scénarios potentiels comme existence d'un coût type IBL en prestation, mais qu'on souhaite le réaliser en régie (le coût prestation était quand même ajouté)
+
 ## 0.0.16
 ### Ajouts
 - `BDD.format` : 
@@ -18,6 +48,10 @@
 - `formatage.noms_propres` : correction d'une coquille dans la description d'un paramètre
 - `poissons.operations` : correction d'une coquille dans un nom de variable dans un scénario de traitement
 - `projet.calculInitial` : court-circuit des valeurs unitaires pour les coûts type si une valeur est ajoutée manuellement directement dans le récapitulatif théorique
+
+### Modifications
+  
+### Suppression
 
 ## 0.0.15 - 2022-05-31
 ### Ajouts

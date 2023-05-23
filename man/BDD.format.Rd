@@ -7,11 +7,15 @@
 BDD.format(
   data = data,
   traitementforce = FALSE,
-  Type = c("MI", "Chroniques", "PC", "Temps de travail", "Topographie")
+  Type = c("MI", "Chroniques", "PC", "Temps de travail", "Topographie", "AEP")
 )
 }
 \arguments{
 \item{data}{Jeu de données à mettre au format de la base de données}
+
+\item{traitementforce}{\code{FALSE} (par défaut) ou \code{TRUE}}
+
+\item{Type}{Thématique de travail : \code{MI}, \code{Chroniques}, \code{PC}, \verb{Temps de travail}, \code{Topographie}, \code{AEP}}
 }
 \description{
 Cette fonction permet de formater les données pour les ajouter aux bases de données respectives

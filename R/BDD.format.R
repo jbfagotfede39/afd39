@@ -3,6 +3,8 @@
 #' Cette fonction permet de formater les données pour les ajouter aux bases de données respectives
 #' @name BDD.format
 #' @param data Jeu de données à mettre au format de la base de données
+#' @param traitementforce `FALSE` (par défaut) ou `TRUE`
+#' @param Type Thématique de travail : `MI`, `Chroniques`, `PC`, `Temps de travail`, `Topographie`, `AEP`
 #' @keywords data
 #' @import DBI
 #' @import glue
@@ -22,7 +24,7 @@
 BDD.format <- function(
   data = data,
   traitementforce = FALSE,
-  Type = c("MI", "Chroniques", "PC", "Temps de travail", "Topographie")
+  Type = c("MI", "Chroniques", "PC", "Temps de travail", "Topographie", "AEP")
   )
 {
   
@@ -336,9 +338,12 @@ BDD.format <- function(
       mutate(chsvi_heure = str_replace(chsvi_heure, "H", ":")) %>% # On remplace le H par :
       mutate(chsvi_heure = ifelse(grepl("Oubli", chsvi_heure), NA_character_, chsvi_heure)) %>% 
       mutate(chsvi_heure = ifelse(grepl("oubli", chsvi_heure), NA_character_, chsvi_heure)) %>% 
-      mutate(count = str_count(.$chsvi_heure, ":")) %>% 
-      mutate(chsvi_heure = ifelse(!is.na(chsvi_heure) & count == 1, paste0(chsvi_heure, ":00"), chsvi_heure)) %>% 
-      select(-count) %>% 
+      mutate(count = str_count(.$chsvi_heure, ":")) %>%
+      mutate(chsvi_heure = ifelse(!is.na(chsvi_heure) & count == 1, glue("{chsvi_heure}:00"), chsvi_heure)) %>%
+      select(-count) %>%
+      mutate(count = nchar(.$chsvi_heure)) %>%
+      mutate(chsvi_heure = ifelse(!is.na(chsvi_heure) & count == 7, glue("0{chsvi_heure}"), chsvi_heure)) %>%
+      select(-count) %>%
       rowwise() %>% 
       mutate(chsvi_heure = ifelse(any(class(.$chsvi_heure) == "POSIXct"), format(chsvi_heure, format="%H:%M:%S"), chsvi_heure)) %>% 
       ungroup()
@@ -653,6 +658,30 @@ BDD.format <- function(
         mutate(id = row_number() + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_production.topographie_leves;")))
     } # Fin de travail sur les mesures de levés topographiques
   } # Fin de travail sur topographie
+  
+  
+  ##### AEP #####
+  Testtraitementforce <- 0
+  if(traitementforce == TRUE & Type == "AEP") Testtraitementforce <- 1
+  if(traitementforce == FALSE & Type == "AEP") Testtraitementforce <- 1
+  if(Testtraitementforce == 1){
+    ## Connexion à la BDD ##
+    dbD <- BDD.ouverture("Data")
+    
+    ## Récupération des données ##
+    prelevements <- tbl(dbD, in_schema("fd_referentiels", "hydrologie_prelevements")) %>% arrange(desc(id)) %>% collect(n = 10)
+
+    ## Travail sur les prélèvements ##
+    if(all(colnames(data) %in% colnames(prelevements))) {
+      
+      # Transformation des formats
+      data <-
+        data %>% 
+        # mutate(pcmes_date = format(ymd(data$pcmes_date), format="%Y-%m-%d")) %>% # Car sinon transformation automatique des formats de date
+        # Ajout des ID
+        mutate(id = row_number() + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_referentiels.hydrologie_prelevements;")))
+    } # Fin de travail sur les prélèvements
+  } # Fin de travail sur AEP
   
   ##### Commun #####
 data <- as.data.frame(data)

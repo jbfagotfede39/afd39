@@ -60,6 +60,12 @@ chronique.suivi <- function(
   
   if(nrow(Vue) == 0) warning("Attention il n'y a aucune ligne correspondante")
   
+  ### Format compatible avec les jointures en cas d'absence de données ###
+  if(nrow(Vue) == 0) {
+    data(chronique_structure)
+    Vue <- suivi_structure
+  }
+  
   #### Affichage des résultats ####
   return(Vue)
 }

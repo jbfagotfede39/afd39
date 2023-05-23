@@ -1,9 +1,10 @@
 #' Switcher de localisation de fichier
 #'
-#' Cette fonction permet de retrouver automatique l'adresse d'un fichier entre l'ordi portable et l'ordi fixe
+#' Cette fonction permet de retrouver automatique l'adresse d'un fichier entre différentes machines
 #' 
 #' @name adresse.switch
 #' @param url Adresse du fichier à ouvrir
+#' @import glue
 #' @export
 #' @examples
 #' adresse.switch("NAS-JB/Études/2014_Les Rousses/Résultats/Poissons/ResultatsRoussestotal-28janvier2015.xlsx")
@@ -19,8 +20,9 @@ adresse.switch <- function(
   if(nchar(url) == 0) url = readline(prompt = "Saisir une adresse de fichier : ")
   
   #### Transformation du format ####
-  if(file.exists(paste0("/Users/jean-baptistefagot/", url))) url <- paste0("/Users/jean-baptistefagot/",url) # #129 - Machine JB
-  if(file.exists(paste0("/Users/adrienlavigne/", url))) url <- paste0("/Users/adrienlavigne/",url) # #4 - Machine Adrien
+  if(file.exists(glue("/Users/jean-baptistefagot/{url}"))) url <- glue("/Users/jean-baptistefagot/{url}") # #129 - Machine JB
+  if(file.exists(glue("/Users/jean-baptistefagot/Nextcloud/", url))) url <- glue("/Users/jean-baptistefagot/Nextcloud/{url}") # #129 - Machine JB
+  if(file.exists(glue("/Users/adrienlavigne/", url))) url <- glue("/Users/adrienlavigne/{url}") # #4 - Machine Adrien
   
   #### Retour de l'adresse correcte ####
   return(url)

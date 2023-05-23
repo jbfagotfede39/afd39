@@ -5,8 +5,8 @@
 \title{Exportation d'abréviations}
 \usage{
 formatage.abreviation(
-  thematique = c("Complet", "Écosystème", "Espèce", "Chronique", "Biologie",
-    "Physico-chimie", "Morphologie", "Document", "Institution", "Usage"),
+  thematique = c("Complet", "Écosystème", "Espèce", "Général", "Chronique",
+    "Biologie", "Physico-chimie", "Morphologie", "Document", "Institution", "Usage"),
   formatage = c("Aucun", "Propre", "Latex"),
   export = F,
   exportformat = c(".xlsx", ".pdf", ".tex")
