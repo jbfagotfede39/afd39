@@ -21,6 +21,8 @@ chronique.traitement(
   filtrageanneevmm = TRUE,
   filtragedatefperiode = "07-15",
   filtragenbj = 75,
+  seuils = c(25, 22, 19, 15, 4),
+  seuilexcesdefaut = 12,
   dep39 = c(FALSE, TRUE, "autre"),
   localisation_stations = NA,
   localisation_commentaires = NA,
@@ -63,6 +65,10 @@ chronique.traitement(
 \item{filtragedatefperiode}{Ne conserver que les résultats dont la date de fin de période est postérieure à la date choisie ("07-15", soit le 15 juillet par défaut)}
 
 \item{filtragenbj}{Nombre de journées minimales pour chaque résultat à conserver (75 par défaut).}
+
+\item{seuils}{Seuils de valeurs (25,22,19,15,4 par défaut) dont il faut tester les dépassements. L'ordre de sortie correspond à l'ordre de cette liste.}
+
+\item{seuilexcesdefaut}{Seuil en-deça duquel les dépassements sont testés par défaut, sinon ils sont testés par excès (valeur de 12 par défaut).}
 
 \item{dep39}{Si \code{FALSE} (par défaut), ne va pas rechercher les données de stations dans la base locale et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations}
 

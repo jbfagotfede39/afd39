@@ -4,6 +4,7 @@
 #' @name chronique.traitement
 #' @keywords chronique
 #' @param data Data.frame issu de chronique.mesures, pouvant contenir différentes stations
+#' @param projet Nom du projet
 #' @param export Si \code{TRUE} (par défaut), exporte les résultats/figures. Si \code{FALSE}, ne les exporte pas.
 #' @param exportfigures Si \code{TRUE} (par défaut), exporte les figures. Si \code{FALSE}, ne les exporte pas.
 #' @param style \code{boxplot} ou \code{violon}
@@ -18,7 +19,8 @@
 #' @param filtrageanneevmm Si \code{TRUE} (par défaut), ne conserve que les résultats dont l'année de fin de vmm30j est égale à l'année biologique du résultat
 #' @param filtragedatefperiode Ne conserver que les résultats dont la date de fin de période est postérieure à la date choisie ("07-15", soit le 15 juillet par défaut)
 #' @param filtragenbj Nombre de journées minimales pour chaque résultat à conserver (75 par défaut).
-#' @param projet Nom du projet
+#' @param seuils Seuils de valeurs (25,22,19,15,4 par défaut) dont il faut tester les dépassements. L'ordre de sortie correspond à l'ordre de cette liste.
+#' @param seuilexcesdefaut Seuil en-deça duquel les dépassements sont testés par défaut, sinon ils sont testés par excès (valeur de 12 par défaut).
 #' @param dep39 Si \code{FALSE} (par défaut), ne va pas rechercher les données de stations dans la base locale et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations
 #' @param localisation_stations Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier des stations
 #' @param localisation_commentaires Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier des commentaires
@@ -61,6 +63,8 @@ chronique.traitement <- function(
   filtrageanneevmm = TRUE,
   filtragedatefperiode = "07-15",
   filtragenbj = 75,
+  seuils = c(25,22,19,15,4),
+  seuilexcesdefaut = 12,
   dep39 = c(FALSE, TRUE, "autre"),
   localisation_stations = NA,
   localisation_commentaires = NA,
@@ -263,7 +267,7 @@ if(log != "Aucun") put("Fin de l'importation des données nécessaires aux expor
 DataTravail <- 
   data %>%
   group_split(chmes_coderhj, chmes_anneebiol, chmes_typemesure) %>% 
-    purrr::map_dfr(~ chronique.analyse(.)) %>% 
+    purrr::map_dfr(~ chronique.analyse(., seuils = seuils, seuilexcesdefaut = seuilexcesdefaut)) %>% 
     ungroup()
 # ça pourra crasher par ici lorsqu'on fera un essai mixant chmes_typemesure == "Thermie" avec un autre chmes_typemesure à cause de la jointure à réaliser et un nb de champ différent (absence de TRF$DateDebutDegresJours et la suite)
 

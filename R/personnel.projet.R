@@ -44,11 +44,12 @@ personnel.projet <- function(
   RecapTpsW <- tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_recapitulatif")) %>% filter(tpswrecap_projet %in% !! Projets$id) %>% collect(n = Inf)
   CoutsAnnuels <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_coutsannuels")) %>% filter(gestctan_projet_id %in% !! Projets$id) %>% collect(n = Inf)
   Postes <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_postes")) %>% select(id, gestpost_poste_libelle) %>% collect(n = Inf) %>% rename(idposte = id)
-  Personnels <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_operateurs")) %>% filter(gestop_mo == 3 & gestop_type == "Salarié") %>% select(id:gestop_qualite) %>% collect(n = Inf) %>% left_join(Postes, by = c("gestop_qualite" = "gestpost_poste_libelle")) %>% mutate(gestop_qualite = idposte) %>% select(-idposte)
+  Personnels <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_operateurs")) %>% filter(gestop_mo == 3 & gestop_type == "Salarié") %>% filter(!(gestop_prenom %in% c("Collectif", "recruter", "Admin"))) %>% select(id:gestop_qualite) %>% collect(n = Inf) %>% left_join(Postes, by = c("gestop_qualite" = "gestpost_poste_libelle")) %>% mutate(gestop_qualite = idposte) %>% select(-idposte)
   if(Personnels %>% filter(is.na(gestop_qualite)) %>% nrow() != 0) stop("Présence de personnels sans poste de travail clairement défini")
   
   id_max <- as.numeric(tbl(dbD,in_schema("fd_production", "tpstravail_recapitulatif")) %>% summarise(max = max(id, na.rm = TRUE)) %>% collect())
   projet_id <- Projets %>% select(id) %>% pull()
+  projet_libelle <- Projets %>% select(prjlst_projet) %>% pull()
   
   ##### Vérification de l'existence de ce projet #####
   if(dim(Projets)[1] == 0) stop("Projet non répertorié")
@@ -150,7 +151,7 @@ personnel.projet <- function(
       # On peut manquer des projets qui sont rentrés dans OpenTime sous deux intitulés : leur numéro de projet (60) et sous leur numéro de devis (2020-001) : il faut donc rechercher sur ces deux intitulés pour ne pas rater de lignes
       TpsWOTfiltre_temporaire <-
         TpsWOTfiltre %>%
-        filter(tpswot_projet_id %in% projet)
+        filter(tpswot_projet_id %in% projet_id)
       
       if(!is.na(Projets$prjlst_refdevis)){
         TpsWOTfiltre <- 
@@ -163,7 +164,7 @@ personnel.projet <- function(
           TpsWOTfiltre_temporaire
       }
       
-      if(dim(TpsWOTfiltre)[1] == 0) stop(glue('Pas de données détaillées OpenTime au niveau tpswot_activite pour le projet {projet}')) # Sans doute nécessaire d'ajouter ultérieurement un sélecteur pour affiner la recherche dans ce scénario
+      if(dim(TpsWOTfiltre)[1] == 0) stop(glue('Pas de données détaillées OpenTime au niveau tpswot_activite pour le projet {projet_id}')) # Sans doute nécessaire d'ajouter ultérieurement un sélecteur pour affiner la recherche dans ce scénario
       
       TpsW <-
         TpsWOTfiltre %>% 
@@ -184,7 +185,7 @@ personnel.projet <- function(
         mutate(tpswdetail_statut = NA_character_) %>% 
         mutate(tpswdetail_ecosysteme = NA_character_) %>% 
         mutate(tpswdetail_massedeau = NA_character_) %>% 
-        mutate(tpswdetail_projet = projet) %>% 
+        mutate(tpswdetail_projet = projet_id) %>% 
         mutate(tpswdetail_actionaermc = NA_character_) %>% 
         mutate(tpswdetail_sousactionaermc = NA_character_) %>% 
         mutate(tpswdetail_priorite = NA_character_) %>% 
@@ -204,7 +205,7 @@ personnel.projet <- function(
       ### Calcul à proprement parler
   DataToAdd <- 
     TpsW %>% 
-    filter(tpswdetail_projet == projet) %>% 
+    filter(tpswdetail_projet == projet_id) %>% 
     filter(!is.na(tpswdetail_temps)) %>% 
     mutate(tpswdetail_annee = year(tpswdetail_date)) %>% 
     group_by(tpswdetail_projet, tpswdetail_annee, tpswdetail_poste, tpswdetail_personnel, tpswdetail_detail) %>%
@@ -235,10 +236,10 @@ personnel.projet <- function(
     ## Calcul à proprement parler ##
     DataToAdd <-
       TpsWOT %>% 
-      personnel.formatAC(., projet) %>% 
+      personnel.formatAC(., projet_libelle) %>% 
       mutate(tpswdetail_ecosysteme = NA_character_) %>% 
       mutate(tpswdetail_massedeau = NA_character_) %>% 
-      # mutate(tpswdetail_projet = projet) %>% 
+      # mutate(tpswdetail_projet = projet_id) %>% 
       mutate(tpswdetail_temps = NA_character_) %>% 
       mutate(tpswdetail_annee = year(tpswot_date)) %>% 
       mutate(cle_cout_poste_personnel = glue('{tpswdetail_annee}-{tpswdetail_poste}-{tpswot_personnel}'), .before = 'tpswdetail_detail') %>% 
@@ -263,7 +264,7 @@ personnel.projet <- function(
       mutate(tpswrecap_quantite = NA_integer_) %>%  
       mutate(tpswrecap_quantitepersonnel = NA_integer_)
       
-      bug <- TpsWOT %>% personnel.formatAC(., projet) %>% filter(is.na(tpswdetail_sousactionaermc))
+      bug <- TpsWOT %>% personnel.formatAC(., projet_libelle) %>% filter(is.na(tpswdetail_sousactionaermc))
       if(nrow(bug) != 0) stop(glue('Il y a des actions/sous-actions AERMC non reconnues : id {bug %>% distinct(id)}'))
   }
   
@@ -290,6 +291,7 @@ DataToAdd <-
   DataToAdd %>% 
   left_join(Projets %>% ungroup() %>% select(id, prjlst_projet, prjlst_natureprojet), by = c("tpswrecap_projet" = "id")) %>% # 
   mutate(tpswrecap_natureprojet = prjlst_natureprojet) %>% 
+  mutate(tpswrecap_sousactionaermc = as.character(tpswrecap_sousactionaermc)) %>% 
   # mutate(tpswrecap_projet = id) %>% 
   mutate(id = row_number() + id_max) %>%  # Pour incrémenter les id à partir du dernier
   mutate(tpswprj_remarques = NA_character_) %>% 
@@ -324,9 +326,13 @@ RecapTpsW <-
     collect(n = Inf)
   }
 if(envoi == FALSE){
-  # if(nRecapTpsW <= 5){ # Suppression temporaire pour test le 2021-10-27, en attente de voir si ça fonctionne bien sans
-    RecapTpsW <- DataToAdd
-    # } # Suppression temporaire pour test le 2021-10-27, en attente de voir si ça fonctionne bien sans
+    # Matériel
+    materiel_realise <-
+      tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_recapitulatif")) %>% 
+      filter(tpswrecap_projet %in% !! Projets$id) %>% 
+      filter(tpswrecap_programmation == "Réalisé" & is.na(tpswrecap_personnel)) %>%
+      collect(n = Inf)
+    RecapTpsW <- DataToAdd %>% union(materiel_realise)
   }
 
 ### Données attendues ###
@@ -388,16 +394,15 @@ if(grepl("AERMC", Projets$prjlst_projet)){
             # contains("Attendu_Responsable adminis"), contains("Attendu_Ingénieur resp"), contains("Attendu_Ingénieur hy"), contains("Attendu_Charg"), contains("Attendu_Technicien quali"), contains("Attendu_Mat"), # Sans apprenti
             contains("Attendu_Responsable adminis"), contains("Attendu_Ingénieur resp"), contains("Attendu_Ingénieur hy"), contains("Attendu_Charg"), contains("Attendu_Technicien quali"), contains("Attendu_Appren"), contains("Attendu_Mat"), # Avec apprenti
             # contains("Réalisé_Responsable adminis"), contains("Réalisé_Ingénieur resp"), contains("Réalisé_Ingénieur hy"), contains("Réalisé_Charg"), contains("Réalisé_Technicien quali"), contains("Réalisé_Mat") # Sans apprenti
-            contains("Réalisé_Responsable adminis"), contains("Réalisé_Ingénieur resp"), contains("Réalisé_Ingénieur hy"), contains("Réalisé_Charg"), contains("Réalisé_Technicien quali"), contains("Réalisé_Appren"), contains("Réalisé_Mat") # Avec apprenti
+            contains("Réalisé_Responsable adminis"), contains("Réalisé_Ingénieur resp"), contains("Réalisé_Ingénieur hy"), contains("Réalisé_Charg"), contains("Réalisé_Technicien quali"), contains("Réalisé_Appren"), contains("Réalisé_Intérim"), contains("Réalisé_Mat") # Avec apprenti
     )
   
   ## Renommage des colonnes
   if(ncol(Recapitulatif) == 11) colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses")
   if(ncol(Recapitulatif) == 22) colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses") # Sans apprenti
+  if(ncol(Recapitulatif) == 25) colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses") # Avec apprenti avec matériel
   if(ncol(Recapitulatif) == 26) colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses") # Avec apprenti
-    
-  stop("Attention : il reste à intégrer l'affichage des apprentis dans la partie ci-dessous")
-  
+
   ## Création d'un classeur
   tempsprojet <- createWorkbook()
   ## Ajout d'une feuille
@@ -419,6 +424,7 @@ if(grepl("AERMC", Projets$prjlst_projet)){
   mergeCells(tempsprojet, 1, cols = 17:18, rows = 2)
   mergeCells(tempsprojet, 1, cols = 19:20, rows = 2)
   mergeCells(tempsprojet, 1, cols = 21:22, rows = 2)
+  mergeCells(tempsprojet, 1, cols = 23:24, rows = 2)
   writeData(tempsprojet, 1, "Resp. admin. et fin.", startCol = 2, startRow = 2)
   writeData(tempsprojet, 1, "Mat.", startCol = 12, startRow = 2)
   writeData(tempsprojet, 1, "Resp. admin. et fin.", startCol = 13, startRow = 2)
@@ -428,14 +434,16 @@ if(grepl("AERMC", Projets$prjlst_projet)){
   writeData(tempsprojet, 1, "Ing. hydr.", startCol = 17, startRow = 2)
   writeData(tempsprojet, 1, "Chargés de dével.", startCol = 8, startRow = 2)
   writeData(tempsprojet, 1, "Chargés de dével.", startCol = 19, startRow = 2)
-  writeData(tempsprojet, 1, "Tech. PDPG", startCol = 10, startRow = 2)
-  writeData(tempsprojet, 1, "Tech. PDPG", startCol = 21, startRow = 2)
-  writeData(tempsprojet, 1, "Mat.", startCol = 23, startRow = 2)
+  writeData(tempsprojet, 1, "Appr.", startCol = 10, startRow = 2)
+  writeData(tempsprojet, 1, "Appr.", startCol = 21, startRow = 2)
+  # writeData(tempsprojet, 1, "Inter.", startCol = 10, startRow = 2)
+  writeData(tempsprojet, 1, "Inter.", startCol = 23, startRow = 2)
+  writeData(tempsprojet, 1, "Mat.", startCol = 25, startRow = 2)
   ## Centrage des cellules fusionnées
   centerStyle <- createStyle(halign = "center")
   addStyle(tempsprojet, 1, centerStyle, rows = 1:2, cols = 1:23, gridExpand = TRUE)
   ## Enregistrement du classeur
-  saveWorkbook(tempsprojet, glue('{today()}_{projet}_récapitulatif_coût_personnel.xlsx'), overwrite = T) 
+  saveWorkbook(tempsprojet, glue('{today()}_{projet_libelle}_récapitulatif_coût_personnel.xlsx'), overwrite = T) 
   } # fin de export = T
   if(export == F) return(Recapitulatif)
 }
@@ -472,7 +480,7 @@ SynthesePersonnel <- as.data.frame(SynthesePersonnel)
 ### Extraction des données détaillées par personnel ###
   Detail <- 
     TpsW %>% 
-    filter(tpswdetail_projet == projet) %>% 
+    filter(tpswdetail_projet == projet_id) %>% 
     select(tpswdetail_personnel, tpswdetail_date, tpswdetail_poste, tpswdetail_statut, tpswdetail_projet, tpswdetail_detail, tpswdetail_ecosysteme, tpswdetail_temps) %>% 
     arrange(tpswdetail_personnel, tpswdetail_date) %>% 
     filter(!is.na(tpswdetail_temps)) %>% 
@@ -515,7 +523,7 @@ SynthesePersonnel <- as.data.frame(SynthesePersonnel)
   writeData(tempsprojet, 3, Detail, startCol = 1, startRow = 1, colNames = T) # writing content on the left-most column to be merged
   writeData(tempsprojet, 4, Comparaison, startCol = 1, startRow = 1, colNames = T) # writing content on the left-most column to be merged
   ## Écriture du classeur
-  saveWorkbook(tempsprojet, glue('{today()}_{projet}_récapitulatif_coût_personnel.xlsx'), overwrite = T)
+  saveWorkbook(tempsprojet, glue('{today()}_{projet_libelle}_récapitulatif_coût_personnel.xlsx'), overwrite = T)
   } # fin de export = T
   
   DBI::dbDisconnect(dbD)

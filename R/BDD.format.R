@@ -272,7 +272,8 @@ BDD.format <- function(
       mutate(chsvi_mo = ifelse(chsvi_mo == "Fédé 39", "FJPPMA", chsvi_mo)) %>% 
       mutate(chsvi_mo = ifelse(chsvi_mo == "FD39", "FJPPMA", chsvi_mo)) %>% 
       mutate(chsvi_mo = ifelse(chsvi_mo == "Fédé39", "FJPPMA", chsvi_mo)) %>% 
-      mutate(chsvi_mo = ifelse(chsvi_mo == "PNR HJ", "PNRHJ", chsvi_mo))
+      mutate(chsvi_mo = ifelse(chsvi_mo == "PNR HJ", "PNRHJ", chsvi_mo)) %>% 
+      mutate(chsvi_mo = ifelse(chsvi_mo == "PNR", "PNRHJ", chsvi_mo))
     
     # Travail sur les stations #
     data$chsvi_coderhj <- str_replace(data$chsvi_coderhj, " ", "") # On efface les espaces en trop dans les noms de station
@@ -294,6 +295,7 @@ BDD.format <- function(
       mutate(chsvi_coderhj = ifelse(chsvi_coderhj == "ILABLOC", "ILAbloc", chsvi_coderhj)) %>% 
       mutate(chsvi_coderhj = ifelse(chsvi_coderhj == "LEM-2-2", "LEM2-2", chsvi_coderhj)) %>% 
       mutate(chsvi_coderhj = ifelse(chsvi_coderhj == "NCZ6-2TRÉMONTAGNE", "NCZ6-2", chsvi_coderhj)) %>% 
+      mutate(chsvi_coderhj = stringr::str_replace(chsvi_coderhj, "_", "-")) %>% # Remplacement du caractère _ par -
       mutate(chsvi_coderhj = stringr::str_replace(chsvi_coderhj, "BIS$", "bis")) %>% # Remplacement en fin de station de BIS par bis
       mutate(chsvi_coderhj = stringr::str_replace(chsvi_coderhj, "LAC$", "lac")) %>% # Remplacement en fin de station de LAC par lac
       mutate(chsvi_coderhj = stringr::str_replace(chsvi_coderhj, "BARO$", "baro")) %>% # Remplacement en fin de station de BARO par baro
@@ -412,7 +414,10 @@ BDD.format <- function(
       data %>% 
       mutate(chsvi_action = ifelse(grepl("Dépose", chsvi_remarques), "Dépose", chsvi_action))
     }
-    if(dim(filter(data, !(chsvi_action == "Disparue"|chsvi_action == "Pose"|chsvi_action == "Dépose"|chsvi_action == "Relève"|chsvi_action == "Mesure manuelle"|chsvi_action == "Entretien")))[1] > 0) stop("Action saisie de type inconnu")
+    bug_type_action <- data %>% filter(!(chsvi_action == "Disparue"|chsvi_action == "Pose"|chsvi_action == "Dépose"|chsvi_action == "Relève"|chsvi_action == "Mesure manuelle"|chsvi_action == "Entretien"))
+    n_bug_type_action <- bug_type_action %>% distinct(chsvi_action) %>% nrow()
+    if(n_bug_type_action == 1) stop(glue("Action(s) saisie(s) de type inconnu : {bug_type_action %>% distinct(chsvi_action) %>% pull()}"))
+    if(n_bug_type_action > 1) stop(glue("Action(s) saisie(s) de types inconnus : {glue_collapse(bug_type_action %>% distinct(chsvi_action) %>% pull(), ', ', last = ' et ')}"))
     
     # Transformation des formats
     data$id <- as.integer(data$id)

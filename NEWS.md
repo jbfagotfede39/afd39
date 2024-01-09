@@ -1,5 +1,35 @@
 # NEWS - afd39
 
+## 0.0.18
+### Ajouts
+- `BDD.format` : 
+  * Ajout d'un cas de formatage du PNRHJ pour le suivi de terrain des chroniques
+  * Ajout d'un cas de remplace d'un `_` par un `-` dans les noms de station dans le suivi de terrain des chroniques
+  * Amélioration du traitement des actions du suivi de terrain, pour affichage direct des modalités qui ne conviennent pas
+  
+- `chronique.traitement` : ajout de paramètres permettant l'utilisation directe des seuils de `chronique.analyse`
+
+- `PC.classes` : ajout d'un tri en fonction de la classe de qualité établie (du pire au meilleur)
+- `PC.mesures` : création
+- `PC.operations` : création
+
+- `stations.territoire` : ajout d'une liste automatique par BV à partir des contextes PDPG (cas de la Bienne et de l'Orbe ici)
+
+### Corrections
+- `chronique.traitement` : correction de l'ordre du paramètre `projet` dans la documentation
+- `MI.systematique` : correction d'un bug de jointure suite à l'évolution de la structure de la base de données
+  
+### Modifications
+- `personnel.formatAC` : 
+  * Mise en snake case de variables
+  * Amélioration des personnels concernés
+  
+- `personnel.projet` : 
+  * Amélioration des personnels concernés
+  * Correction d'un bug entraînant une impossible d'`union` à cause de datatypes différents
+  * Harmonisation du code entre les versions de la variable `projet` qui est divisée en `projet_id` et `projet_libelle`
+  * Correction de l'export au format excel pour l'accord-cadre, en modifiant les postes et intégration du coût du matériel saisi manuellement
+
 ## 0.0.17
 ### Ajouts
 - `DESCRIPTION` :

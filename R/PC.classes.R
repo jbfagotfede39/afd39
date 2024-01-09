@@ -356,6 +356,10 @@ ClasseQualites <-
     
   }
   
+  #### Mise en forme ####
+  ClasseQualites <- 
+    ClasseQualites %>% 
+    arrange(pcmes_parametrenom, factor(Couleur, levels = c("Noir", "Violet", "Rouge", "Orange", "Jaune", "Vert clair", "Vert", "Bleu", "Gris", "Gris clair")), desc(pcmes_valeur))
   
 #### Retour des données ####
   return(ClasseQualites)
