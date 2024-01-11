@@ -30,8 +30,7 @@ chronique.mesures <- function(
   
 #### Évaluation des choix ####
 Type <- match.arg(Type)
-if(nchar(as.character(CodeStation)) == 0) 
-  stop("Attention : pas de station spécifiée")
+if(nchar(as.character(CodeStation)) == 0) stop("Attention : pas de station spécifiée")
 
 ##### Connexion à la BDD #####
 dbD <- BDD.ouverture("Data")
@@ -77,8 +76,8 @@ RPostgreSQL::dbDisconnect(dbD)
 ##### Filtrage en fonction de la période #####
 if(length(as.character(annee)) != 0){
   Mesures <-
-    Mesures %>% 
-    formatage.annee.biologique() %>% 
+    Mesures %>%
+    formatage.annee.biologique() %>%
     filter(chmes_anneebiol == as.character(annee))
 }
 

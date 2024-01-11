@@ -1,6 +1,17 @@
 # NEWS - afd39
 
-## 0.0.18
+## 0.0.19 - 2024-01-11
+### Ajouts
+- `topographie.mesures` : création
+
+### Modifications
+- `chronique.mesures` : nettoyage du code
+- `poissons.stations` :
+  * Reformatage et versionnage des noms de variables
+  * Remplacement des paramètres par défaut par des `NA_character`
+  * Filtrage directement dans la requête SQL afin d'optimiser les chargements de tables
+
+## 0.0.18 - 2024-01-09
 ### Ajouts
 - `BDD.format` : 
   * Ajout d'un cas de formatage du PNRHJ pour le suivi de terrain des chroniques
@@ -30,7 +41,7 @@
   * Harmonisation du code entre les versions de la variable `projet` qui est divisée en `projet_id` et `projet_libelle`
   * Correction de l'export au format excel pour l'accord-cadre, en modifiant les postes et intégration du coût du matériel saisi manuellement
 
-## 0.0.17
+## 0.0.17 - 2023-05-23
 ### Ajouts
 - `DESCRIPTION` :
   * Ajout des champs `Maintainer` et `Depends`
@@ -60,7 +71,7 @@
   * Remplacement de `paste0()` par des `glue()`
   * Prise en compte de scénarios potentiels comme existence d'un coût type IBL en prestation, mais qu'on souhaite le réaliser en régie (le coût prestation était quand même ajouté)
 
-## 0.0.16
+## 0.0.16 - 2022-09-21
 ### Ajouts
 - `BDD.format` : 
   * Ajout d'un traitement pour les opérations de suivi physico-chimique
@@ -78,10 +89,6 @@
 - `formatage.noms_propres` : correction d'une coquille dans la description d'un paramètre
 - `poissons.operations` : correction d'une coquille dans un nom de variable dans un scénario de traitement
 - `projet.calculInitial` : court-circuit des valeurs unitaires pour les coûts type si une valeur est ajoutée manuellement directement dans le récapitulatif théorique
-
-### Modifications
-  
-### Suppression
 
 ## 0.0.15 - 2022-05-31
 ### Ajouts

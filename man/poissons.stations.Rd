@@ -4,16 +4,16 @@
 \alias{poissons.stations}
 \title{Extraction de données de stations}
 \usage{
-poissons.stations(station = "")
+poissons.stations(poi_coderhj = NA_character_)
 }
 \arguments{
-\item{Nom}{de la station}
+\item{poi_coderhj}{Nom de la station}
 }
 \description{
 Cette fonction permet d'extraire les données complètes de l'ensemble des stations piscicoles (par défaut) ou d'une seule
 }
 \examples{
-Stations <- poissons.stations()
-Station <- poissons.stations("SOR10-2")
+stations <- poissons.stations()
+station <- poissons.stations("SOR10-2")
 }
 \keyword{stations}

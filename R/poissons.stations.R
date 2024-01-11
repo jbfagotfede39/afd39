@@ -2,46 +2,40 @@
 #'
 #' Cette fonction permet d'extraire les données complètes de l'ensemble des stations piscicoles (par défaut) ou d'une seule
 #' @name poissons.stations
-#' @param Nom de la station
+#' @param poi_coderhj Nom de la station
 #' @keywords stations
-#' @import DBI 
+#' @import DBI
+#' @import glue
 #' @import tidyverse
 #' @export
 #' @examples
-#' Stations <- poissons.stations()
-#' Station <- poissons.stations("SOR10-2")
-
-##### TODO LIST #####
-
-#####################
+#' stations <- poissons.stations()
+#' station <- poissons.stations("SOR10-2")
 
 poissons.stations <- function(
-  station="")
+    poi_coderhj = NA_character_)
 {
   
+  #### Nettoyage & reformatage ####
+  if(poi_coderhj == "") poi_coderhj <- NA_character_
+  
+  #### Collecte des données ####
   ## Ouverture de la BDD ##
   dbP <- BDD.ouverture(Type = "Poissons")
   
   ## Récupération des données ##
-  Stations <- tbl(dbP,"stations") %>% collect(n = Inf)
+  if(is.na(poi_coderhj)) stations_v1 <- tbl(dbP,"stations") %>% collect(n = Inf)
+  if(!is.na(poi_coderhj)) stations_v1 <- tbl(dbP,"stations") %>% filter(nom == poi_coderhj) %>% collect(n = Inf)
   
   ## Fermeture de la BDD ##
   DBI::dbDisconnect(dbP)
   
-  ## Extraction des données de la station si une est spécifiée ##
-  if(nchar(station) != 0) {
-    # Test si le nom existe bien, sinon message d'erreur et arrêt de la fonction #
-  if(dim(Stations %>% filter(Nom == station)
-  )[1] == 0) 
-    stop("Attention : nom de station absent de la base de données")
-    
-    # filtrage en tant que tel 
-    Stations <-
-    Stations %>% 
-    filter(Nom == station)}
-  
-  ## Extraction de toutes les stations si aucune spécifiée ##
-  
-  return(Stations)
+  #### Test ####
+  # Test si le nom existe bien, sinon message d'avertissement #
+  if(!is.na(poi_coderhj)) {
+    if(nrow(stations_v1) == 0) warning(glue("Attention : nom de station ('{poi_coderhj}') absent de la base de données"))
+  }
+
+  return(stations_v1)
   
 } # Fin de la fonction
