@@ -17,7 +17,7 @@ poissons.stations <- function(
 {
   
   #### Nettoyage & reformatage ####
-  if(poi_coderhj == "") poi_coderhj <- NA_character_
+  if(is.na(nchar(poi_coderhj))) poi_coderhj <- NA_character_
   
   #### Collecte des données ####
   ## Ouverture de la BDD ##
