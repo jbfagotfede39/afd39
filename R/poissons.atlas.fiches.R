@@ -16,10 +16,6 @@
 #' poissons.atlas.fiches(data, export=T)
 #' poissons.captures("AIN18-4") %>% poissons.atlas.fiches(export=T)
 
-##### -------------- A FAIRE -------------- #####
-# 
-# -------------- A FAIRE -------------- #
-
 poissons.atlas.fiches <- function(
   data = data,
   projet = NA_character_,
@@ -40,12 +36,11 @@ poissons.atlas.fiches <- function(
   contextesPDPG <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.hydrographie_contextespdpg;")
   DBI::dbDisconnect(dbD)
   
-  
   #### Regroupement des données ####
-  SyntheseAtlasPoissons <-
+  synthese_atlas_poissons <-
     data %>% 
     dplyr::select(codeecosysteme, X, Y, TypeCoord, Station, repereamont, codesiermc, categoriepiscicole, reservoirbiologique, reservedepeche, typetheorique, especesreperes, Date, longueurprospectee, largeurlameeau, profondeur, surface) %>% 
-    left_join(IPR, by = c("Station", "Date")) %>% 
+    left_join(IPR %>% select(-CodeSIERMC), by = c("Station", "Date")) %>% 
     left_join(ecosystemes, by = "codeecosysteme") %>% 
     sf::st_as_sf(coords = c("X","Y")) %>% 
     st_set_crs(2154) %>% 
@@ -56,18 +51,15 @@ poissons.atlas.fiches <- function(
     mutate(reservedepeche = ifelse(reservedepeche == "true", "Oui", "Non")) %>% 
     mutate(localisation = projet)
   
-  
   #### Vérifications ####
   ### Pas d'espèce repère ###
-  especesreperesVides <- SyntheseAtlasPoissons %>% filter(is.na(especesreperes)) %>% st_drop_geometry() %>% select(Station) %>% arrange(Station)
-  if(nrow(especesreperesVides) == 1) stop(glue("Pas d'espèce repère dans la station {pull(especesreperesVides)}"))
-  if(nrow(especesreperesVides) == 2) stop(glue("Pas d'espèce repère dans les stations {glue_collapse(pull(especesreperesVides), sep = ',', last = ' et ')}"))
-  if(nrow(especesreperesVides) == 2) stop(glue_collapse("Pas d'espèce repère dans les stations ", ", ", last = " et "))
-  glue_collapse(1:4, ", ", last = " and ")
-  
+  especes_reperes_vides <- synthese_atlas_poissons %>% filter(is.na(especesreperes)) %>% st_drop_geometry() %>% select(Station) %>% arrange(Station)
+  if(nrow(especes_reperes_vides) == 1) stop(glue("Pas d'espèce repère dans la station {pull(especes_reperes_vides)}"))
+  if(nrow(especes_reperes_vides) == 2) stop(glue("Pas d'espèce repère dans les stations {glue_collapse(pull(especes_reperes_vides), sep = ',', last = ' et ')}"))
+  if(nrow(especes_reperes_vides) == 2) stop(glue_collapse("Pas d'espèce repère dans les stations ", ", ", last = " et "))
   
   #### Exportation des données ####
-  if(export == T) SyntheseAtlasPoissons %>% SIG.export("Atlas_Resultats_poissons", shp = F, kml = F, excel = F)
-  if(export == F) return(SyntheseAtlasPoissons)
+  if(export == T) synthese_atlas_poissons %>% SIG.export("Atlas_Resultats_poissons", shp = F, kml = F, excel = F)
+  if(export == F) return(synthese_atlas_poissons)
 
 } # Fin de la fonction

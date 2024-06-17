@@ -336,6 +336,10 @@ BDD.format <- function(
     if(any(!is.na(data$chsvi_heure))){
     data <- 
       data %>% 
+      mutate(count = nchar(chsvi_heure)) %>%
+      mutate(chsvi_heure = ifelse(count == 2, glue("{chsvi_heure}00"), chsvi_heure)) %>%  # Cas d'une saisie avec 9h par exemple
+      mutate(chsvi_heure = ifelse(count == 3, glue("{chsvi_heure}00"), chsvi_heure)) %>%  # Cas d'une saisie avec 10h par exemple
+      select(-count) %>%
       mutate(chsvi_heure = str_replace(chsvi_heure, "h", ":")) %>% # On remplace le h par :
       mutate(chsvi_heure = str_replace(chsvi_heure, "H", ":")) %>% # On remplace le H par :
       mutate(chsvi_heure = ifelse(grepl("Oubli", chsvi_heure), NA_character_, chsvi_heure)) %>% 

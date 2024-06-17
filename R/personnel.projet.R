@@ -5,6 +5,7 @@
 #' @keywords personnel
 #' @param projet Intitulé du projet que l'on souhaite calculer
 #' @param projection Si \code{TRUE} (par défaut), va chercher les données projetées.
+#' @param arrondi Valeur d'arrondi des journées : demi-journée \code{0.5} (par défaut)
 #' @param anciennebase Si \code{TRUE}, va chercher les données détaillées également dans l'ancienne base en plus d'Opentime
 #' @param envoi Si \code{TRUE}, envoie les données calculées dans la table fd_production.tpstravail_recapitulatif (\code{FALSE} par défaut)
 #' @param export Si \code{TRUE} (par défaut), exporte les résultats
@@ -26,6 +27,7 @@
 personnel.projet <- function(
   projet = NA_character_,
   projection = TRUE,
+  arrondi = 0.5,
   anciennebase = FALSE,
   envoi = FALSE,
   export = TRUE
@@ -181,6 +183,8 @@ personnel.projet <- function(
         mutate(tpswdetail_detail = str_replace(tpswdetail_detail, " - NA", "")) %>% # Nouvelle version avant 2021-04-14
         mutate(tpswdetail_detail = str_replace(tpswdetail_detail, "NA - ", "")) %>% # Nouvelle version avant 2021-04-14
         mutate(tpswdetail_temps = tpswdetail_duree/7) %>% 
+        mutate(tpswdetail_temps = ifelse(grepl("Recouvreux|Millet|Mougin", tpswdetail_personnel), tpswdetail_duree/7.8, NA)) %>% # Car base de 39 heures rémunérées 39h, alors que Stéphane base 39h rémunées 35h + récupérations et les autres personnels = base 35h
+        mutate(tpswdetail_temps = ifelse(!grepl("Recouvreux|Millet|Mougin", tpswdetail_personnel), tpswrecap_jours/7, tpswrecap_jours)) %>% # Car base de 39 heures rémunérées 39h, alors que Stéphane base 39h rémunées 35h + récupérations et les autres personnels = base 35h
         rename(tpswdetail_id = id) %>% 
         mutate(tpswdetail_statut = NA_character_) %>% 
         mutate(tpswdetail_ecosysteme = NA_character_) %>% 
@@ -212,7 +216,8 @@ personnel.projet <- function(
     summarise(tpswrecap_jours = sum(tpswdetail_temps, na.rm = T)) %>% 
     mutate(cle_cout_poste_personnel = glue('{tpswdetail_annee}-{tpswdetail_poste}-{tpswdetail_personnel}'), .before = 'tpswdetail_detail') %>% 
     # mutate(tpswrecap_jours = round(tpswrecap_jours / 0.5) * 0.5) %>% # Arrondi strict à la demi-journée
-    mutate(tpswrecap_jours = round(tpswrecap_jours / 0.25) * 0.25) %>% # Arrondi strict au quart de journée
+    # mutate(tpswrecap_jours = round(tpswrecap_jours / 0.25) * 0.25) %>% # Arrondi strict au quart de journée
+    mutate(tpswrecap_jours = round(tpswrecap_jours / arrondi) * arrondi) %>%
     ungroup() %>% 
     select(-tpswdetail_annee) %>% 
     # {if(projection == T) left_join(., CoutPersonnel %>% select(-tpswrecap_poste), by = c("tpswdetail_personnel" = "tpswrecap_personnel")) else .} %>% 
@@ -247,9 +252,12 @@ personnel.projet <- function(
       rename(tpswot_personnel_id = tpswot_personnel) %>% 
       rename_all(~sub("tpswot", 'tpswdetail', .x)) %>%
       group_by(tpswdetail_projet, tpswdetail_actionaermc, tpswdetail_sousactionaermc, cle_cout_poste_personnel, tpswdetail_poste, tpswdetail_personnel, tpswdetail_personnel_id) %>%
-      summarise(tpswrecap_jours = sum(tpswdetail_duree, na.rm = T)/7) %>% 
+      summarise(tpswrecap_jours = sum(tpswdetail_duree, na.rm = T)) %>%
+      mutate(tpswrecap_jours = ifelse(tpswdetail_personnel_id %in% c(6, 7, 11), tpswrecap_jours/7.8, tpswrecap_jours)) %>% # Car base de 39 heures rémunérées 39h, alors que Stéphane base 39h rémunées 35h + récupérations et les autres personnels = base 35h
+      mutate(tpswrecap_jours = ifelse(!(tpswdetail_personnel_id %in% c(6, 7, 11)), tpswrecap_jours/7, tpswrecap_jours)) %>% # Car base de 39 heures rémunérées 39h, alors que Stéphane base 39h rémunées 35h + récupérations et les autres personnels = base 35h
       # mutate(tpswrecap_jours = round(tpswrecap_jours / 0.5) * 0.5) %>% # Arrondi strict à la demi-journée
-      mutate(tpswrecap_jours = round(tpswrecap_jours / 0.25) * 0.25) %>% # Arrondi strict au quart de journée
+      # mutate(tpswrecap_jours = round(tpswrecap_jours / 0.25) * 0.25) %>% # Arrondi strict au quart de journée
+      mutate(tpswrecap_jours = round(tpswrecap_jours / arrondi) * arrondi) %>%
       ungroup() %>% 
       # left_join(CoutPersonnel %>% select(-tpswrecap_poste), by = c("tpswdetail_personnel_id" = "tpswrecap_personnel")) %>% 
       left_join(., CoutPersonnel %>% select(-tpswrecap_personnel, -tpswrecap_poste), by = "cle_cout_poste_personnel") %>% 
@@ -411,7 +419,7 @@ if(grepl("AERMC", Projets$prjlst_projet)){
   writeData(tempsprojet, 1, Recapitulatif, startCol = 1, startRow = 3, colNames = T) # writing content on the left-most column to be merged
   ## Ajout de cellules fusionnées
   mergeCells(tempsprojet, 1, cols = 2:12, rows = 1)
-  mergeCells(tempsprojet, 1, cols = 13:23, rows = 1)
+  mergeCells(tempsprojet, 1, cols = 13:25, rows = 1)
   writeData(tempsprojet, 1, "Attendu", startCol = 2, startRow = 1)
   writeData(tempsprojet, 1, "Réalisé", startCol = 13, startRow = 1)
   mergeCells(tempsprojet, 1, cols = 2:3, rows = 2)
@@ -441,7 +449,7 @@ if(grepl("AERMC", Projets$prjlst_projet)){
   writeData(tempsprojet, 1, "Mat.", startCol = 25, startRow = 2)
   ## Centrage des cellules fusionnées
   centerStyle <- createStyle(halign = "center")
-  addStyle(tempsprojet, 1, centerStyle, rows = 1:2, cols = 1:23, gridExpand = TRUE)
+  addStyle(tempsprojet, 1, centerStyle, rows = 1:2, cols = 1:25, gridExpand = TRUE)
   ## Enregistrement du classeur
   saveWorkbook(tempsprojet, glue('{today()}_{projet_libelle}_récapitulatif_coût_personnel.xlsx'), overwrite = T) 
   } # fin de export = T

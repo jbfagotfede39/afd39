@@ -160,21 +160,20 @@ stations.territoire <- function(
   
   #### GEMAPI ####
   if(Echelle == "GEMAPI"){
-    stop("Traitement des entités GEMAPI à développer")
-    # Il faut créer une table avec les territoires d'action qui fait référence à la table des MO et qui historise (champ actif ou tri/filtre sur date d'ajout la plus récente ?) les versions des différents territoires d'action, avec un champ de sous-thème GEMAP/N2000 (cas du PNRHJ), avec une seule combinaison active possible
-    
-    # dbD <- BDD.ouverture("Data")
-    # communes <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.topographie_communes WHERE (tpcomm_departement_insee = '39');")
-    # DBI::dbDisconnect(dbD)
-    # if(Liste == F){
-    #   if(class(Territoire) != "character"){stop("Liste de territoires pas au bon format")}
-    # }
-    # if(Liste == T){
-    #   #Territoire <- select.list(sort(communes$tpcomm_commune_libelle), multiple = T) # Liste directement dans R, avec sélection par numéro
-    #   Territoire <- tcltk::tk_select.list(sort(communes$tpcomm_commune_libelle), multiple = T) # Pour avoir un menu qui s'ouvre
-    # }
-    # Sortie <- communes %>% mutate(nometcode = paste0(tpcomm_commune_libelle, " - ", tpcomm_commune_insee)) %>% filter(grepl(paste(Territoire,collapse="|"), nometcode)) %>% select(-nometcode)
-    # if(nrow(Sortie) == 0){warning("Aucun résultat")}
+    # stop("Traitement des entités GEMAPI à développer")
+
+    dbD <- BDD.ouverture("Data")
+    mo_territoires <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.gestion_moterritoires WHERE (gestmoterr_activite = 'TRUE');")
+    DBI::dbDisconnect(dbD)
+    if(Liste == F){
+      if(class(Territoire) != "character"){stop("Liste de territoires pas au bon format")}
+    }
+    if(Liste == T){
+      #Territoire <- select.list(sort(mo_territoires$gestmoterr_intitule), multiple = T) # Liste directement dans R, avec sélection par numéro
+      Territoire <- tcltk::tk_select.list(sort(mo_territoires$gestmoterr_intitule), multiple = T) # Pour avoir un menu qui s'ouvre
+    }
+    Sortie <- mo_territoires %>% filter(grepl(paste(Territoire, collapse="|"), gestmoterr_intitule))
+    if(nrow(Sortie) == 0){warning("Aucun résultat")}
   }
   
   #### MO ####

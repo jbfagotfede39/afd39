@@ -38,7 +38,7 @@ personnel.formatAC <- function(
                                                                                        "POSIXt"))), row.names = integer(0), class = c("tbl_df", 
                                                                                                                                       "tbl", "data.frame"))
   postes <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_postes")) %>% select(id, gestpost_poste_libelle) %>% collect(n = Inf) %>% rename(idposte = id)
-  personnels <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_operateurs")) %>% filter(gestop_mo == 3 & gestop_type == "Salarié") %>% filter(is.na(gestop_datefinactivite)|(gestop_datefinactivite >= date_debut_ac & gestop_datefinactivite <= date_fin_ac)) %>% filter(!(gestop_prenom %in% c("Collectif", "recruter", "Admin"))) %>% select(id:gestop_qualite) %>% collect(n = Inf) %>% left_join(postes, by = c("gestop_qualite" = "gestpost_poste_libelle")) %>% mutate(gestop_qualite = idposte) %>% select(-idposte)
+  personnels <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_operateurs")) %>% filter(gestop_mo == 3 & gestop_type == "Salarié") %>% filter(!(gestop_prenom %in% c("Collectif", "recruter", "Admin"))) %>% select(id:gestop_qualite, gestop_datefinactivite) %>% collect(n = Inf) %>% filter(is.na(gestop_datefinactivite)|(gestop_datefinactivite <= ymd(date_fin_ac)+years(1))) %>% select(-gestop_datefinactivite) %>% left_join(postes, by = c("gestop_qualite" = "gestpost_poste_libelle")) %>% mutate(gestop_qualite = idposte) %>% select(-idposte)
   if(personnels %>% filter(is.na(gestop_qualite)) %>% nrow() != 0) stop("Présence de personnels sans poste de travail clairement défini")
   
   if(is.na(projet)) stop("Pas de projet spécifié")

@@ -7,6 +7,7 @@
 personnel.projet(
   projet = NA_character_,
   projection = TRUE,
+  arrondi = 0.5,
   anciennebase = FALSE,
   envoi = FALSE,
   export = TRUE
@@ -16,6 +17,8 @@ personnel.projet(
 \item{projet}{Intitulé du projet que l'on souhaite calculer}
 
 \item{projection}{Si \code{TRUE} (par défaut), va chercher les données projetées.}
+
+\item{arrondi}{Valeur d'arrondi des journées : demi-journée \code{0.5} (par défaut)}
 
 \item{anciennebase}{Si \code{TRUE}, va chercher les données détaillées également dans l'ancienne base en plus d'Opentime}
 

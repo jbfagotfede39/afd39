@@ -1,8 +1,8 @@
-#' Extraction de données de stations
+#' Extraction de données des écosystèmes
 #'
 #' Cette fonction permet d'extraire les données complètes de l'ensemble des écosystèmes (par défaut) ou d'un seul
 #' @name poissons.ecosystemes
-#' @param Nom de l'écosystème
+#' @param poi_ecosysteme Nom de l'écosystème
 #' @keywords poissons
 #' @import DBI
 #' @import tidyverse
@@ -11,37 +11,29 @@
 #' listeCE <- poissons.ecosystemes()
 #' listeCE <- poissons.ecosystemes("Valouse")
 
-##### TODO LIST #####
-# 
-#####################
-
 poissons.ecosystemes <- function(
-  ecosysteme="")
+  poi_ecosysteme = NA_character_)
 {
   
+  #### Nettoyage & reformatage ####
+  if(is.na(nchar(poi_ecosysteme))) poi_ecosysteme <- NA_character_
+  
+  #### Collecte des données ####
   ## Ouverture de la BDD ##
   dbP <- BDD.ouverture(Type = "Poissons")
-  
+
   ## Récupération des données ##
-  Ecosystemes <- tbl(dbP,"ecosystemes") %>% collect(n = Inf)
-  
-  ## Extraction des données de l'écosystème si un est spécifié ##
-  if(nchar(ecosysteme) != 0) {
-    # Test si le nom existe bien, sinon message d'erreur et arrêt de la fonction #
-    if(dim(Ecosystemes %>% filter(Nomecosysteme == ecosysteme))[1] == 0) 
-      stop("Attention : nom de l'écosystème absent de la base de données")
-    
-    # filtrage en tant que tel 
-    ecosysteme <-
-      Ecosystemes %>% 
-      filter(Nomecosysteme == ecosysteme)}
-  
-  ## Extraction de tous les écosystèmes si aucun spécifié ##
-  if(nchar(ecosysteme) == 0) {
-    ecosysteme <- Ecosystemes}
+  if(is.na(poi_ecosysteme)) ecosysteme <- tbl(dbP,"ecosystemes") %>% collect(n = Inf)
+  if(!is.na(poi_ecosysteme)) ecosysteme <- tbl(dbP,"ecosystemes") %>% filter(nomecosysteme == poi_ecosysteme) %>% collect(n = Inf)
   
   ## Fermeture de la BDD ##
   DBI::dbDisconnect(dbP)
+  
+  #### Test ####
+  # Test si le nom existe bien, sinon message d'avertissement #
+  if(!is.na(poi_ecosysteme)) {
+    if(nrow(ecosysteme) == 0) warning(glue("Attention : écosystème ('{poi_ecosysteme}') absent de la base de données"))
+  }
   
   ## Sortie des résultats ##
   return(ecosysteme)
