@@ -45,10 +45,14 @@ if(ColonneEntree %in% names(data) == FALSE) stop(paste0("Le champs ", ColonneEnt
   
   dictionnaire_correction_complete <-
     dictionnaire_correction %>% 
+    union(dictionnaire_correction %>% distinct(diccor_valeur_correcte) %>% mutate(id = NA_integer_, .before = "diccor_valeur_correcte") %>% mutate(diccor_valeur_incorrecte = diccor_valeur_correcte, .before = "diccor_valeur_correcte") %>% mutate(diccor_remarques = NA_character_)) %>% # Afin de générer les valeurs propres directement, afin qu'elles ne soient pas ignorées
     left_join(dictionnaire_articles, by = c("diccor_valeur_correcte" = "dicar_valeur")) %>% 
     select(-contains("id"), -contains("remarques")) %>% 
     mutate(diccor_valeur_correcte_avec_article = glue("{dicar_article}{diccor_valeur_correcte}"))
   
+    ## Fermeture de la BDD ##
+    DBI::dbDisconnect(dbD)
+    
 ##### Nettoyage #####
 if(Operation == "Nettoyage"){
 
@@ -57,6 +61,8 @@ if(Operation == "Nettoyage"){
   data <-
     data %>% 
     rename(diccor_valeur_incorrecte := !!ColonneEntree) %>% 
+    mutate(diccor_valeur_incorrecte = str_trim(diccor_valeur_incorrecte)) %>% # Afin de retirer d'éventuels espaces en début et fin
+    mutate(diccor_valeur_incorrecte = str_to_title(diccor_valeur_incorrecte)) %>% # Afin de mettre la première lettre de chaque mot en majuscule si elle ne l'était pas, afin de limiter les cas ensuite
     left_join(dictionnaire_correction_complete, by = c("diccor_valeur_incorrecte" = "diccor_valeur_incorrecte")) %>% 
     rename(!!ColonneEntree := diccor_valeur_incorrecte) %>%
     rename(Sortie = diccor_valeur_correcte)
