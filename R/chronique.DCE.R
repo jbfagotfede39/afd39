@@ -14,7 +14,6 @@
 #' @import glue
 #' @import openxlsx
 #' @import sf
-#' @import tcltk
 #' @import tidyverse
 #' @export
 #' @examples
@@ -55,11 +54,13 @@ chronique.DCE <- function(
     ### Stations ###
     listeStations <- data %>% distinct(chmes_coderhj)
     if(!is.na(fichierStations)) fnameStations <- fichierStations
-    if(is.na(fichierStations)) fnameStations <- tk_choose.files(caption = "Fichier de stations")
+    # if(is.na(fichierStations)) fnameStations <- tk_choose.files(caption = "Fichier de stations")
+    if(is.na(fichierStations)) stop("Localisation du fichier des stations à saisir manuellement")
     Stations <- chronique.ouverture("Stations", "Thermie", fnameStations)
     
     if(!is.na(fichierSuivis)) fnameSuivi <- fichierSuivis
-    if(is.na(fichierSuivis)) fnameSuivi <- tk_choose.files(caption = "Fichier de suivi de terrain")
+    # if(is.na(fichierSuivis)) fnameSuivi <- tk_choose.files(caption = "Fichier de suivi de terrain")
+    if(is.na(fichierSuivis))  stop("Localisation du fichier du suivi de terrain à saisir manuellement")
     SuiviTerrain <- chronique.ouverture("Suivis", "Thermie", fnameSuivi)
     
     listeStations <- 
@@ -74,7 +75,8 @@ chronique.DCE <- function(
     ### Capteurs ###
     listeCapteurs <- data %>% distinct(chmes_capteur)
     if(!is.na(fichierCapteurs)) fnameCapteurs <- fichierCapteurs
-    if(is.na(fichierCapteurs)) fnameCapteurs <- tk_choose.files(caption = "Fichier des capteurs")
+    # if(is.na(fichierCapteurs)) fnameCapteurs <- tk_choose.files(caption = "Fichier des capteurs")
+    if(is.na(fichierCapteurs))  stop("Localisation du fichier des capteurs à saisir manuellement")
     Capteurs <- chronique.ouverture("Capteurs", "Thermie", fnameCapteurs)
   }
 

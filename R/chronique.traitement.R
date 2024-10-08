@@ -35,7 +35,6 @@
 #' @import lubridate
 #' @import openxlsx
 #' @import sf
-#' @import tcltk
 #' @import tidyverse
 #' @import zip
 #' @export
@@ -239,25 +238,30 @@ if(export == TRUE & dep39 == TRUE){
 
 if(export == TRUE & dep39 == "autre"){
 
-  if(is.na(localisation_stations)) fnameStations <- tk_choose.files(caption = "Fichier de stations")
+  # if(is.na(localisation_stations)) fnameStations <- tk_choose.files(caption = "Fichier de stations")
+  if(is.na(localisation_stations)) stop("Localisation du fichier des stations à saisir manuellement")
   if(!is.na(localisation_stations)) fnameStations <- adresse.switch(localisation_stations)
   Stations <- chronique.ouverture("Stations", "Thermie", fnameStations)
   
-  if(is.na(localisation_commentaires)) fnameCommentaires <- tk_choose.files(caption = "Fichier de commentaires")
+  # if(is.na(localisation_commentaires)) fnameCommentaires <- tk_choose.files(caption = "Fichier de commentaires")
+  if(is.na(localisation_commentaires))  stop("Localisation du fichier des commentaires à saisir manuellement")
   if(!is.na(localisation_commentaires)) fnameCommentaires <- adresse.switch(localisation_commentaires)
   Commentaires <- chronique.ouverture("Commentaires", "Thermie", fnameCommentaires)
   
   if(exportDCE == TRUE){
-    if(is.na(localisation_suiviterrain)) fnameSuivi <- tk_choose.files(caption = "Fichier de suivi de terrain")
+    # if(is.na(localisation_suiviterrain)) fnameSuivi <- tk_choose.files(caption = "Fichier de suivi de terrain")
+    if(is.na(localisation_suiviterrain))  stop("Localisation du fichier du suivi de terrain à saisir manuellement")
     if(!is.na(localisation_suiviterrain)) fnameSuivi <- adresse.switch(localisation_suiviterrain)
     SuiviTerrain <- chronique.ouverture("Suivis", "Thermie", fnameSuivi)
     
-    if(is.na(localisation_capteurs)) fnameCapteurs <- tk_choose.files(caption = "Fichier des capteurs")
+    # if(is.na(localisation_capteurs)) fnameCapteurs <- tk_choose.files(caption = "Fichier des capteurs")
+    if(is.na(localisation_capteurs))  stop("Localisation du fichier des capteurs à saisir manuellement")
     if(!is.na(localisation_capteurs)) fnameCapteurs <- adresse.switch(localisation_capteurs)
     Capteurs <- chronique.ouverture("Capteurs", "Thermie", fnameCapteurs)
   }
   
-  if(is.na(localisation_donnees)) fnameDonnesbrutes <- tk_choose.dir(caption = "Répertoire des chroniques") # On interroge tout de suite l'opérateur pour ne pas le déranger ensuite seulement pour le répertoire des données brutes
+  # if(is.na(localisation_donnees)) fnameDonnesbrutes <- tk_choose.dir(caption = "Répertoire des chroniques") # On interroge tout de suite l'opérateur pour ne pas le déranger ensuite seulement pour le répertoire des données brutes
+  if(is.na(localisation_donnees))  stop("Localisation du répertoire des données à saisir manuellement")
   if(!is.na(localisation_donnees)) fnameDonnesbrutes <- adresse.switch(localisation_donnees)
   
 }

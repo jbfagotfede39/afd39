@@ -6,10 +6,8 @@
 #' @param Territoire Territoire concerné. Unique ou sous forme de vecteur (c("Villerserine", "Villers-Robert") par exemple)
 #' @param Liste \code{FALSE} par défault. Permet d'afficher une liste dans laquelle choisir le territoire concerné
 #' @keywords stations
-#' @import keyring
 #' @import RPostgreSQL
 #' @import sf
-#' @import tcltk
 #' @import tidyverse
 #' @export
 #' @examples
@@ -52,7 +50,8 @@ stations.territoire <- function(
     }
     if(Liste == T){
       #Territoire <- select.list(sort(communes$tpcomm_commune_libelle), multiple = T) # Liste directement dans R, avec sélection par numéro
-      Territoire <- tcltk::tk_select.list(sort(communes$tpcomm_commune_libelle), multiple = T) # Pour avoir un menu qui s'ouvre
+      # Territoire <- tcltk::tk_select.list(sort(communes$tpcomm_commune_libelle), multiple = T) # Pour avoir un menu qui s'ouvre
+      stop("Commande à remplacer pour supprimer la dépendance à tcltk::tk_select.list")
     }
     Sortie <- communes %>% mutate(nometcode = paste0(tpcomm_commune_libelle, " - ", tpcomm_commune_insee)) %>% filter(grepl(paste(Territoire,collapse="|"), nometcode)) %>% select(-nometcode)
     if(nrow(Sortie) == 0){warning("Aucun résultat")}
@@ -102,7 +101,8 @@ stations.territoire <- function(
     }
     if(Liste == T){
       #Territoire <- select.list(sort(communes$tpcomm_departement_libelle), multiple = T) # Liste directement dans R, avec sélection par numéro
-      Territoire <- tcltk::tk_select.list(sort(communes$tpcomm_departement_libelle), multiple = T) # Pour avoir un menu qui s'ouvre
+      # Territoire <- tcltk::tk_select.list(sort(communes$tpcomm_departement_libelle), multiple = T) # Pour avoir un menu qui s'ouvre
+      stop("Commande à remplacer pour supprimer la dépendance à tcltk::tk_select.list")
     }
     Sortie <- communes %>% mutate(nometcode = paste0(tpcomm_departement_libelle, " - ", tpcomm_departement_insee)) %>% filter(grepl(paste(Territoire,collapse="|"), nometcode)) %>% select(-nometcode)
     if(nrow(Sortie) == 0){warning("Aucun résultat")}
@@ -118,7 +118,8 @@ stations.territoire <- function(
     }
     if(Liste == T){
       #Territoire <- select.list(sort(communes$tpcomm_region_libelle), multiple = T) # Liste directement dans R, avec sélection par numéro
-      Territoire <- tcltk::tk_select.list(sort(communes$tpcomm_region_libelle), multiple = T) # Pour avoir un menu qui s'ouvre
+      # Territoire <- tcltk::tk_select.list(sort(communes$tpcomm_region_libelle), multiple = T) # Pour avoir un menu qui s'ouvre
+      stop("Commande à remplacer pour supprimer la dépendance à tcltk::tk_select.list")
     }
     Sortie <- communes %>% mutate(nometcode = paste0(tpcomm_region_libelle, " - ", tpcomm_region_insee)) %>% filter(grepl(paste(Territoire,collapse="|"), nometcode)) %>% select(-nometcode)
     if(nrow(Sortie) == 0){warning("Aucun résultat")}
@@ -136,7 +137,8 @@ stations.territoire <- function(
     }
     if(Liste == T){
       #Territoire <- select.list(sort(contextesPDPG$hycont_contexte_libelle), multiple = T) # Liste directement dans R, avec sélection par numéro
-      Territoire <- tcltk::tk_select.list(sort(contextesPDPG$hycont_contexte_libelle), multiple = T) # Pour avoir un menu qui s'ouvre
+      # Territoire <- tcltk::tk_select.list(sort(contextesPDPG$hycont_contexte_libelle), multiple = T) # Pour avoir un menu qui s'ouvre
+      stop("Commande à remplacer pour supprimer la dépendance à tcltk::tk_select.list")
     }
     Sortie <- contextesPDPG %>% mutate(nometcode = paste0(hycont_contexte_libelle, " - ", hycont_contexte_code)) %>% filter(grepl(paste(Territoire,collapse="|"), nometcode)) %>% select(-nometcode)
     if(nrow(Sortie) == 0){warning("Aucun résultat")}
@@ -152,7 +154,8 @@ stations.territoire <- function(
     }
     if(Liste == T){
       #Territoire <- select.list(sort(HER$hyher_her_libelle), multiple = T) # Liste directement dans R, avec sélection par numéro
-      Territoire <- tcltk::tk_select.list(sort(HER$hyher_her_libelle), multiple = T) # Pour avoir un menu qui s'ouvre
+      # Territoire <- tcltk::tk_select.list(sort(HER$hyher_her_libelle), multiple = T) # Pour avoir un menu qui s'ouvre
+      stop("Commande à remplacer pour supprimer la dépendance à tcltk::tk_select.list")
     }
     Sortie <- HER %>% mutate(nometcode = paste0(hyher_her_libelle, " - ", hyher_her_libelle)) %>% filter(grepl(paste(Territoire,collapse="|"), nometcode)) %>% select(-nometcode)
     if(nrow(Sortie) == 0){warning("Aucun résultat")}
@@ -170,7 +173,8 @@ stations.territoire <- function(
     }
     if(Liste == T){
       #Territoire <- select.list(sort(mo_territoires$gestmoterr_intitule), multiple = T) # Liste directement dans R, avec sélection par numéro
-      Territoire <- tcltk::tk_select.list(sort(mo_territoires$gestmoterr_intitule), multiple = T) # Pour avoir un menu qui s'ouvre
+      # Territoire <- tcltk::tk_select.list(sort(mo_territoires$gestmoterr_intitule), multiple = T) # Pour avoir un menu qui s'ouvre
+      stop("Commande à remplacer pour supprimer la dépendance à tcltk::tk_select.list")
     }
     Sortie <- mo_territoires %>% filter(grepl(paste(Territoire, collapse="|"), gestmoterr_intitule))
     if(nrow(Sortie) == 0){warning("Aucun résultat")}
@@ -204,7 +208,8 @@ stations.territoire <- function(
     }
     if(Liste == T){
       #Territoire <- select.list(sort(communes$tpcomm_commune_libelle), multiple = T) # Liste directement dans R, avec sélection par numéro
-      Territoire <- tcltk::tk_select.list(sort(plansdeau$hypldo_libelle[!is.na(plansdeau$hypldo_libelle)]), multiple = T) # Pour avoir un menu qui s'ouvre
+      # Territoire <- tcltk::tk_select.list(sort(plansdeau$hypldo_libelle[!is.na(plansdeau$hypldo_libelle)]), multiple = T) # Pour avoir un menu qui s'ouvre
+      stop("Commande à remplacer pour supprimer la dépendance à tcltk::tk_select.list")
     }
     Sortie <- plansdeau %>% mutate(nometcode = paste0(hypldo_libelle, " - ", hypldo_libelle)) %>% filter(grepl(paste(Territoire,collapse="|"), nometcode)) %>% select(-nometcode)
     if(nrow(Sortie) == 0){warning("Aucun résultat")}
@@ -220,7 +225,8 @@ stations.territoire <- function(
     }
     if(Liste == T){
       #Territoire <- select.list(sort(BV$hybvth_bassin_libelle), multiple = T) # Liste directement dans R, avec sélection par numéro
-      Territoire <- tcltk::tk_select.list(sort(BV$hybvth_bassin_libelle), multiple = T) # Pour avoir un menu qui s'ouvre
+      # Territoire <- tcltk::tk_select.list(sort(BV$hybvth_bassin_libelle), multiple = T) # Pour avoir un menu qui s'ouvre
+      stop("Commande à remplacer pour supprimer la dépendance à tcltk::tk_select.list")
     }
     Sortie <- BV %>% mutate(nometcode = paste0(hybvth_bassin_libelle, " - ", hybvth_sousbassin_libelle)) %>% filter(grepl(paste(Territoire,collapse="|"), nometcode)) %>% select(-nometcode)
     if(nrow(Sortie) == 0){warning("Aucun résultat")}
@@ -236,7 +242,8 @@ stations.territoire <- function(
     }
     if(Liste == T){
       #Territoire <- select.list(sort(BV$hybvth_sousbassin_libelle), multiple = T) # Liste directement dans R, avec sélection par numéro
-      Territoire <- tcltk::tk_select.list(sort(BV$hybvth_sousbassin_libelle), multiple = T) # Pour avoir un menu qui s'ouvre
+      # Territoire <- tcltk::tk_select.list(sort(BV$hybvth_sousbassin_libelle), multiple = T) # Pour avoir un menu qui s'ouvre
+      stop("Commande à remplacer pour supprimer la dépendance à tcltk::tk_select.list")
     }
     Sortie <- BV %>% mutate(nometcode = paste0(hybvth_sousbassin_libelle, " - ", hybvth_sousbassin_libelle)) %>% filter(grepl(paste(Territoire,collapse="|"), nometcode)) %>% select(-nometcode)
     if(nrow(Sortie) == 0){warning("Aucun résultat")}
