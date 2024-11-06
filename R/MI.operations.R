@@ -35,18 +35,18 @@ MI.operations <- function(
 
   #### Récupération des données ####
   operations <- sf::st_read(dbD, query = "select * from fd_production.macroinvertebres_operations") %>% collect(n = Inf)
-  captures <- tbl(dbD, dbplyr::in_schema("fd_production", "macroinvertebres_captures")) %>% collect(n = Inf)
-  prelevements <- tbl(dbD, dbplyr::in_schema("fd_production", "macroinvertebres_prelevements")) %>% collect(n = Inf)
-  habitats <- tbl(dbD, dbplyr::in_schema("fd_production", "macroinvertebres_habitats")) %>% collect(n = Inf)
-  habitats_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "macroinvertebres_habitats_reference")) %>% collect(n = Inf)
-  especes_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "systematique_especes")) %>% collect(n = Inf)
-  genres_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "systematique_genres")) %>% collect(n = Inf)
-  sous_familles_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "systematique_sousfamilles")) %>% collect(n = Inf)
-  familles_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "systematique_familles")) %>% collect(n = Inf)
-  ordres_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "systematique_ordres")) %>% collect(n = Inf)
+  # captures <- tbl(dbD, dbplyr::in_schema("fd_production", "macroinvertebres_captures")) %>% collect(n = Inf)
+  # prelevements <- tbl(dbD, dbplyr::in_schema("fd_production", "macroinvertebres_prelevements")) %>% collect(n = Inf)
+  # habitats <- tbl(dbD, dbplyr::in_schema("fd_production", "macroinvertebres_habitats")) %>% collect(n = Inf)
+  # habitats_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "macroinvertebres_habitats_reference")) %>% collect(n = Inf)
+  # especes_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "systematique_especes")) %>% collect(n = Inf)
+  # genres_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "systematique_genres")) %>% collect(n = Inf)
+  # sous_familles_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "systematique_sousfamilles")) %>% collect(n = Inf)
+  # familles_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "systematique_familles")) %>% collect(n = Inf)
+  # ordres_reference <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "systematique_ordres")) %>% collect(n = Inf)
   
   # ## Fermeture de la BDD ##
-  # DBI::dbDisconnect(dbD)
+  DBI::dbDisconnect(dbD)
   
   ## Simplification ##
   

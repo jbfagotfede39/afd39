@@ -31,15 +31,15 @@ MI.captures <- function(
   
   ## Promesse de données ##
   suppressWarnings(operations <- tbl(dbD, dbplyr::in_schema("fd_production", "macroinvertebres_operations")))
-  prelevements <- tbl(dbD, dbplyr::in_schema("fd_production", "macroinvertebres_prelevements"))
+  suppressWarnings(prelevements <- tbl(dbD, dbplyr::in_schema("fd_production", "macroinvertebres_prelevements")))
   captures <- tbl(dbD, dbplyr::in_schema("fd_production", "macroinvertebres_captures"))
   
   ## Collecte ##
   suppressWarnings(
     resultat <- 
       captures %>% 
-      left_join(prelevements, by = c("micapt_miprlvt_id" = "id")) %>% 
-      left_join(operations, by = c("miprlvt_miop_id" = "id")) %>% 
+      left_join(prelevements %>% select(-contains("_modif"), -geom), by = c("micapt_miprlvt_id" = "id")) %>% 
+      left_join(operations %>% select(-contains("_modif")), by = c("miprlvt_miop_id" = "id")) %>% 
       filter(miprlvt_miop_id == id_operation) %>% 
       {if(sortie == "Brute") select(., id, micapt_miprlvt_id, micapt_taxon, micapt_abondance, micapt_typeabondance, micapt_volumeabondance, micapt_stade, micapt_sexe, micapt_remarques) else .} %>%
       {if(sortie == "Complète") select(., everything(), -contains("modif_")) else .} %>%
