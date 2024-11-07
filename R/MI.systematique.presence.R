@@ -2,7 +2,7 @@
 #'
 #' Cette fonction permet de vérifier la présence des taxons de MI
 #' @name MI.systematique.presence
-#' @param data Jeu de données à compléter
+#' @param data Jeu de données à vérifier, issu de MI.captures
 #' @keywords MI
 #' @import DBI
 #' @import dplyr
@@ -30,15 +30,6 @@ MI.systematique.presence <- function(data)
   FamillesReference <- tbl(dbD, in_schema("fd_referentiels", "systematique_familles")) %>% collect(n = Inf)
   OrdresReference <- tbl(dbD, in_schema("fd_referentiels", "systematique_ordres")) %>% collect(n = Inf)
   
-  Captures <- structure(list(id = integer(0), micapt_miprlvt_id = integer(0), 
-                             micapt_taxon = character(0), micapt_abondance = numeric(0), 
-                             micapt_typeabondance = character(0), micapt_volumeabondance = character(0), 
-                             micapt_stade = character(0), micapt_sexe = character(0), 
-                             micapt_remarques = character(0), `_modif_utilisateur` = character(0), 
-                             `_modif_type` = character(0), `_modif_date` = structure(numeric(0), tzone = "", class = c("POSIXct", 
-                                                                                                                       "POSIXt"))), row.names = integer(0), class = c("tbl_df", 
-                                                                                                                                                                      "tbl", "data.frame"))
-  
   ## Fermeture de la BDD ##
   DBI::dbDisconnect(dbD)
 
@@ -59,8 +50,7 @@ MI.systematique.presence <- function(data)
   Systematique <- distinct(Systematique) %>% filter(!is.na(sysord_ranglibelle))
   
   # Travail sur les captures #
-  if(all(colnames(data) %in% colnames(Captures))) {
-    
+
     # Vérification de l'existence des taxons dans la BDD #
     Absents <- setdiff(unique(data$micapt_taxon), Systematique$sysesp_ranglibelle)
     Absents <- setdiff(Absents, Systematique$sysgen_ranglibelle)
@@ -76,7 +66,5 @@ MI.systematique.presence <- function(data)
     if(length(Absents) == 0){
       print("Aucun taxon absent des données de référence")
     }
-    
-  }
-  
+
 } # Fin de la fonction

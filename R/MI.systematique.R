@@ -12,7 +12,10 @@
 MI.systematique <- function(data)
 {
   
-  #### Récupération des données ####
+  #### Contexte ####
+  nrow_avant <- data %>% nrow()
+  
+  #### Collecte des données ####
   ## Connexion à la BDD ##
   dbD <- BDD.ouverture("Data")
   
@@ -26,44 +29,85 @@ MI.systematique <- function(data)
   DBI::dbDisconnect(dbD)
   
   #### Assemblage des morceaux de systématique ####
-  systematique <- especes_reference %>% full_join(genres_reference, by = c("sysesp_genre_id" = "id"))
-  systematique <- systematique %>% bind_rows(systematique %>% filter(!is.na(sysesp_rangsandre)))
-  systematique <- systematique %>% full_join(sous_familles_reference, by = c("sysgen_sousfamille_id" = "id"))
-  systematique$famille_id <- ifelse(!is.na(systematique$sysgen_famille_id), systematique$sysgen_famille_id, systematique$sysssfam_famille_id) # Pour tout remettre les FamilleID dans la même colonne
-  systematique <- systematique %>% select(-sysgen_famille_id, -sysssfam_famille_id)
-  systematique <- systematique %>% full_join(familles_reference, by = c("famille_id" = "id"))
-  systematique <- systematique %>% bind_rows(systematique %>% filter(!is.na(sysesp_genre_id)) %>% select(10:17))
-  systematique <- systematique %>% full_join(ordres_reference, by = c("sysfam_ordre_id" = "id"))
-  systematique <- systematique %>% bind_rows(systematique %>% filter(!is.na(sysfam_ordre_id)) %>% select(18:23))
+  systematique_1 <- 
+    ordres_reference %>% 
+    left_join(familles_reference %>% rename(sysfam_id = id), by = c("id" = "sysfam_ordre_id"))
   
-  systematique <-
-    distinct(systematique) %>% # Dédoublonnage
-    rename(sysesp_espece_id = id)
+  systematique_2 <-
+    systematique_1 %>% 
+    left_join(sous_familles_reference %>% rename(sysssfam_id = id), by = c("sysfam_id" = "sysssfam_famille_id"))
+  
+  systematique_3 <-
+    systematique_2 %>% 
+    filter(!is.na(sysssfam_ranglibelle)) %>% 
+    left_join(genres_reference %>% rename(sysgen_id = id), by = c("sysssfam_id" = "sysgen_sousfamille_id"))
+  
+  systematique_3_bis <-
+    systematique_1 %>% 
+    left_join(genres_reference %>% filter(is.na(sysgen_sousfamille_id)) %>% rename(sysgen_id = id), by = c("sysfam_id" = "sysgen_famille_id"))
+  
+  systematique_4 <-
+    systematique_3 %>% 
+    bind_rows(systematique_3_bis) %>% 
+    left_join(especes_reference %>% rename(sysesp_id = id), by = c("sysgen_id" = "sysesp_genre_id"))
+  
+  systematique_complete <-
+    ordres_reference %>% 
+    bind_rows(systematique_1) %>% 
+    bind_rows(systematique_2) %>% 
+    bind_rows(systematique_3) %>% 
+    bind_rows(systematique_3_bis) %>% 
+    bind_rows(systematique_4) %>% 
+    distinct() %>% 
+    rename(sysord_id = id)
   
   #### Travail sur les captures ####
-  ##### Ajout de la systématique #####
-  synthese_especes <- systematique %>% left_join(data, by = c("sysesp_ranglibelle" = "micapt_taxon"))
-  synthese_genres <- systematique %>% filter(!is.na(sysesp_ranglibelle) & !is.na(sysgen_ranglibelle)) %>% select(contains("sys")) %>% left_join(data, by = c("sysgen_ranglibelle" = "micapt_taxon"))
-  synthese_sousfamilles <- systematique %>% filter(!is.na(sysesp_ranglibelle) & !is.na(sysgen_ranglibelle) & !is.na(sysssfam_ranglibelle)) %>% select(contains("sysssfam"), contains("sysfam"), contains("sysord")) %>% left_join(data, by = c("sysssfam_ranglibelle" = "micapt_taxon"))
-  synthese_familles <- systematique %>% filter(!is.na(sysesp_ranglibelle) & !is.na(sysgen_ranglibelle) & !is.na(sysssfam_ranglibelle) & !is.na(sysfam_ranglibelle)) %>% select(contains("sysfam"), contains("sysord")) %>% left_join(data, by = c("sysfam_ranglibelle" = "micapt_taxon"))
-  synthese_ordres <- systematique %>% filter(!is.na(sysesp_ranglibelle) & !is.na(sysgen_ranglibelle) & !is.na(sysssfam_ranglibelle) & !is.na(sysfam_ranglibelle) & !is.na(sysord_ranglibelle)) %>% select(contains("sysord")) %>% left_join(data, by = c("sysord_ranglibelle" = "micapt_taxon"))
+  ##### Jointure entre les taxons des captures et la systématique #####
+  data_v2 <-
+    data %>% 
+    select(id, micapt_taxon) %>% 
+    rename(id_capture = id)
   
-  data <-
-    synthese_especes %>% 
-    full_join(synthese_genres) %>% 
-    full_join(synthese_sousfamilles) %>% 
-    full_join(synthese_familles) %>% 
-    full_join(synthese_ordres) %>% 
-    distinct()
-    
-  ##### Calcul de la famille au sens de l'IBGN #####
-  data <-
-    data %>%
-    mutate(famille_sens_ibgn_libelle = ifelse(!is.na(sysfam_ranglibelle), sysfam_ranglibelle, sysord_ranglibelle)) %>% 
-    mutate(gi_ibgn = ifelse(!is.na(sysfam_gi_ibgn), sysfam_gi_ibgn, sysord_gi_ibgn)) %>% 
-    mutate(gi_cb2 = ifelse(!is.na(sysfam_gi_cb2), sysfam_gi_cb2, sysord_gi_cb2)) %>% 
-    mutate(gi_ibl = ifelse(!is.na(sysgen_gi_ibl), sysgen_gi_ibl, sysfam_gi_ibl))
+  synthese_especes <- data_v2 %>% left_join(systematique_complete, by = c("micapt_taxon" = "sysesp_ranglibelle")) %>% filter(!is.na(sysesp_id))
+  data_v2_sans_especes <- data_v2 %>% filter(!(id_capture %in% synthese_especes$id_capture))
+  synthese_genres <- data_v2_sans_especes %>% left_join(systematique_complete %>% filter(is.na(sysesp_id)), by = c("micapt_taxon" = "sysgen_ranglibelle")) %>% filter(!is.na(sysgen_id))
+  data_v2_sans_genres <- data_v2_sans_especes %>% filter(!(id_capture %in% synthese_genres$id_capture))
+  synthese_ss_familles <- data_v2_sans_genres %>% left_join(systematique_complete %>% filter(is.na(sysgen_id)), by = c("micapt_taxon" = "sysssfam_ranglibelle")) %>% filter(!is.na(sysssfam_id))
+  data_v2_sans_ss_familles <- data_v2_sans_genres %>% filter(!(id_capture %in% synthese_ss_familles$id_capture))
+  synthese_familles <- data_v2_sans_ss_familles %>% left_join(systematique_complete %>% filter(is.na(sysssfam_id) & is.na(sysgen_id)), by = c("micapt_taxon" = "sysfam_ranglibelle")) %>% filter(!is.na(sysfam_id))
+  data_v2_sans_familles <- data_v2_sans_ss_familles %>% filter(!(id_capture %in% synthese_familles$id_capture))
+  synthese_ordres <- data_v2_sans_familles %>% left_join(systematique_complete %>% filter(is.na(sysfam_id)) %>% mutate(sysord_ranglibelle_bis = sysord_ranglibelle), by = c("micapt_taxon" = "sysord_ranglibelle_bis")) %>% filter(!is.na(sysord_id))
+  data_v2_sans_ordres <- data_v2_sans_familles %>% filter(!(id_capture %in% synthese_ordres$id_capture))
 
-  return(data)
+  data_v3 <-
+    synthese_especes %>% 
+    bind_rows(synthese_genres) %>% 
+    bind_rows(synthese_ss_familles) %>% 
+    bind_rows(synthese_familles) %>% 
+    bind_rows(synthese_ordres)
+  
+  ##### Jointure entre les captures systématisées et l'ensembles des informations relatives aux captures #####
+  data_v4 <-
+    data_v3 %>% 
+    rename(id = id_capture) %>% 
+    # left_join(data)
+    left_join(data,by = join_by(micapt_taxon, id))
+
+  ##### Calcul de la famille au sens de l'IBGN #####
+  data_v5 <-
+    data_v4 %>%
+    mutate(famille_sens_ibgn_libelle = ifelse(!is.na(sysfam_ranglibelle), sysfam_ranglibelle, sysord_ranglibelle), .after = "micapt_taxon") %>% 
+    mutate(gi_ibgn = ifelse(!is.na(sysfam_gi_ibgn), sysfam_gi_ibgn, sysord_gi_ibgn), .after = "famille_sens_ibgn_libelle") %>% 
+    mutate(gi_cb2 = ifelse(!is.na(sysfam_gi_cb2), sysfam_gi_cb2, sysord_gi_cb2), .after = "gi_ibgn") %>% 
+    mutate(gi_ibl = ifelse(!is.na(sysgen_gi_ibl), sysgen_gi_ibl, sysfam_gi_ibl), .after = "gi_cb2")
+
+  #### Vérification ####
+  if(data_v2_sans_ordres %>% nrow() != 0) stop("Présence de taxons sans jointure")
+  nrow_apres <- data_v5 %>% nrow()
+  if(nrow_apres != nrow_avant) stop("Incohérence dans le nombre de lignes avant et après traitement")
+  
+  #### Sortie ####
+  
+  return(data_v5)
   
 } # Fin de la fonction
