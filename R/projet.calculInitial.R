@@ -3,6 +3,7 @@
 #' Cette fonction permet de calculer les coûts d'un projet au moment de son montage. Elle s'appuie sur le format saisi dans la table tpstravail_recapitulatif et réalise les conversions à partir des volumes unitaires, et ordonne les sujets
 #' @name projet.calculInitial
 #' @param nom_projet Nom du dataframe contenant les données "attendues" à traiter, dans le format de tpstravail_recapitulatif
+#' @param mois_modif_couts_annuels Mois de l'année à partir duquel il faut prendre les coûts annuels N+1 (\code{12} par défaut)
 #' @importFrom dplyr select
 #' @import glue
 #' @import tidyverse
@@ -12,7 +13,8 @@
 #' tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_recapitulatif")) %>% filter(tpswrecap_projet == 212) %>% collect() %>% projet.calculInitial()
 
 projet.calculInitial <- function(
-  nom_projet
+  nom_projet,
+  mois_modif_couts_annuels = 12
 )
 {
   #### Vérifications ####
@@ -32,8 +34,8 @@ projet.calculInitial <- function(
   DBI::dbDisconnect(dbD)
   
   if(all(colnames(nom_projet) != colnames(recap_tps_w))) stop("Dataframe d'entrée différent de tpstravail_recapitulatif")
-  if(all(month(today()) < 12 & cout_annuel %>% filter(gestctan_annee == year(today())) %>% filter(gestctan_type == "Estimé N-1") %>% select(gestctan_poste_id, gestctan_coutjournaliermajore) %>% nrow() == 0)) stop(glue("Pas de coûts annuels estimés pour l'année {year(today())}"))
-  if(all(month(today()) == 12 & cout_annuel %>% filter(gestctan_annee == 1+year(today())) %>% filter(gestctan_type == "Estimé N-1") %>% select(gestctan_poste_id, gestctan_coutjournaliermajore) %>% nrow() == 0)) stop(glue("Pas de coûts annuels estimés pour l'année {1+year(today())}"))
+  if(all(month(today()) < mois_modif_couts_annuels & cout_annuel %>% filter(gestctan_annee == year(today())) %>% filter(gestctan_type == "Estimé N-1") %>% select(gestctan_poste_id, gestctan_coutjournaliermajore) %>% nrow() == 0)) stop(glue("Pas de coûts annuels estimés pour l'année {year(today())}"))
+  if(all(month(today()) >= mois_modif_couts_annuels & cout_annuel %>% filter(gestctan_annee == 1+year(today())) %>% filter(gestctan_type == "Estimé N-1") %>% select(gestctan_poste_id, gestctan_coutjournaliermajore) %>% nrow() == 0)) stop(glue("Pas de coûts annuels estimés pour l'année {1+year(today())}"))
   
   ##### Préparation ####
   nom_projet <-
@@ -66,8 +68,8 @@ projet.calculInitial <- function(
     select(-id_operateur, -contains("gestop_"), -gestpost_remarques) %>%
     # On joint avec les coûts unitaires par poste/opérateur via une clé #
     mutate(clepostepersonnel = glue("{tpswrecap_poste}-{tpswrecap_personnel}")) %>% 
-    {if(month(today()) < 12) left_join(., cout_annuel %>% filter(gestctan_annee == year(today())) %>% filter(gestctan_type == "Estimé N-1") %>% mutate(clepostepersonnel = glue("{gestctan_poste_id}-{gestctan_operateur_id}")) %>% select(clepostepersonnel, gestctan_coutjournaliermajore) %>% rename(cout_unitaire = gestctan_coutjournaliermajore), by = "clepostepersonnel") else .} %>%
-    {if(month(today()) == 12) left_join(., cout_annuel %>% filter(gestctan_annee == 1+year(today())) %>% filter(gestctan_type == "Estimé N-1") %>% mutate(clepostepersonnel = glue("{gestctan_poste_id}-{gestctan_operateur_id}")) %>% select(clepostepersonnel, gestctan_coutjournaliermajore) %>% rename(cout_unitaire = gestctan_coutjournaliermajore), by = "clepostepersonnel") else .} %>%
+    {if(month(today()) < mois_modif_couts_annuels) left_join(., cout_annuel %>% filter(gestctan_annee == year(today())) %>% filter(gestctan_type == "Estimé N-1") %>% mutate(clepostepersonnel = glue("{gestctan_poste_id}-{gestctan_operateur_id}")) %>% select(clepostepersonnel, gestctan_coutjournaliermajore) %>% rename(cout_unitaire = gestctan_coutjournaliermajore), by = "clepostepersonnel") else .} %>%
+    {if(month(today()) >= mois_modif_couts_annuels) left_join(., cout_annuel %>% filter(gestctan_annee == 1+year(today())) %>% filter(gestctan_type == "Estimé N-1") %>% mutate(clepostepersonnel = glue("{gestctan_poste_id}-{gestctan_operateur_id}")) %>% select(clepostepersonnel, gestctan_coutjournaliermajore) %>% rename(cout_unitaire = gestctan_coutjournaliermajore), by = "clepostepersonnel") else .} %>%
     # Cas du coût unitaire des chargés de développement, différents en fonction du personnel, personnel qui n'est pas individuellement précisé : on prend la valeur max
     mutate(cout_unitaire = ifelse(tpswrecap_poste == 1 & is.na(tpswrecap_personnel), cout_annuel %>% filter(gestctan_annee == year(now()) & gestctan_type == "Estimé N-1" & gestctan_poste_id == 1) %>% summarise(cout_unitaire = max(gestctan_coutjournaliermajore)) %>% pull(), cout_unitaire)) %>% 
     # On regroupe les coûts unitaires #

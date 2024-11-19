@@ -4,10 +4,12 @@
 \alias{projet.calculInitial}
 \title{Calcul initial des coûts de projet}
 \usage{
-projet.calculInitial(nom_projet)
+projet.calculInitial(nom_projet, mois_modif_couts_annuels = 12)
 }
 \arguments{
 \item{nom_projet}{Nom du dataframe contenant les données "attendues" à traiter, dans le format de tpstravail_recapitulatif}
+
+\item{mois_modif_couts_annuels}{Mois de l'année à partir duquel il faut prendre les coûts annuels N+1 (\code{12} par défaut)}
 }
 \description{
 Cette fonction permet de calculer les coûts d'un projet au moment de son montage. Elle s'appuie sur le format saisi dans la table tpstravail_recapitulatif et réalise les conversions à partir des volumes unitaires, et ordonne les sujets

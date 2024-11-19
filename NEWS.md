@@ -1,5 +1,40 @@
 # NEWS - afd39
 
+## 0.0.21 - 
+### Ajouts
+- 
+
+### Corrections
+- 
+
+### Modifications
+- 
+
+### Suppressions
+- 
+
+
+## 0.0.20 - 2024-06-17
+### Ajouts
+- `BDD.format` : ajout d'un traitement manquant pour les heures de suivi de chroniques
+- `stations.territoire` : création du traitement `GEMAPI`
+
+### Corrections
+- `personnel.formatAC` : correction d'un filtre un peu trop restrictif (cas de Germain)
+- `personnel.projet` : 
+  * Modification du calcul de conversion des heures en jours car chargés de dvpt à 7,8 heures par jour
+  * Ajout d'un paramètre `arrondi` permettant de gérer la valeur d'arrondi souhaitée
+- `poissons.atlas.fiches` : 
+  * Nettoyage du code
+  * Renommage de variables
+  * Correction d'une colonne en doublon (`codesiermc`) qui bloquait l'export en `geojson`
+- `poissons.ecosystemes` : 
+  * Corrections de l'en-tête
+  * Passage en snake_case des noms de variables
+  * Correction d'un nom de champ de la base de données qui ne fonctionnait pas
+  * Filtrage directement dans la requête SQL afin d'optimiser les chargements de tables
+- `poissons.stations` : recodage du test initial, qui ne générait un bug s'il n'y avait pas de guillemets entre les parenthèses
+
 ## 0.0.19 - 2024-01-11
 ### Ajouts
 - `topographie.mesures` : création

@@ -6,22 +6,20 @@
 #' @param date Date de la pêche
 #' @keywords poissons
 #' @import glue
+#' @import gt
+#' @import gtsummary 
 #' @import gridExtra
 #' @import openxlsx 
 #' @import tidyverse
 #' @export
 #' @examples
-#' poissons.brut("SOR10-2", "2015-05-19")
+#'poissons.brut("SOR10-2", "2015-05-19")
 
 poissons.brut <- function(
-  station="AIN18-4",
-  date="2011-09-07")
+  station="SOR10-2",
+  date="2015-05-19")
 {
 
-  ##### TODO LIST #####
-  # 
-  #####################
-  
   ## Ouverture de la BDD ##
   dbP <- BDD.ouverture(Type = "Poissons")
   
@@ -99,7 +97,7 @@ poissons.brut <- function(
   ## Résultats élaborés
   Elabores <-
     Resultats %>%
-    filter(nom == station, datedebut.x == date) %>%
+    filter(nom == station) %>%filter (datedebut.x == date) %>%
     dplyr::select(nom, datedebut.x, codeespece, n_sommecapturepassage1, n_sommecapturepassage2, n_sommecapturepassage3, estimationeffectifnumerique, densitenumeriqueestimee, intervalleconfiancedensitenum, estimationeffectifponderal, densiteponderaleestimee, intervalleconfiancedensitepond, coteabondancenumerique, coteabondanceponderale) %>%
     arrange(codeespece)
   
@@ -131,10 +129,13 @@ poissons.brut <- function(
 
   # Remise en ordre des colonnes et renommage #
   Elabores <- 
-    Elabores %>% 
-    dplyr::select(nom, datedebut.x, codeespece, n_sommecapturepassage1, n_sommecapturepassage2, n_sommecapturepassage3, estimationeffectifnumerique, densitenumeriqueestimee, intervalleconfiancedensitenum, estimationeffectifponderal, densiteponderaleestimee, intervalleconfiancedensitepond, coteabondancenumerique, coteabondanceponderale) %>% 
-    dplyr::rename(Date = datedebut.x)
-  colnames(Elabores)<-c("Station", "Date","Espèce","P1","P2","P3","Effectif estimé","Ind/10a","IC Ind/10a","Biomasse estimée (kg)","kg/ha","IC kg/ha", "CAN", "CAP")
+    Elabores %>% mutate(codeespece = as.character(codeespece))%>% 
+    left_join((poissons.especes()%>% select(codeespece,nomfrancais)), by = 'codeespece')
+  Elabores <-Elabores %>% 
+    mutate(nomfrancais = ifelse(is.na (Elabores$nomfrancais) , "Total",nomfrancais))%>% 
+    dplyr::select(nomfrancais, n_sommecapturepassage1, n_sommecapturepassage2, n_sommecapturepassage3, estimationeffectifnumerique, densitenumeriqueestimee, intervalleconfiancedensitenum, estimationeffectifponderal, densiteponderaleestimee, intervalleconfiancedensitepond, coteabondancenumerique, coteabondanceponderale) 
+   
+  colnames(Elabores)<-c("Espèce","P1","P2","P3","Effectif estimé","Ind/10a","IC Ind/10a","Biomasse estimée (kg)","kg/ha","IC kg/ha", "CAN", "CAP")
   
   # Suppression des valeurs d'effectifs si toutes les valeurs du P2 sont nulles
   if(length(unique(Elabores$P2)) == 1){
@@ -148,14 +149,14 @@ poissons.brut <- function(
   
   ###### Écriture des fichiers ######
   ## Captures excel ##
-  captures <- createWorkbook() # Création d'un classeur
+  captures <- openxlsx::createWorkbook() # Création d'un classeur
   addWorksheet(captures, sheetName = glue('{station} {date}')) # Ajout d'une feuille
   writeData(captures, 1, Captures, startCol = 1, startRow = 1, colNames = T) # Ajout des données
   setColWidths(captures, sheet = 1, cols = 2, widths = 10) # Largeur de colonne pour la date
   saveWorkbook(captures, glue('{station}_{date}_captures.xlsx'), overwrite = T) # save workbook
   
   ## Résultats calculés excel ##
-  SortieResultats <- createWorkbook() # Création d'un classeur
+  SortieResultats <- openxlsx::createWorkbook() # Création d'un classeur
   addWorksheet(SortieResultats, sheetName = "Bruts") # Ajout d'une feuille
   addWorksheet(SortieResultats, sheetName = "Calculés") # Ajout d'une feuille
   writeData(SortieResultats, 1, Bruts, startCol = 1, startRow = 1, colNames = T) # Ajout des données
@@ -165,28 +166,11 @@ poissons.brut <- function(
   saveWorkbook(SortieResultats, glue('{station}_{date}_résultats.xlsx'), overwrite = T) # save workbook
   
   ## Résultats calculés png ##
-  Elabores <- 
-    Elabores %>% 
-    mutate(Date = format(Date, format="%Y-%m-%d")) %>% 
+  Elabores %>%
     mutate_all(funs(replace(., is.na(.), ""))) %>% 
-    mutate(Station = ifelse(row_number() == 1 | row_number() == max(row_number()), Station, ""))%>% 
-    mutate(Date = ifelse(row_number() == 1, Date, ""))
-  
-  matriceGrasItalique <- matrix(c("plain", "plain", "plain", "plain", "plain", "plain", "plain", "bold", "plain", "plain", "bold", "plain", "bold", "bold"), ncol = ncol(Elabores), nrow = nrow(Elabores), byrow = TRUE)
-  matriceGrasItalique[nrow(Elabores),] <- "bold.italic"
-  
-  tt1 <- 
-    ttheme_minimal(
-      core = list(
-        bg_params = list(fill = blues9[1:2], col=NA),
-        fg_params = list(fontface = matriceGrasItalique)
-      ),
-      colhead = list(fg_params=list(col="navyblue", fontface=4L)),
-      rowhead = list(fg_params=list(col="white", fontface=3L))
-    )
-  
-  png(paste0(station, "_", date, "_résultats.png", sep=""), height = 25*nrow(Elabores), width = 60*ncol(Elabores))
-  grid.table(Elabores, theme = tt1, rows = NULL)
-  dev.off()
+    gt() %>%
+    tab_header(title = station, 
+               subtitle = date) %>% 
+    gtsave(glue("{station}_{date}_résultats.png"))
   
 } # Fin de la fonction

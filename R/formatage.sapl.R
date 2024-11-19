@@ -12,11 +12,6 @@
 #' @examples
 #' formatage.sapl(data)
 
-
-##### TODO LIST #####
-# 
-#####################
-
 formatage.sapl <- function(
   data = data
 ){

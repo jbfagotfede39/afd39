@@ -7,7 +7,7 @@
 MI.systematique.presence(data)
 }
 \arguments{
-\item{data}{Jeu de données à compléter}
+\item{data}{Jeu de données à vérifier, issu de MI.captures}
 }
 \description{
 Cette fonction permet de vérifier la présence des taxons de MI

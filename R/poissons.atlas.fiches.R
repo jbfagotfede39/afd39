@@ -4,13 +4,13 @@
 #' @name poissons.atlas.fiches
 #' @param data Jeu de données en entrée (opérations issues de poissons.operations)
 #' @param projet Nom du projet
-#' @param export \code{FALSE} par défault. Permet d'exporter les données
-#' @param commentaires \code{FALSE} par défault. Permet d'extraire le commentaire associé aux opérations
+#' @param export \code{FALSE} par défaut. Permet d'exporter les données
+#' @param commentaires \code{FALSE} par défaut. Permet d'extraire le commentaire associé aux opérations
 #' @keywords poissons
-#' @export
 #' @import sf
 #' @import stringr
 #' @import tidyverse
+#' @export
 #' @examples
 #' poissons.atlas.fiches(data)
 #' poissons.atlas.fiches(data, export=T)
@@ -23,7 +23,7 @@ poissons.atlas.fiches <- function(
   commentaires = F
 )
 {
-  
+
   #### Évaluation des choix ####
   
   #### Collecte des données ####
@@ -39,13 +39,13 @@ poissons.atlas.fiches <- function(
   #### Regroupement des données ####
   synthese_atlas_poissons <-
     data %>% 
-    dplyr::select(codeecosysteme, X, Y, TypeCoord, Station, repereamont, codesiermc, categoriepiscicole, reservoirbiologique, reservedepeche, typetheorique, especesreperes, Date, longueurprospectee, largeurlameeau, profondeur, surface) %>% 
+    dplyr::select(codeecosysteme, X, Y, TypeCoord, Station, repereamont, codesiermc, categoriepiscicole, reservoirbiologique, reservedepeche, gestionnaire, typetheorique, especesreperes, Date, longueurprospectee, largeurlameeau, profondeur, surface) %>% 
     left_join(IPR %>% select(-CodeSIERMC), by = c("Station", "Date")) %>% 
     left_join(ecosystemes, by = "codeecosysteme") %>% 
     sf::st_as_sf(coords = c("X","Y")) %>% 
     st_set_crs(2154) %>% 
     st_join(communes %>% dplyr::select(tpcomm_commune_libelle)) %>% 
-    st_join(contextesPDPG %>% dplyr::select(hycont_contexte_code)) %>% 
+    st_join(contextesPDPG %>% dplyr::select(hycont_contexte_code, hycont_contexte_libelle, hycont_domaine_piscicole, hycont_espece_repere, hycont_contexte_etat))%>% 
     mutate(especesreperes = str_trim(word(especesreperes, 1, sep = fixed(",")))) %>% # Formule nécessaire dans le cas où il y a plusieurs espèces repère, permet de ne conserver que la première
     mutate(reservoirbiologique = ifelse(reservoirbiologique == "true", "Oui", "Non")) %>% 
     mutate(reservedepeche = ifelse(reservedepeche == "true", "Oui", "Non")) %>% 
@@ -63,3 +63,4 @@ poissons.atlas.fiches <- function(
   if(export == F) return(synthese_atlas_poissons)
 
 } # Fin de la fonction
+
