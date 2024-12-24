@@ -130,6 +130,7 @@ if(export == TRUE){
   }
   
   # Répertoires secondaires
+  if(file.exists(paste0("./",projet, "/log/")) == FALSE){dir.create(paste0("./",projet, "/log/"), showWarnings = FALSE, recursive = FALSE)}
   if(file.exists(paste0("./",projet, "/Sorties/")) == FALSE){
   dir.create(paste0("./",projet, "/Sorties/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Sorties/Données/"), showWarnings = FALSE, recursive = FALSE)
@@ -181,6 +182,7 @@ if(export == TRUE & dep39 != TRUE & file.exists(paste0("./",projet, "/Entrées/"
   dir.create(paste0("./",projet, "/Entrées/Commentaires/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Entrées/Suivi/"), showWarnings = FALSE, recursive = FALSE)
 }
+
 if(log != "Aucun") put("Fin de la création des répertoires") # Log
 } # Fin de if(export == TRUE){}
   
@@ -607,10 +609,10 @@ if (exportfigures == TRUE) {
 
 #### Informations de session ####
   if(export == TRUE){
-Session <- devtools::session_info()
+session <- devtools::session_info()
 
-write(paste0("Généré le ", now(), " avec le package Aquatools (https://github.com/jbfagotfede39/aquatools/). \n"),file=paste0("./",projet, "/log/session_info.txt"))
-write(capture.output(Session),file=paste0("./",projet, "/log/session_info.txt"),append=TRUE)
+write(glue("Généré le {now()} avec le package Aquatools (https://github.com/jbfagotfede39/aquatools/). \n"), file = glue("./{projet}/log/session_info.txt"))
+write(capture.output(session), file = glue("./{projet}/log/session_info.txt"), append = TRUE)
 }
 if(log != "Aucun") put("Fin de sortie des informations de session") # Log
 
@@ -651,10 +653,10 @@ if(log != "Aucun"){
 
 #### Zippage ####
 if(export == TRUE & archivage != "Aucun"){
-  zip::zipr(zipfile = paste0(projet,".zip"), files = paste0("./",projet))
+  zip::zipr(zipfile = glue("{projet}.zip"), files = glue("./{projet}"))
 }
 if(export == TRUE & archivage == "Complet"){
-  fs::dir_delete(paste0("./",projet))
+  fs::dir_delete(glue("./{projet}"))
 }
 
 #### Sortie ####

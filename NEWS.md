@@ -1,18 +1,40 @@
 # NEWS - afd39
 
-## 0.0.21 - 
+## 0.0.22 - 2024-12-24
 ### Ajouts
-- 
-
-### Corrections
-- 
+- Ajout d'une `licence` et d'un `readme`
+- Ajout de dépendances manquantes : `aquatools`, `gt`, `gtsummary`
+- `chronique.traitement` :
+  * Ajout de la création automatique du répertoire `log`
 
 ### Modifications
-- 
+- `chronique.traitement` :
+  * Recodage de la section liée aux `Informations de session` : noms de variables et remplacement de `paste0` par `glue`
+  * Recodage de la section liée au `Zippage` : remplacement de `paste0` par `glue`
 
-### Suppressions
-- 
+## 0.0.21 - 2024-11-19
+### Ajouts
+- `formatage.noms_propres` :
+  * Nettoyage amélioré avec retrait des espaces (début/fin) et ajout de majuscules à tous les mots, afin de limiter les cas minuscules/majuscules
+  * Ajout d'un union qui permet de reprendre les noms déjà propres, afin qu'on les retrouve directement en sortie
+  * Ajout d'une fermeture de l'accès à la base de données, qui était absent
+- `poissons.atlas.fiches` : collecte d'un champs complémentaire (`gestionnaire`) + nettoyage
 
+### Corrections
+- `chronique.DCE` : suppression de la dépendance à `tcltk`
+- `chronique.traitement` : suppression de la dépendance à `tcltk`
+- `MI.captures` : suppression de la colonne de géométrie issue des prélèvements, qui posait problème ensuite
+- `MI.operations` : fermeture de la connexion à la base de données
+- `MI.systematique` : Ré-écriture complète
+- `MI.systematique.presence` : Suppression d'un test de cohérence avec le format de `MI.captures` en entrée
+- `stations.territoire` : suppression de la dépendance à `tcltk`
+
+### Modifications
+- `formatage.sapl` : nettoyage
+- `projet.calculInitial` : modification du critère du mois à partir duquel il faut prendre les coûts annuels N+1 sous la forme d'un paramètre `mois_modif_couts_annuels`
+- `poissons.brut` : 
+  * Nettoyage
+  * Modification de la forme du tableau (passage au format `gt`)
 
 ## 0.0.20 - 2024-06-17
 ### Ajouts
