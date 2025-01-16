@@ -1,5 +1,14 @@
 # NEWS - afd39
 
+## 0.0.23 - 2025-01-16
+### Ajouts
+- `carte.departement` : création
+  
+### Modifications
+- `poissons.IPR` : 
+  * refactoring partiel
+  * modification du format de sortie, afin de permettre l'extraction des métriques tout en laissant ça harmonisé
+  
 ## 0.0.22 - 2024-12-24
 ### Ajouts
 - Ajout d'une `licence` et d'un `readme`

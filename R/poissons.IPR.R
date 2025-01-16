@@ -3,7 +3,7 @@
 #' Cette fonction permet d'exporter les résultats IPR de pêche
 #' @name poissons.IPR
 #' @param ListeOperations Dataframe contenant un colonne "Station" avec le code de la station (RHJ) et une colonne "Date"
-#' @param expertise \code{TRUE} par défault
+#' @param sortie Forme du dataframe de sortie - \code{Simple} (par défaut), \code{Propre} (format diffusable, avec stations) ou \code{Complet} (tous les champs)
 #' @keywords poissons
 #' @import DBI
 #' @import tidyverse
@@ -11,19 +11,18 @@
 #' @examples
 #' poissons.IPR()
 #' poissons.IPR(listeOperations)
-#' poissons.IPR(data.frame(Station = "SOR10-2", Date = "2012-11-03"))
-#' poissons.IPR(data.frame(Station = "SOR10-2", Date = "2012-11-03"), expertise = FALSE)
-
-##### TODO LIST #####
-# Ré-écriture nécessaire afin de réduire au maximum le volume de données à transférer
-#####################
-
-#library(aquatools);library(dplyr);library(lubridate)
+#' poissons.IPR(data.frame(Station = "CUI3-8", Date = "2024-09-18"))
+#' poissons.IPR(data.frame(Station = "CUI3-8", Date = "2024-09-18"), sortie = "Propre")
+#' poissons.IPR(data.frame(Station = "CUI3-8", Date = "2024-09-18"), sortie = "Complet")
 
 poissons.IPR <- function(
   ListeOperations = data.frame(Station = character(0), Date = character(0)),
-  expertise=TRUE)
+  expertise = TRUE,
+  sortie = c("Simple", "Propre", "Complet")
+)
 {
+  ## Évaluation des choix ##
+  sortie <- match.arg(sortie)
   
   ## Ouverture de la BDD ##
   dbP <- BDD.ouverture(Type = "Poissons")
@@ -52,37 +51,26 @@ poissons.IPR <- function(
     mutate(N = str_count(.$Especes, ",") + 1)
   
   # Travail sur toutes les opérations #
-  if(dim(ListeOperations)[1] == 0 & expertise == TRUE){
-  IPR <-
+  if(nrow(ListeOperations) == 0){
+  IPR <- 
     IPR %>% 
-    select(Station, CodeSIERMC, Altitude, Date, Classe, Score, Qualite, AvisExpertCourt, AvisExpert, Especes, N)
+    {if(sortie == "Simple") select(., Station, CodeSIERMC, Altitude, Date, Classe, Score, Qualite, Especes, N) else .} %>% 
+    {if(sortie == "Propre") select(., Station, CodeSIERMC, Altitude, Date, Classe, Score, Qualite, contains("AvisExpert"), Especes, N) else .} %>% 
+    {if(sortie == "Complet") select(., Station, CodeSIERMC, Altitude, Date, Classe, Score, Qualite, contains("AvisExpert"), Especes, N, everything()) else .}
   }
-  
-  if(dim(ListeOperations)[1] == 0 & expertise == FALSE){
-    IPR <-
-      IPR %>% 
-      select(Station, CodeSIERMC, Altitude, Date, Classe, Score, Qualite, Especes, N)
-  }
-  
+
   # Travail sur quelques opérations #
-  if(dim(ListeOperations)[1] != 0 & expertise == TRUE){
+  if(nrow(ListeOperations) != 0){
     ListeOperations <- ListeOperations %>% mutate(Cle = paste0(Station, " - ", Date))
     IPR <-
       IPR %>% 
       mutate(Cle = paste0(Station, " - ", Date)) %>% 
       filter(Cle %in% ListeOperations$Cle) %>% 
-      select(Station, CodeSIERMC, Altitude, Date, Classe, Score, Qualite, AvisExpertCourt, AvisExpert, Especes, N)
+      {if(sortie == "Simple") select(., Station, CodeSIERMC, Altitude, Date, Classe, Score, Qualite, Especes, N) else .} %>% 
+      {if(sortie == "Propre") select(., Station, CodeSIERMC, Altitude, Date, Classe, Score, Qualite, contains("AvisExpert"), Especes, N) else .} %>% 
+      {if(sortie == "Complet") select(., Station, CodeSIERMC, Altitude, Date, Classe, Score, Qualite, contains("AvisExpert"), Especes, N, everything()) else .}
   }
-  
-  if(dim(ListeOperations)[1] != 0 & expertise == FALSE){
-    ListeOperations <- ListeOperations %>% mutate(Cle = paste0(Station, " - ", Date))
-    IPR <-
-      IPR %>% 
-      mutate(Cle = paste0(Station, " - ", Date)) %>% 
-      filter(Cle %in% ListeOperations$Cle) %>% 
-      select(Station, CodeSIERMC, Altitude, Date, Classe, Score, Qualite, Especes, N)
-  }
-  
+
   # Rendu du résultat #
   return(IPR)
   
