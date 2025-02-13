@@ -1,6 +1,6 @@
-#' Switcher de localisation de fichier
+#' Permuter la localisation de fichier
 #'
-#' Cette fonction permet de retrouver automatique l'adresse d'un fichier entre différentes machines
+#' Cette fonction permet de retrouver automatiquement l'adresse d'un fichier entre différentes machines
 #' 
 #' @name adresse.switch
 #' @param url Adresse du fichier à ouvrir
@@ -12,7 +12,7 @@
 #' fish <- read_excel(adresse.switch("NAS-JB/Études/2014_Les Rousses/Résultats/Poissons/ResultatsRoussestotal-28janvier2015.xlsx"), sheet = 2)
 
 adresse.switch <- function(
-  url="")
+  url = "")
   
 {
   
@@ -21,8 +21,11 @@ adresse.switch <- function(
   
   #### Transformation du format ####
   if(file.exists(glue("/Users/jean-baptistefagot/{url}"))) url <- glue("/Users/jean-baptistefagot/{url}") # #129 - Machine JB
-  if(file.exists(glue("/Users/jean-baptistefagot/Nextcloud/", url))) url <- glue("/Users/jean-baptistefagot/Nextcloud/{url}") # #129 - Machine JB
+  if(file.exists(glue("/Users/jean-baptistefagot/Nextcloud/{url}"))) url <- glue("/Users/jean-baptistefagot/Nextcloud/{url}") # #129 - Machine JB
+  if(file.exists(glue("/Users/jean-baptistefagot/Nextcloud_perso/{url}"))) url <- glue("/Users/jean-baptistefagot/Nextcloud_perso/{url}") # #129 - Machine JB
+  if(file.exists(glue("/Users/anne-lauretruchot/Nextcloud/{url}"))) url <- glue("/Users/anne-lauretruchot/Nextcloud/{url}") #
   if(file.exists(glue("/Users/adrienlavigne/", url))) url <- glue("/Users/adrienlavigne/{url}") # #4 - Machine Adrien
+  if(file.exists(glue("/Users/malidedjamil/", url))) url <- glue("/Users/malidedjamil/{url}") # - Machine Malidé
   
   #### Retour de l'adresse correcte ####
   return(url)

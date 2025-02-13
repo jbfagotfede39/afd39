@@ -2,7 +2,7 @@
 % Please edit documentation in R/adresse.switch.R
 \name{adresse.switch}
 \alias{adresse.switch}
-\title{Switcher de localisation de fichier}
+\title{Permuter la localisation de fichier}
 \usage{
 adresse.switch(url = "")
 }
@@ -10,7 +10,7 @@ adresse.switch(url = "")
 \item{url}{Adresse du fichier à ouvrir}
 }
 \description{
-Cette fonction permet de retrouver automatique l'adresse d'un fichier entre différentes machines
+Cette fonction permet de retrouver automatiquement l'adresse d'un fichier entre différentes machines
 }
 \examples{
 adresse.switch("NAS-JB/Études/2014_Les Rousses/Résultats/Poissons/ResultatsRoussestotal-28janvier2015.xlsx")

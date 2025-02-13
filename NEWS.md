@@ -1,5 +1,20 @@
 # NEWS - afd39
 
+## 0.0.24 - 2025-02-13
+### Ajouts
+- `carte.territoire` : 
+  * ajout d'un affichage à un niveau plus local si nécessaire
+  * ajout de l'option `altitude` qui permet de supprimer le MNT en fond
+  * ajout de l'option `position_echelle` qui permet de régler la position de l'échelle
+  * ajout de l'option `position_nord` qui permet de régler la position de la flèche du nord
+- `general.mail` : création
+
+### Modifications
+- `adresse.switch` : refactoring et ajout de la machine d'AL
+- `carte.territoire` : également un affichage à un niveau plus local si nécessaire
+  * réglages transparences du fond de carte
+  * léger refactoring
+
 ## 0.0.23 - 2025-01-16
 ### Ajouts
 - `carte.departement` : création
