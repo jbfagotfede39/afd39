@@ -492,9 +492,10 @@ BDD.format <- function(
   if(traitementforce == TRUE & Type == "PC") Testtraitementforce <- 1
   if(traitementforce == FALSE & Type == "PC") Testtraitementforce <- 1
   if(Testtraitementforce == 1){
+    
   ## Connexion à la BDD ##
   dbD <- BDD.ouverture("Data")
-  
+    
   ## Récupération des données ##
   # pc <- tbl(dbD, in_schema("fd_production", "physicochimie_mesures")) %>% collect(n = 10)
   # operations <- tbl(dbD, in_schema("fd_production", "physicochimie_suiviterrain")) %>% collect(n = 10)
@@ -554,6 +555,8 @@ BDD.format <- function(
       mutate(id = row_number() + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_production.physicochimie_suiviterrain;")))
   } # Fin de travail sur les opérations de PC
   
+  DBI::dbDisconnect(dbD)
+  
   } # Fin de travail sur PC
   
   ##### Temps de travail ####
@@ -586,7 +589,7 @@ BDD.format <- function(
     RecapTpsW <- tbl(dbD, dbplyr::in_schema("fd_production", "tpstravail_recapitulatif")) %>% collect(n = 1)
     Projets <- tbl(dbD, dbplyr::in_schema("fd_production", "projets_liste")) %>% collect(n = Inf)
     Personnels <- tbl(dbD, dbplyr::in_schema("fd_referentiels", "gestion_operateurs")) %>% filter(gestop_mo == 3 & gestop_type == "Salarié") %>% select(id:gestop_qualite) %>% collect(n = Inf)
-    
+
     ## Travail sur les données OpenTime ##
     if(all(colnames(data) %in% colnames(tps_w_opentime))) {
       
@@ -598,13 +601,16 @@ BDD.format <- function(
           select(-statut, -`date de lancement`, -`date de clôture`, -`numéro de matricule`, -poste) %>% 
           select(date:`sous-projet`, personnel, heuredebut, heurefin, duree, validation, remarques) %>%
           mutate(date = as_date(date)) %>% 
+          mutate(duree = round(duree, 2)) %>% 
           mutate(personnel = ifelse(personnel == "Fagot Jean Baptiste", "Fagot Jean-Baptiste", personnel)) %>% # Ajout du tiret manquant
           mutate(validation = str_to_title(validation)) %>% # Ajout d'une majuscule à oui/non
           # Complément/modification
           left_join(Personnels %>% mutate(personnel = glue("{gestop_nom} {gestop_prenom}")), by = c("personnel")) %>% 
           mutate(personnel = id) %>% 
           select(-contains("gestop"), -id) %>% 
-          # mise en forme 
+          mutate(heuredebut = ifelse(grepl("Absence", domaine), "00:00:00", heuredebut)) %>% 
+          mutate(heurefin = ifelse(grepl("Absence", domaine), "23:59:59", heurefin)) %>% 
+          # Mise en forme 
           rename_all(list(~ stringi::stri_trans_general(., "latin-ascii"))) %>% # Pour remplacer les caractères accentués par les mêmes sans accents
           rename_all(list(~ paste0("tpswot_", .))) %>%
           rename_all(list(~ gsub("[[:punct:]]", "_", .))) %>%
@@ -641,6 +647,8 @@ BDD.format <- function(
         select(id, everything(), `_modif_utilisateur`, `_modif_type`,`_modif_date`)
     } # Fin de travail sur les données de comptabilité
     
+    DBI::dbDisconnect(dbD)
+    
   } # Fin de travail sur Temps de travail
   
   
@@ -666,6 +674,9 @@ BDD.format <- function(
         # Ajout des ID
         mutate(id = row_number() + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_production.topographie_leves;")))
     } # Fin de travail sur les mesures de levés topographiques
+    
+    DBI::dbDisconnect(dbD)
+    
   } # Fin de travail sur topographie
   
   
@@ -679,7 +690,7 @@ BDD.format <- function(
     
     ## Récupération des données ##
     prelevements <- tbl(dbD, in_schema("fd_referentiels", "hydrologie_prelevements")) %>% arrange(desc(id)) %>% collect(n = 10)
-
+    
     ## Travail sur les prélèvements ##
     if(all(colnames(data) %in% colnames(prelevements))) {
       
@@ -690,10 +701,13 @@ BDD.format <- function(
         # Ajout des ID
         mutate(id = row_number() + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_referentiels.hydrologie_prelevements;")))
     } # Fin de travail sur les prélèvements
+    
+    DBI::dbDisconnect(dbD)
+    
   } # Fin de travail sur AEP
   
   ##### Commun #####
-data <- as.data.frame(data)
+data <- as_tibble(data)
 
   return(data)
   

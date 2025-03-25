@@ -1,5 +1,17 @@
 # NEWS - afd39
 
+## 0.0.25 - 2025-03-25
+### Ajouts
+- `BDD.format` : ajout d'un arrondi de la durée de travail dans les données OpenTime
+- `opentime.projet` : création
+- `opentime.ouverture` : création
+- `formatage.mo.libelle` : création
+- `formatage.personnel.prenom` : création
+- `personnel.projection` : création
+
+### Corrections
+- `BDD.format` : fermeture de connexions à la BDD après collecte des données nécessaires
+
 ## 0.0.24 - 2025-02-13
 ### Ajouts
 - `carte.territoire` : 
