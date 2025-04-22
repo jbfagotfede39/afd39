@@ -1,12 +1,24 @@
 # NEWS - afd39
 
+## 0.0.26 - 2025-04-22
+### Ajouts
+- `personnel.projection` : ajout d'un arrondi
+
+### Modifications
+- `adresse.switch` : suppression de la transformation de la session de Malidé
+- `poissons.atlas.fiches` : inversion de l'ordre des paramètres `commentaires` et `export`
+
+### Corrections
+- `poissons.brut` : ajout de la dépendance à `chromote`, car bug lors de l'exécution de `gtsave` suite à update chrome > v128 (https://github.com/rstudio/chromote/issues/170)
+- `poissons.IPR` : retrait d'un paramètre qui n'était plus utilisé et qui restait dans le code
+
 ## 0.0.25 - 2025-03-25
 ### Ajouts
 - `BDD.format` : ajout d'un arrondi de la durée de travail dans les données OpenTime
-- `opentime.projet` : création
-- `opentime.ouverture` : création
 - `formatage.mo.libelle` : création
 - `formatage.personnel.prenom` : création
+- `opentime.ouverture` : création
+- `opentime.projet` : création
 - `personnel.projection` : création
 
 ### Corrections

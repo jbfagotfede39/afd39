@@ -7,8 +7,8 @@
 poissons.atlas.fiches(
   data = data,
   projet = NA_character_,
-  export = F,
-  commentaires = F
+  commentaires = F,
+  export = F
 )
 }
 \arguments{
@@ -16,9 +16,9 @@ poissons.atlas.fiches(
 
 \item{projet}{Nom du projet}
 
-\item{export}{\code{FALSE} par défaut. Permet d'exporter les données}
-
 \item{commentaires}{\code{FALSE} par défaut. Permet d'extraire le commentaire associé aux opérations}
+
+\item{export}{\code{FALSE} par défaut. Permet d'exporter les données}
 }
 \description{
 Cette fonction permet de générer le fichier geojson nécessaire à la création des fiches de l'atlas 2021-02-01_Modèle_atlas_poissons_V1

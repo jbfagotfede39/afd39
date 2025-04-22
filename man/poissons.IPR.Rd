@@ -6,7 +6,6 @@
 \usage{
 poissons.IPR(
   ListeOperations = data.frame(Station = character(0), Date = character(0)),
-  expertise = TRUE,
   sortie = c("Simple", "Propre", "Complet")
 )
 }

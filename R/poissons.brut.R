@@ -5,6 +5,7 @@
 #' @param station Code RHJ de la station
 #' @param date Date de la pêche
 #' @keywords poissons
+#' @import chromote
 #' @import glue
 #' @import gt
 #' @import gtsummary 

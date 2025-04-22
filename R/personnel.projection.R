@@ -48,8 +48,8 @@ personnel.projection <- function(
   #### Calcul ####
   data_v3 <-
     data_v2 %>% 
-    mutate(tpswrecap_heures_ponderees = tpswrecap_heures * tpswprj_proportion, .after = "tpswprj_proportion") %>% 
-    mutate(tpswrecap_argent_pondere = tpswrecap_argent * tpswprj_proportion, .after = "tpswrecap_heures_ponderees") # %>% 
+    mutate(tpswrecap_heures_ponderees = round(tpswrecap_heures * tpswprj_proportion, 2), .after = "tpswprj_proportion") %>% 
+    mutate(tpswrecap_argent_pondere = round(tpswrecap_argent * tpswprj_proportion, 2), .after = "tpswrecap_heures_ponderees") # %>% 
     # view()
     # pivot_wider(,
     #             names_from = c(estimate, moe),

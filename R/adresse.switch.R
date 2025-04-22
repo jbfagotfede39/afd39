@@ -25,8 +25,7 @@ adresse.switch <- function(
   if(file.exists(glue("/Users/jean-baptistefagot/Nextcloud_perso/{url}"))) url <- glue("/Users/jean-baptistefagot/Nextcloud_perso/{url}") # #129 - Machine JB
   if(file.exists(glue("/Users/anne-lauretruchot/Nextcloud/{url}"))) url <- glue("/Users/anne-lauretruchot/Nextcloud/{url}") #
   if(file.exists(glue("/Users/adrienlavigne/", url))) url <- glue("/Users/adrienlavigne/{url}") # #4 - Machine Adrien
-  if(file.exists(glue("/Users/malidedjamil/", url))) url <- glue("/Users/malidedjamil/{url}") # - Machine Malidé
-  
+
   #### Retour de l'adresse correcte ####
   return(url)
   

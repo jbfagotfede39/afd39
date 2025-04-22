@@ -1,6 +1,6 @@
 Package: afd39
 Title: Outils pour la FJPPMA
-Version: 0.0.24
+Version: 0.0.26
 Authors@R: 
     person("Jean-Baptiste", "Fagot", , "jean-baptiste.fagot@peche-jura.com", role = c("aut", "cre"))
 Maintainer: Jean-Baptiste Fagot <jean-baptiste.fagot@peche-jura.com>
@@ -13,21 +13,29 @@ Depends:
     R (>= 4.0.0)
 Imports:
     aquatools,
+    chromote,
     DBI,
     dbplyr,
     devtools,
     dplyr,
+    elevatr,
+    emayili,
     fs,
+    ggspatial,
     glue,
     gridExtra,
     gt,
     gtsummary,
+    htmltools,
     keyring,
     knitr,
     logr,
     lubridate,
+    metR,
     openxlsx,
     purrr,
+    raster,
+    readxl,
     reshape2,
     RPostgreSQL,
     sf,

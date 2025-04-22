@@ -4,8 +4,8 @@
 #' @name poissons.atlas.fiches
 #' @param data Jeu de données en entrée (opérations issues de poissons.operations)
 #' @param projet Nom du projet
-#' @param export \code{FALSE} par défaut. Permet d'exporter les données
 #' @param commentaires \code{FALSE} par défaut. Permet d'extraire le commentaire associé aux opérations
+#' @param export \code{FALSE} par défaut. Permet d'exporter les données
 #' @keywords poissons
 #' @import sf
 #' @import stringr
@@ -19,15 +19,15 @@
 poissons.atlas.fiches <- function(
   data = data,
   projet = NA_character_,
-  export = F,
-  commentaires = F
+  commentaires = F,
+  export = F
 )
 {
 
   #### Évaluation des choix ####
   
   #### Collecte des données ####
-  IPR <- poissons.IPR(data)
+  IPR <- poissons.IPR(data, sortie = "Propre")
   
   ## Données de référence ##
   ecosystemes <- poissons.ecosystemes() %>% select(codeecosysteme, nomecosysteme)
