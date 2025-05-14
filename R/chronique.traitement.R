@@ -29,6 +29,7 @@
 #' @param localisation_donnees Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier des données brutes
 #' @param archivage Si \code{Aucun} (par défaut), ne va pas créer une archives .zip du répertoire de sortie. Si \code{Partiel}, créé une archive et conserve le répertoire. Si \code{Complet}, créé une archive et supprimer le répertoire.
 #' @param log Si \code{Simple} (par défaut), le log ne sera pas très bavard. Si \code{Verbeux}, le log incluera tous les retours du tidyverse. Si \code{Aucun}, absence de log
+#' @import cli
 #' @import fs
 #' @import glue
 #' @import logr
@@ -268,6 +269,15 @@ if(export == TRUE & dep39 == "autre"){
   
 }
 if(log != "Aucun") put("Fin de l'importation des données nécessaires aux exportations") # Log
+
+#### Vérification des données ####
+if(export == TRUE){
+##### Commentaires #####
+  commentaires_n <- Commentaires %>% chronique.cle() %>% count(Cle) %>% filter(n > 1)
+  if(nrow(commentaires_n) == 1) message <- glue("{col_red('Attention')} : présence de plusieurs commentaires pour la clé {commentaires_n$Cle}")
+  if(nrow(commentaires_n) > 1) message <- glue("{col_red('Attention')} : présence de plusieurs commentaires pour les clés {glue_collapse(commentaires_n$Cle, ', ', last = ' et ')}")
+  if(nrow(commentaires_n) >= 1)cli_li(message)
+}
 
 #### Analyse des données ####
 DataTravail <- 

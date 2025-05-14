@@ -63,7 +63,7 @@ chronique.suivi <- function(
   ### Format compatible avec les jointures en cas d'absence de données ###
   if(nrow(Vue) == 0) {
     data(chronique_structure)
-    Vue <- suivi_structure
+    Vue <- suivis_structure
   }
   
   #### Affichage des résultats ####

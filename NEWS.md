@@ -1,5 +1,17 @@
 # NEWS - afd39
 
+## 0.0.27 - 2025-05-14
+### Ajouts
+- `PC.mesures` : ajout d'un exemple d'export en masse
+- `chronique.DCE` : ajout de l'export du MO du point de suivi et du référentiel horaire suite à évolution format 2025
+- `chronique.traitement` : ajout d'une vérification de l'absence de doublons dans les commentaires, avec message d'erreur associé
+
+### Modifications
+- `chronique.suivi` : modification de l'appel vers le jeu de données de référence suite à harmonisation des intitulés
+
+### Corrections
+- `PC.mesures` : correction de l'absence d'export si `sortie = "Complet"`
+
 ## 0.0.26 - 2025-04-22
 ### Ajouts
 - `personnel.projection` : ajout d'un arrondi

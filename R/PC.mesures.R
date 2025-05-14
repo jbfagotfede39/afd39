@@ -14,6 +14,7 @@
 #' PC.mesures(station = "SOR10-2")
 #' PC.mesures("SOR10-2", sortie = "Propre")
 #' PC.mesures("Lac de Chalain", date = "2010-01-01", sortie = "Propre")
+#' operations_a_corriger %>% group_split(cle) %>% map(~ PC.mesures(station = .$pcsvi_coderhj, date = .$pcsvi_date, sortie = "Complet")) %> list_rbind()
 
 PC.mesures <- function(
   station = "", 
@@ -83,6 +84,8 @@ if(sortie != "Complet"){
     mesures %>% 
     rename(any_of(renommage))
 }
+  
+  if(sortie == "Complet"){mesures_v2 <- mesures}
   
   ## Vérifications ##
   if(nrow(mesures_v2) == 0)
