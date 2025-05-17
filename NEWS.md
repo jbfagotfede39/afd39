@@ -1,5 +1,19 @@
 # NEWS - afd39
 
+## 0.0.28 - 2025-05-17
+### Ajouts
+- `chronique.traitement` : 
+  * ajout de la gestion des nouveaux champs de stations introduits via TIGRE 2 (oubli de la version `0.0.27 - 2025-05-14`)
+  
+### Modifications
+- `BDD.format` : modification des jeux de données de référence de chroniques vers `chronique_structure`
+
+### Corrections
+- `chronique.DCE` : 
+  * ajout de l'export du référentiel horaire suite à évolution format 2025 (oubli de la version `0.0.27 - 2025-05-14`)
+  * correction de coquilles de sélection de colonnes (erreurs de la version `0.0.27 - 2025-05-14`)
+  * rustine temporaire pour effacer le suivi qui ne correspond pas à la station : code à reprendre en profondeur
+
 ## 0.0.27 - 2025-05-14
 ### Ajouts
 - `PC.mesures` : ajout d'un exemple d'export en masse

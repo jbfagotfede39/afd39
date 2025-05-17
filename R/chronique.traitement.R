@@ -219,7 +219,7 @@ data <-
 if(log != "Aucun") put("Fin du nettoyage des données") # Log
 
 #### Importation des données nécessaires aux exportations ####
-listeStations <- data %>% distinct(chmes_coderhj)
+liste_stations_brute <- data %>% distinct(chmes_coderhj)
 listeCapteurs <- data %>% distinct(chmes_capteur)
 
 if(export == TRUE){
@@ -230,7 +230,7 @@ if(export == TRUE){
 
 if(export == TRUE & dep39 == TRUE){
   dbD <- BDD.ouverture("Data")
-  listeStations <- sf::st_read(dbD, query = "SELECT * FROM fd_production.chroniques_stations;") %>% filter(chsta_coderhj %in% listeStations$chmes_coderhj) %>% collect() %>% dplyr::select(chsta_coderhj:chsta_departement, chsta_coord_x:chsta_coord_type, chsta_fonctionnement:chsta_reseauthermietype, chsta_altitude, chsta_distancesource, chsta_typetheorique, chsta_sprep)
+  listeStations <- sf::st_read(dbD, query = "SELECT * FROM fd_production.chroniques_stations;") %>% filter(chsta_coderhj %in% liste_stations_brute$chmes_coderhj) %>% collect() %>% dplyr::select(chsta_coderhj:chsta_departement, chsta_coord_x:chsta_coord_type, chsta_fonctionnement:chsta_reseauthermietype, chsta_altitude, chsta_distancesource, chsta_typetheorique, chsta_sprep)
   communes <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.topographie_communes WHERE (tpcomm_departement_insee = '39' OR tpcomm_departement_insee = '25' OR tpcomm_departement_insee = '01');")
   contextesPDPG <- sf::st_read(dbD, query = "SELECT * FROM fd_referentiels.hydrographie_contextespdpg;")
   Commentaires <- tbl(dbD, in_schema("fd_production", "chroniques_commentaires")) %>% collect(n = Inf)
@@ -301,7 +301,7 @@ if(log != "Aucun") put("Fin de l'analyse des données") # Log
 #### Sortie stations ####
 if(export == TRUE & dep39 == "autre"){
   ## Préparation format SIG ##
-  listeStations <- Stations %>% filter(chsta_coderhj %in% listeStations$chmes_coderhj) %>% dplyr::select(chsta_coderhj:chsta_codecontextepdpg, chsta_coord_x:chsta_coord_type, chsta_fonctionnement:chsta_reseauthermietype, chsta_altitude, chsta_distancesource, chsta_typetheorique, chsta_sprep)
+  listeStations <- Stations %>% filter(chsta_coderhj %in% liste_stations_brute$chmes_coderhj) %>% dplyr::select(chsta_coderhj:chsta_codecontextepdpg, chsta_coord_x:chsta_coord_type, chsta_fonctionnement:chsta_reseauthermietype, chsta_altitude, chsta_distancesource, chsta_typetheorique, chsta_sprep)
   listeStations <-
     listeStations %>% 
     rowwise() %>% 
@@ -310,11 +310,57 @@ if(export == TRUE & dep39 == "autre"){
     ungroup() %>% 
     sf::st_as_sf(coords = c("chsta_coord_x","chsta_coord_y")) %>% 
     st_set_crs(2154)
+  ## Préparation format TIGRE 2 ##
+  liste_stations_tigre2 <- 
+    Stations %>% 
+    filter(chsta_coderhj %in% liste_stations_brute$chmes_coderhj) %>% 
+    dplyr::select(chsta_coderhj, chsta_coord_x, chsta_coord_y, chsta_milieu, chsta_mo, chsta_rive, chsta_impacts, chsta_codesie, chsta_codehydro, chsta_infl_nappe, chsta_infl_ant_type) %>% 
+    mutate(CODE_SONDE = NA_character_, .after = "chsta_mo") %>%
+    mutate(MODELE_SONDE = "Hobo UA-001-64", .after = "CODE_SONDE") %>%
+    mutate(TIGRE1 = "Non", .after = "chsta_impacts") %>%
+    mutate(MAIL_STRUCTURE = NA_character_, .after = "chsta_codehydro") %>%
+    mutate(MAIL_STRUCTURE = case_when(chsta_mo == "FD01" ~ "FD01",
+                                      chsta_mo == "FDPPMA01" ~ "FD01",
+                                      chsta_mo == "FD21" ~ "FD21",
+                                      chsta_mo == "FDPPMA21" ~ "FD21",
+                                      chsta_mo == "FD25" ~ "FD25",
+                                      chsta_mo == "FDPPMA25" ~ "FD25",
+                                      chsta_mo == "FD39" ~ "FD39",
+                                      chsta_mo == "FDPPMA39" ~ "FD39",
+                                      chsta_mo == "FD70" ~ "FD70",
+                                      chsta_mo == "FDPPMA70" ~ "FD70",
+                                      chsta_mo == "FD71" ~ "FD71",
+                                      chsta_mo == "FDPPMA71" ~ "FD71",
+                                      chsta_mo == "FD90" ~ "FD90",
+                                      chsta_mo == "FDPPMA90" ~ "FD90",
+                                       .default = "Indéterminé")
+           ) %>%
+    rowwise() %>%
+    mutate(tpcomm_commune_libelle = aquatools::BV.ComByCoordL93(chsta_coord_x,chsta_coord_y) %>% dplyr::select(name) %>% as.character()) %>%
+    # mutate(chsta_departement = aquatools::BV.ComByCoordL93(chsta_coord_x,chsta_coord_y) %>% dplyr::select(codeDepartement) %>% as.character()) %>%
+    ungroup() %>%
+    relocate(tpcomm_commune_libelle, .after = "chsta_milieu") %>% 
+    rename(CODE_INTERNE = chsta_coderhj,
+           X_93 = chsta_coord_x,
+           Y_93 = chsta_coord_y,
+           NOM_RIV = chsta_milieu,
+           NOM_COM = tpcomm_commune_libelle,
+           NOM_STRUCTURE = chsta_mo,
+           EMPLACEMENT_SONDE = chsta_rive,
+           INFL_ANT = chsta_impacts,
+           CODE_SANDRE = chsta_codesie,
+           CODE_HYDRO = chsta_codehydro,
+           INFL_NAPPES = chsta_infl_nappe,
+           TYPE_INFL_ANT = chsta_infl_ant_type
+    ) %>%
+    sf::st_as_sf(coords = c("X_93","Y_93"), remove = F) %>%
+    st_set_crs(2154)
 }
 
 ## Export en SIG ##
 if(export == TRUE & dep39 != FALSE){
-  SIG.export(listeStations, paste0("./",projet, "/Sorties/Stations/", format(now(), format="%Y-%m-%d"), "_Stations"))
+  SIG.export(listeStations, glue("./{projet}/Sorties/Stations/{today()}_Stations"))
+  SIG.export(liste_stations_tigre2, glue("./{projet}/Sorties/Stations/{today()}_Stations_format_TIGRE_2"), geojson = F, shp = F, kml = F)
 }
 if(log != "Aucun") put("Fin de la sortie des stations") # Log
 
