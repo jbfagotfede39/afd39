@@ -127,8 +127,11 @@ BDD.format <- function(
     Stations <- stations_structure
     Capteurs <- capteurs_structure
     Mesures <- mesures_structure
+    mesures_sans_chmes_referentiel_temporel <- mesures_structure %>% select(-chmes_referentiel_temporel) # rustine temporaire le temps de modifier les scripts d'importation automatique
     SuiviTerrain <- suivis_structure
     commentaires <- commentaires_structure
+    
+    if(all(colnames(data) %in% colnames(mesures_sans_chmes_referentiel_temporel))) data <- data %>% mutate(chmes_referentiel_temporel = NA_character_) # rustine temporaire le temps de modifier les scripts d'importation automatique
   
   # MesuresGroupees
   MesuresGroupees <- structure(list(id = integer(0), chmesgr_coderhj_id = integer(0), 

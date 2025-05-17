@@ -1,10 +1,14 @@
 # NEWS - afd39
 
+## 0.0.29 - 2025-05-17
+### Ajouts
+- `BDD.format` : ajout d'une rustine temporaire concernant les mesures de chroniques le temps de modifier les scripts d'importation automatique
+
 ## 0.0.28 - 2025-05-17
 ### Ajouts
 - `chronique.traitement` : 
   * ajout de la gestion des nouveaux champs de stations introduits via TIGRE 2 (oubli de la version `0.0.27 - 2025-05-14`)
-  
+
 ### Modifications
 - `BDD.format` : modification des jeux de données de référence de chroniques vers `chronique_structure`
 
