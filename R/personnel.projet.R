@@ -340,7 +340,7 @@ if(envoi == FALSE){
       filter(tpswrecap_projet %in% !! Projets$id) %>% 
       filter(tpswrecap_programmation == "Réalisé" & is.na(tpswrecap_personnel)) %>%
       collect(n = Inf)
-    RecapTpsW <- DataToAdd %>% union(materiel_realise)
+    RecapTpsW <- DataToAdd %>% union(materiel_realise) %>% mutate('_modif_date' = now())
   }
 
 ### Données attendues ###

@@ -1,5 +1,28 @@
 # NEWS - afd39
 
+## 0.0.30 - 2025-06-10
+### Ajouts
+- `chronique.DCE` : 
+  * ajout d'un filtrage sur les années N-2 à N-1, car souvent calcul en N pour N-1
+  * ajout d'un tri des données
+- `chronique.traitement` : ajout d'un regroupement des fichiers DCE dans un unique fichier
+- `personnel.formatAC` : ajout de la connexion à la base de données qui était manquante
+
+### Modifications
+- `chronique.DCE` : 
+  * toilettage et suppression du paramètre `typemesure` non utilisé
+  * export en utilisation `openxlsx2` au lieu de `openxlsx`
+  
+### Corrections
+- `chronique.DCE` : correction de l'export du référentiel horaire depuis des données 39 qui ne fonctionnait pas 
+- `chronique.traitement` : 
+  * ajout de l'export vers TIGRE 2 dans le cas de données `dep39 = T` qui avait été oublié aux versions précédentes
+  * ajout d'un traitement différentiel du champ `chsta_codetigre1` s'il existe déjà dans le fichier source des stations
+  * correction temporaire d'une circularité au niveau de l'appel de `chronique.figure.interannuelle` à cause des stations absentes, nécessaires à la définition du MO
+- `personnel.projet` : 
+  * correction d'un datatype bloquant pour une jointure dans le cas de données vides
+  * correction du format d'export du fichier excel pour AC AE avec le nouvel organigramme
+
 ## 0.0.29 - 2025-05-17
 ### Ajouts
 - `BDD.format` : ajout d'une rustine temporaire concernant les mesures de chroniques le temps de modifier les scripts d'importation automatique

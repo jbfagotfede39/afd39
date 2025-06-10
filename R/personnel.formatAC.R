@@ -11,11 +11,6 @@
 #' @examples
 #' personnel.formatAC(data, "Convention-cadre AERMC-FD39-2020")
 
-###### À faire #####
-# 
-# 
-####################
-
 personnel.formatAC <- function(
   data,
   projet = NA_character_
@@ -23,6 +18,9 @@ personnel.formatAC <- function(
 {
   
   #### Données de référence ####
+  ## Connexion à la BDD ##
+  dbD <- BDD.ouverture("Data")
+  
   annee_ac <- str_replace(projet, "Convention-cadre AERMC-FD39-", "")
   date_debut_ac <- glue("{annee_ac}-01-01")
   date_fin_ac <- glue("{annee_ac}-12-31")
@@ -44,6 +42,8 @@ personnel.formatAC <- function(
   if(is.na(projet)) stop("Pas de projet spécifié")
   if(is.numeric(projet)){projets <- tbl(dbD, dbplyr::in_schema("fd_production", "projets_liste")) %>% filter(id == projet) %>% collect(n = Inf)} # Si le projet est recherché via son id
   if(!is.numeric(projet)){projets <- tbl(dbD, dbplyr::in_schema("fd_production", "projets_liste")) %>% filter(prjlst_projet == projet) %>% collect(n = Inf)} # Si le projet est recherché via son intitulé
+  
+  DBI::dbDisconnect(dbD)
   
   #### Tests ####
   if(grepl("Convention-cadre AERMC-FD39-", projets$prjlst_projet) == FALSE) stop("Le projet spécifié n'est pas de la forme Convention-cadre AERMC-FD39-")
