@@ -6,10 +6,6 @@
 \usage{
 chronique.DCE(
   data = data,
-  typemesure = c("Thermie", "Thermie barométrique", "Thermie piézométrique",
-    "Barométrie", "Piézométrie", "Piézométrie brute", "Piézométrie compensée",
-    "Piézométrie calée", "Piézométrie NGF", "Oxygénation", "Hydrologie",
-    "Pluviométrie"),
   projet = NA_character_,
   export = T,
   dep39 = F,
@@ -20,8 +16,6 @@ chronique.DCE(
 }
 \arguments{
 \item{data}{Data.frame issu de chronique.mesures, ne pouvant pas contenir différentes stations}
-
-\item{typemesure}{Défini le type de données et modifie le traitement en fonction}
 
 \item{projet}{Nom du projet}
 
@@ -41,5 +35,6 @@ Permet de réaliser un export de données thermiques au format DCE AE-OFB
 \examples{
 chronique.DCE(data)
 chronique.mesures("SUR0-9", "Thermie") \%>\% chronique.DCE()
+mesures_annuelles \%>\% filter(chmes_validation == "Validé") \%>\% group_split(chmes_coderhj) \%>\% map(~ chronique.DCE(data =., projet = glue("{today()}_{projet}"), dep39 = T))
 }
 \keyword{chronique}

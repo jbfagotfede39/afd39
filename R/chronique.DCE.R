@@ -4,7 +4,6 @@
 #' @name chronique.DCE
 #' @keywords chronique
 #' @param data Data.frame issu de chronique.mesures, ne pouvant pas contenir différentes stations
-#' @param typemesure Défini le type de données et modifie le traitement en fonction
 #' @param projet Nom du projet
 #' @param export Si \code{TRUE}, exporte les résultats (\code{FALSE} par défaut)
 #' @param dep39 Si \code{FALSE} (par défault), ne va pas rechercher les données de stations dans la base locale et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations
@@ -12,17 +11,18 @@
 #' @param fichierSuivis Permet de passer automatiquement la localisation du fichier de suivis si on le souhaite, sinon le demandera
 #' @param fichierCapteurs Permet de passer automatiquement la localisation du fichier des capteurs si on le souhaite, sinon le demandera
 #' @import glue
-#' @import openxlsx
+#' @import openxlsx2
 #' @import sf
 #' @import tidyverse
 #' @export
 #' @examples
 #' chronique.DCE(data)
 #' chronique.mesures("SUR0-9", "Thermie") %>% chronique.DCE()
+#' mesures_annuelles %>% filter(chmes_validation == "Validé") %>% group_split(chmes_coderhj) %>% map(~ chronique.DCE(data =., projet = glue("{today()}_{projet}"), dep39 = T))
+
 
 chronique.DCE <- function(  
   data = data,
-  typemesure = c("Thermie", "Thermie barométrique", "Thermie piézométrique", "Barométrie", "Piézométrie", "Piézométrie brute", "Piézométrie compensée", "Piézométrie calée", "Piézométrie NGF", "Oxygénation", "Hydrologie", "Pluviométrie"),
   projet = NA_character_,
   export = T,
   dep39 = F,
@@ -31,12 +31,6 @@ chronique.DCE <- function(
   fichierCapteurs = NA_character_
 )
 {
-  
-  #### Évaluation des choix ####
-  typemesure <- match.arg(typemesure)
-  
-  #### Module d'analyse des données ####
-  
   #### Collecte des données ####
   if(dep39 == TRUE){
   dbD <- BDD.ouverture("Data")
@@ -133,14 +127,16 @@ chronique.DCE <- function(
   ### Chronique ###
   OngletChronique <-
     data %>% 
+    filter(year(chmes_date) <= year(today())-1) %>% # pour ne pas avoir l'année annee+1
+    filter(year(chmes_date) >= year(today())-2) %>% # pour conserver depuis l'envoi de l'année -1
     mutate(chmes_date = format(chmes_date, format="%d/%m/%Y")) %>% 
     right_join(listeStations,
                by = c('chmes_coderhj' = 'chsta_coderhj')
     ) %>% 
-    mutate(chmes_capteur = ifelse("chmes_capteur" %in% names(.), chmes_capteur, NA_character_)) %>% 
-    mutate(chmes_validation = ifelse("chmes_validation" %in% names(.), chmes_validation, NA_character_)) %>% 
-    mutate(chmes_mode_acquisition = ifelse("chmes_mode_acquisition" %in% names(.), chmes_mode_acquisition, "Mesuré")) %>% 
-    mutate(chmes_referentiel_temporel = ifelse("chmes_referentiel_temporel" %in% names(.), chmes_referentiel_temporel, NA_character_)) %>% 
+    {if(!("chmes_capteur" %in% names(.))) mutate(., chmes_capteur = NA_character_) else .} %>%
+    {if(!("chmes_validation" %in% names(.))) mutate(., chmes_validation = NA_character_) else .} %>%
+    {if(!("chmes_mode_acquisition" %in% names(.))) mutate(., chmes_mode_acquisition = "Mesuré") else .} %>%
+    {if(!("chmes_referentiel_temporel" %in% names(.))) mutate(., chmes_referentiel_temporel = NA_character_) else .} %>% 
     dplyr::select(chsta_codesie, chsta_codepointprlvmt, chsta_codemo, chmes_coderhj, chmes_capteur, chmes_date, chmes_heure, chmes_referentiel_temporel, chmes_valeur, chmes_validation, chmes_mode_acquisition) %>% 
     rename(CODE_STA_SANDRE = chsta_codesie, 
            CODE_PT_PRELEVT_SANDRE = chsta_codepointprlvmt,
@@ -154,8 +150,20 @@ chronique.DCE <- function(
   
   ##### Export à proprement parler #####
   if(export == TRUE){
-  list_of_datasets <- list("Pose_relève" = OngletPoseReleve, "chronique de température" = OngletChronique)
-  openxlsx::write.xlsx(list_of_datasets, file = glue("./{projet}/Sorties/Données/DCE/{unique(data$chmes_coderhj)}_données_format_DCE.xlsx"))
+
+    if(nrow(OngletChronique) > 0){
+      fichier <- glue("./{projet}/Sorties/Données/DCE/{unique(data$chmes_coderhj)}_données_format_DCE.xlsx")
+      wb_workbook() %>% 
+        wb_add_worksheet("Pose_relève") %>% 
+        wb_add_data(x = OngletPoseReleve, na.strings = "") %>% 
+        wb_freeze_pane(first_row = T, first_col = F) %>%
+        wb_set_col_widths(cols = 1:20, widths = "auto") %>%
+        wb_add_worksheet("chronique de température") %>% 
+        wb_add_data(x = OngletChronique, na.strings = "") %>% 
+        wb_set_col_widths(cols = 1:20, widths = "auto") %>%
+        wb_freeze_pane(first_row = T, first_col = F) %>%
+        wb_save(file = fichier)
+    }
   }
   if(export == FALSE){
     warning("La fonction export = F est à développer")

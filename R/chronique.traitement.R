@@ -197,6 +197,7 @@ if(log != "Aucun") put("Fin de l'exportation du glossaire") # Log
 #### Préparation des données ####
 data <-
   data %>% 
+  arrange(chmes_coderhj, chmes_date, chmes_heure) %>% 
   formatage.annee.biologique() # Calcul de l'année biologique
 if(log != "Aucun") put("Fin de la préparation des données") # Log
 
@@ -236,6 +237,58 @@ if(export == TRUE & dep39 == TRUE){
   Commentaires <- tbl(dbD, in_schema("fd_production", "chroniques_commentaires")) %>% collect(n = Inf)
   SuiviTerrain <- listeStations$chsta_coderhj %>% map_dfr(~ chronique.suivi(., Recherche = "Station", Sortie = "Propre"))
   SuiviCapteurs <- listeCapteurs$chmes_capteur %>% map_dfr(~ chronique.capteurs(., Recherche = "Numéro", Sortie = "Propre"))
+  
+  liste_stations_tigre2 <- 
+    sf::st_read(dbD, query = "SELECT * FROM fd_production.chroniques_stations;") %>% filter(chsta_coderhj %in% liste_stations_brute$chmes_coderhj) %>% collect() %>% 
+    filter(chsta_coderhj %in% liste_stations_brute$chmes_coderhj) %>% 
+    dplyr::select(chsta_coderhj, chsta_coord_x, chsta_coord_y, chsta_milieu, chsta_mo, chsta_rive, chsta_impacts, chsta_codesie, chsta_codehydro, chsta_infl_nappe, chsta_infl_ant_type) %>% 
+    mutate(CODE_SONDE = NA_character_, .after = "chsta_mo") %>%
+    mutate(MODELE_SONDE = "Hobo UA-001-64", .after = "CODE_SONDE") %>%
+    {if("chsta_codetigre1" %in% names(.)) relocate(., chsta_codetigre1, .after = "chsta_impacts") else .} %>%
+    {if(!("chsta_codetigre1" %in% names(.))) mutate(., chsta_codetigre1 = "Non", .after = "chsta_impacts") else .} %>%
+    mutate(MAIL_STRUCTURE = NA_character_, .after = "chsta_codehydro") %>%
+    mutate(MAIL_STRUCTURE = case_when(chsta_mo == "FD01" ~ "herodet@federation-peche-ain.com",
+                                      chsta_mo == "FDPPMA01" ~ "herodet@federation-peche-ain.com",
+                                      chsta_mo == "SMVV" ~ "Laurent Charbonnier - lcharbonnier@veyle-vivante.com",
+                                      chsta_mo == "FD21" ~ "FDPPMA21",
+                                      chsta_mo == "FDPPMA21" ~ "FDPPMA21",
+                                      chsta_mo == "FD25" ~ "crossignon@federation-peche-doubs.org",
+                                      chsta_mo == "FDPPMA25" ~ "crossignon@federation-peche-doubs.org",
+                                      chsta_mo == "CEN FC" ~ "crossignon@federation-peche-doubs.org",
+                                      chsta_mo == "SVO" ~ "crossignon@federation-peche-doubs.org",
+                                      chsta_mo == "EPAGE HDHL" ~ "crossignon@federation-peche-doubs.org",
+                                      chsta_mo == "FD39" ~ "jean-baptiste.fagot@peche-jura.com",
+                                      chsta_mo == "FDPPMA39" ~ "jean-baptiste.fagot@peche-jura.com",
+                                      chsta_mo == "FJPPMA" ~ "jean-baptiste.fagot@peche-jura.com",
+                                      chsta_mo == "FD70" ~ "FDPPMA70",
+                                      chsta_mo == "FDPPMA70" ~ "FDPPMA70",
+                                      chsta_mo == "FD71" ~ "remy.chassignol@peche-saone-et-loire.fr",
+                                      chsta_mo == "FDPPMA71" ~ "remy.chassignol@peche-saone-et-loire.fr",
+                                      chsta_mo == "FD90" ~ "FDPPMA90",
+                                      chsta_mo == "FDPPMA90" ~ "FDPPMA90",
+                                      .default = "Indéterminé")
+    ) %>%
+    rowwise() %>%
+    mutate(tpcomm_commune_libelle = aquatools::BV.ComByCoordL93(chsta_coord_x,chsta_coord_y) %>% dplyr::select(name) %>% as.character()) %>%
+    # mutate(chsta_departement = aquatools::BV.ComByCoordL93(chsta_coord_x,chsta_coord_y) %>% dplyr::select(codeDepartement) %>% as.character()) %>%
+    ungroup() %>%
+    relocate(tpcomm_commune_libelle, .after = "chsta_milieu") %>% 
+    rename(CODE_INTERNE = chsta_coderhj,
+           X_93 = chsta_coord_x,
+           Y_93 = chsta_coord_y,
+           NOM_RIV = chsta_milieu,
+           NOM_COM = tpcomm_commune_libelle,
+           NOM_STRUCTURE = chsta_mo,
+           EMPLACEMENT_SONDE = chsta_rive,
+           TIGRE1 = chsta_codetigre1,
+           INFL_ANT = chsta_impacts,
+           CODE_SANDRE = chsta_codesie,
+           CODE_HYDRO = chsta_codehydro,
+           INFL_NAPPES = chsta_infl_nappe,
+           TYPE_INFL_ANT = chsta_infl_ant_type
+    ) %>%
+    sf::st_as_sf(coords = c("X_93","Y_93"), remove = F) %>%
+    st_set_crs(2154)
   DBI::dbDisconnect(dbD)
 }
 
@@ -314,26 +367,31 @@ if(export == TRUE & dep39 == "autre"){
   liste_stations_tigre2 <- 
     Stations %>% 
     filter(chsta_coderhj %in% liste_stations_brute$chmes_coderhj) %>% 
-    dplyr::select(chsta_coderhj, chsta_coord_x, chsta_coord_y, chsta_milieu, chsta_mo, chsta_rive, chsta_impacts, chsta_codesie, chsta_codehydro, chsta_infl_nappe, chsta_infl_ant_type) %>% 
+    dplyr::select(chsta_coderhj, chsta_coord_x, chsta_coord_y, chsta_milieu, chsta_mo, chsta_rive, chsta_impacts, chsta_codesie, chsta_codehydro, chsta_infl_nappe, chsta_infl_ant_type, chsta_codetigre1) %>% 
     mutate(CODE_SONDE = NA_character_, .after = "chsta_mo") %>%
     mutate(MODELE_SONDE = "Hobo UA-001-64", .after = "CODE_SONDE") %>%
-    mutate(TIGRE1 = "Non", .after = "chsta_impacts") %>%
+    mutate(chsta_codetigre1 = ifelse(is.na(chsta_codetigre1), "Non", chsta_codetigre1)) %>% 
     mutate(MAIL_STRUCTURE = NA_character_, .after = "chsta_codehydro") %>%
-    mutate(MAIL_STRUCTURE = case_when(chsta_mo == "FD01" ~ "FD01",
-                                      chsta_mo == "FDPPMA01" ~ "FD01",
-                                      chsta_mo == "FD21" ~ "FD21",
-                                      chsta_mo == "FDPPMA21" ~ "FD21",
-                                      chsta_mo == "FD25" ~ "FD25",
-                                      chsta_mo == "FDPPMA25" ~ "FD25",
-                                      chsta_mo == "FD39" ~ "FD39",
-                                      chsta_mo == "FDPPMA39" ~ "FD39",
-                                      chsta_mo == "FD70" ~ "FD70",
-                                      chsta_mo == "FDPPMA70" ~ "FD70",
-                                      chsta_mo == "FD71" ~ "FD71",
-                                      chsta_mo == "FDPPMA71" ~ "FD71",
-                                      chsta_mo == "FD90" ~ "FD90",
-                                      chsta_mo == "FDPPMA90" ~ "FD90",
-                                       .default = "Indéterminé")
+    mutate(MAIL_STRUCTURE = case_when(chsta_mo == "FD01" ~ "herodet@federation-peche-ain.com",
+                                      chsta_mo == "FDPPMA01" ~ "herodet@federation-peche-ain.com",
+                                      chsta_mo == "SMVV" ~ "Laurent Charbonnier - lcharbonnier@veyle-vivante.com",
+                                      chsta_mo == "FD21" ~ "FDPPMA21",
+                                      chsta_mo == "FDPPMA21" ~ "FDPPMA21",
+                                      chsta_mo == "FD25" ~ "crossignon@federation-peche-doubs.org",
+                                      chsta_mo == "FDPPMA25" ~ "crossignon@federation-peche-doubs.org",
+                                      chsta_mo == "CEN FC" ~ "crossignon@federation-peche-doubs.org",
+                                      chsta_mo == "SVO" ~ "crossignon@federation-peche-doubs.org",
+                                      chsta_mo == "EPAGE HDHL" ~ "crossignon@federation-peche-doubs.org",
+                                      chsta_mo == "FD39" ~ "jean-baptiste.fagot@peche-jura.com",
+                                      chsta_mo == "FDPPMA39" ~ "jean-baptiste.fagot@peche-jura.com",
+                                      chsta_mo == "FJPPMA" ~ "jean-baptiste.fagot@peche-jura.com",
+                                      chsta_mo == "FD70" ~ "FDPPMA70",
+                                      chsta_mo == "FDPPMA70" ~ "FDPPMA70",
+                                      chsta_mo == "FD71" ~ "remy.chassignol@peche-saone-et-loire.fr",
+                                      chsta_mo == "FDPPMA71" ~ "remy.chassignol@peche-saone-et-loire.fr",
+                                      chsta_mo == "FD90" ~ "FDPPMA90",
+                                      chsta_mo == "FDPPMA90" ~ "FDPPMA90",
+                                      .default = "Indéterminé")
            ) %>%
     rowwise() %>%
     mutate(tpcomm_commune_libelle = aquatools::BV.ComByCoordL93(chsta_coord_x,chsta_coord_y) %>% dplyr::select(name) %>% as.character()) %>%
@@ -347,6 +405,7 @@ if(export == TRUE & dep39 == "autre"){
            NOM_COM = tpcomm_commune_libelle,
            NOM_STRUCTURE = chsta_mo,
            EMPLACEMENT_SONDE = chsta_rive,
+           TIGRE1 = chsta_codetigre1,
            INFL_ANT = chsta_impacts,
            CODE_SANDRE = chsta_codesie,
            CODE_HYDRO = chsta_codehydro,
@@ -426,6 +485,34 @@ if(export == TRUE & dep39 == FALSE){
     group_split(chmes_coderhj) %>% # Permet d'éclater le dataframe en x dataframe, x étant le nb de modalités de chmes_coderhj
     purrr::map(~ chronique.DCE(data = ., projet = projet, export = T, dep39 = F, fichierStations = fnameStations, fichierSuivis = fnameSuivi, fichierCapteurs = fnameCapteurs))
 }
+  
+  ##### Regroupement #####
+  suivis_dce <-
+    fs::dir_ls(glue("./{projet}/Sorties/Données/DCE/")) %>%
+    # map_dfr(~ read_excel(., col_types = c("text", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA)))
+    map_dfr(~ read_excel(., col_types = rep("text", 19))) %>% 
+    # map_dfr(~ read_excel(., col_types = rep("c", 19))) %>% 
+      mutate(X_93 = as.numeric(X_93)) %>% 
+      mutate(Y_93 = as.numeric(Y_93)) %>% 
+      mutate(PROF_POSE = as.numeric(PROF_POSE)) %>% 
+      mutate(T_POSE = as.numeric(T_POSE))
+  
+  mesures_dce <-
+    fs::dir_ls(glue("./{projet}/Sorties/Données/DCE/")) %>%
+    map_dfr(~ read_excel(., sheet = 2))
+  
+  fichier <- glue("./{projet}/Sorties/Données/DCE/Donnees_thermie_regroupees_format_DCE.xlsx")
+  openxlsx2::wb_workbook() %>% 
+    openxlsx2::wb_add_worksheet("Pose_relève") %>% 
+    openxlsx2::wb_add_data(x = suivis_dce, na.strings = "") %>% 
+    openxlsx2::wb_freeze_pane(first_row = T, first_col = F) %>%
+    openxlsx2::wb_set_col_widths(cols = 1:20, widths = "auto") %>%
+    openxlsx2::wb_add_worksheet("chronique de température") %>% 
+    openxlsx2::wb_add_data(x = mesures_dce, na.strings = "") %>% 
+    openxlsx2::wb_set_col_widths(cols = 1:20, widths = "auto") %>%
+    openxlsx2::wb_freeze_pane(first_row = T, first_col = F) %>%
+    openxlsx2::wb_save(file = fichier)
+  
 }
 if(log != "Aucun") put("Fin de la sortie des données au format DCE") # Log
 
@@ -466,7 +553,8 @@ if(log != "Aucun") put("Fin de la sortie des données agrégées") # Log
 
 #### Sorties graphiques ####
 ### Contexte ###
-contexte_stations <- listeStations %>% chronique.contexte()
+if(export == TRUE & dep39 != FALSE){contexte_stations <- listeStations %>% chronique.contexte()}
+if(export == TRUE & dep39 == FALSE){contexte_stations$mo <- "Non défini"}
 
 if (exportfigures == TRUE) {
 ### Sortie graphique chronique complète ###
