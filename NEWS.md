@@ -1,5 +1,22 @@
 # NEWS - afd39
 
+## 0.0.31 - 2025-09-02
+### Ajouts
+- `chronique.traitement` : ajout d'un test relatif au regroupement des données DCE, afin de ne lancer que si le nombre de mesures est inférieur à la taille maximale d'une feuille excel, afin de ne pas tout faire planter
+- `general.identification` : création
+- `hydrovu.collecte` : création
+- `projet.calculInitial` : explicitation de commentaires de stop
+
+### Modifications
+- Ajout de dépendances
+- `BDD.format` : refactoring
+
+### Corrections
+- `PC.mesures` : suppression d'un exemple d'aide qui faisait planter la compilation
+- `poissons.especes` :
+  * Correction d'une syntaxe obsolète
+  * Correction d'une syntaxe non fonctionnelle qui faisait planter la fonction
+
 ## 0.0.30 - 2025-06-10
 ### Ajouts
 - `chronique.DCE` : 

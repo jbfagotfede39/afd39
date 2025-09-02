@@ -32,11 +32,10 @@ hydrovu.collecte <- function(
   if(is.na(capteur)) stop("Un identifiant de capteur doit forcément être fourni")
   
   #### Contexte ####
-  if(system('uname -n', intern=T) == "MBPdeJeBaptiste") machine <- "perso_jb"
-  if(system('uname -n', intern=T) != "MBPdeJeBaptiste") machine <- "serveur"
+  id_machine <- general.identification()
   
   #### Identification ####
-  if(machine == "serveur"){
+  if(id_machine == "serveur"){
     fileName <- 'conf.txt'
     motmystere <- readChar(fileName, file.info(fileName)$size-1)
     keyring_unlock(password = motmystere)
