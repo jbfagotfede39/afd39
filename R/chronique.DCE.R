@@ -127,6 +127,7 @@ chronique.DCE <- function(
   ### Chronique ###
   OngletChronique <-
     data %>% 
+    arrange(chmes_date, chmes_heure) %>% 
     filter(year(chmes_date) <= year(today())-1) %>% # pour ne pas avoir l'année annee+1
     filter(year(chmes_date) >= year(today())-2) %>% # pour conserver depuis l'envoi de l'année -1
     mutate(chmes_date = format(chmes_date, format="%d/%m/%Y")) %>% 

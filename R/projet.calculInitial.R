@@ -34,8 +34,8 @@ projet.calculInitial <- function(
   DBI::dbDisconnect(dbD)
   
   if(all(colnames(nom_projet) != colnames(recap_tps_w))) stop("Dataframe d'entrée différent de tpstravail_recapitulatif")
-  if(all(month(today()) < mois_modif_couts_annuels & cout_annuel %>% filter(gestctan_annee == year(today())) %>% filter(gestctan_type == "Estimé N-1") %>% select(gestctan_poste_id, gestctan_coutjournaliermajore) %>% nrow() == 0)) stop(glue("Pas de coûts annuels estimés pour l'année {year(today())}"))
-  if(all(month(today()) >= mois_modif_couts_annuels & cout_annuel %>% filter(gestctan_annee == 1+year(today())) %>% filter(gestctan_type == "Estimé N-1") %>% select(gestctan_poste_id, gestctan_coutjournaliermajore) %>% nrow() == 0)) stop(glue("Pas de coûts annuels estimés pour l'année {1+year(today())}"))
+  if(all(month(today()) < mois_modif_couts_annuels & cout_annuel %>% filter(gestctan_annee == year(today())) %>% filter(gestctan_type == "Estimé N-1") %>% select(gestctan_poste_id, gestctan_coutjournaliermajore) %>% nrow() == 0)) stop(glue("Pas de coûts annuels estimés pour l'année {year(today())} en base de données"))
+  if(all(month(today()) >= mois_modif_couts_annuels & cout_annuel %>% filter(gestctan_annee == 1+year(today())) %>% filter(gestctan_type == "Estimé N-1") %>% select(gestctan_poste_id, gestctan_coutjournaliermajore) %>% nrow() == 0)) stop(glue("Pas de coûts annuels estimés pour l'année {1+year(today())} en base de données"))
   
   ##### Préparation ####
   nom_projet <-

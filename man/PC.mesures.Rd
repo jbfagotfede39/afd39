@@ -21,6 +21,5 @@ PC.mesures()
 PC.mesures(station = "SOR10-2")
 PC.mesures("SOR10-2", sortie = "Propre")
 PC.mesures("Lac de Chalain", date = "2010-01-01", sortie = "Propre")
-operations_a_corriger \%>\% group_split(cle) \%>\% map(~ PC.mesures(station = .$pcsvi_coderhj, date = .$pcsvi_date, sortie = "Complet")) \%> list_rbind()
 }
 \keyword{pc}

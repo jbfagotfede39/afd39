@@ -159,13 +159,15 @@ BDD.format <- function(
     data$chmes_unite <- ifelse(data$chmes_typemesure == "Piézométrie NGF", "NGF", data$chmes_unite)
     
     # Transformation des formats
-    data$id <- as.integer(data$id)
-    data$chmes_date <- as.character(data$chmes_date)
+    data <- 
+      data %>% 
+      mutate(id = as.integer(id)) %>% 
+      mutate(chmes_date = as.character(chmes_date))
     
     # Ajout des ID
     data$id <- row_number(data$chmes_valeur) + as.numeric(tbl(dbD,in_schema("fd_production", "chroniques_mesures")) %>% summarise(max = max(id, na.rm = TRUE)) %>% collect()) # Pour incrémenter les id à partir du dernier
-    if(dim(filter(data, is.na(id)))[1] > 0 & dim(filter(data, is.na(chmes_validation)))[1] == 0) data$id <- row_number(data$chmes_validation) + as.numeric(tbl(dbD,in_schema("fd_production", "chroniques_mesures")) %>% summarise(max = max(id, na.rm = TRUE)) %>% collect())
-    if(dim(filter(data, is.na(id)))[1] > 0) stop("Tous les id ne sont pas complétés")
+    if(data %>% filter(is.na(id)) %>% nrow() > 0 & data %>% filter(is.na(chmes_validation)) %>% nrow() == 0) data$id <- row_number(data$chmes_validation) + as.numeric(tbl(dbD,in_schema("fd_production", "chroniques_mesures")) %>% summarise(max = max(id, na.rm = TRUE)) %>% collect())
+    if(data %>% filter(is.na(id)) %>% nrow() > 0) stop("Tous les id ne sont pas complétés")
   }
   
   # Mesures groupées #

@@ -49,18 +49,19 @@ poissons.especes <- function(
   if(Sortie == "Simple" | Sortie == "Propre"){
     Especes <- 
       Especes %>% 
-      rename_at(vars(contains("codeespece")), funs(str_replace(., "codeespece", "Code"))) %>%
-      rename_at(vars(contains("nomfrancais")), funs(str_replace(., "nomfrancais", "Espèce"))) %>%
-      rename_at(vars(contains("nomlatin")), funs(str_replace(., "nomlatin", "Nom latin"))) %>%
-      rename_at(vars(contains("famille")), funs(str_replace(., "famille", "Famille"))) %>%
-      rename_at(vars(contains("protectioniucnlocal")), funs(str_replace(., "protectioniucnlocal", "Statut")))
+      rename_at(vars(contains("codeespece")), ~str_replace(., "codeespece", "Code")) %>%
+      rename_at(vars(contains("nomfrancais")), ~str_replace(., "nomfrancais", "Espèce")) %>%
+      rename_at(vars(contains("nomlatin")), ~str_replace(., "nomlatin", "Nom latin")) %>%
+      rename_at(vars(contains("famille")), ~str_replace(., "famille", "Famille")) %>%
+      rename_at(vars(contains("protectioniucnlocal")), ~str_replace(., "protectioniucnlocal", "Statut"))
   }
   
   if(Sortie != "Simple" & Couleurs == TRUE){
     Especes <- 
       Especes %>% 
       mutate(Statut = stringr::str_replace(Statut, "(?s) .*", "")) %>%  # Suppression de la chaîne de caractère à partir du premier espace
-      dplyr::na_if("NA") %>% 
+      mutate(across(where(is.character), ~na_if(., ""))) %>% 
+      mutate(across(where(is.character), ~na_if(., "NA"))) %>% 
       mutate(Statut = ifelse(Statut == "EX", "{\\color[RGB]{0,0,0} EX}", Statut)) %>% 
       mutate(Statut = ifelse(Statut == "EW", "{\\color[RGB]{61,25,81} EW}", Statut)) %>% 
       mutate(Statut = ifelse(Statut == "RE", "{\\color[RGB]{90,26,99} RE}", Statut)) %>% 

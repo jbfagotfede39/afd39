@@ -400,16 +400,21 @@ if(grepl("AERMC", Projets$prjlst_projet)){
     left_join(Argent, by="tpswrecap_sousactionaermc") %>% 
     select(tpswrecap_sousactionaermc, 
             # contains("Attendu_Responsable adminis"), contains("Attendu_Ingénieur resp"), contains("Attendu_Ingénieur hy"), contains("Attendu_Charg"), contains("Attendu_Technicien quali"), contains("Attendu_Mat"), # Sans apprenti
-            contains("Attendu_Responsable adminis"), contains("Attendu_Ingénieur resp"), contains("Attendu_Ingénieur hy"), contains("Attendu_Charg"), contains("Attendu_Technicien quali"), contains("Attendu_Appren"), contains("Attendu_Mat"), # Avec apprenti
+            # contains("Attendu_Responsable adminis"), contains("Attendu_Ingénieur resp"), contains("Attendu_Ingénieur hy"), contains("Attendu_Charg"), contains("Attendu_Technicien quali"), contains("Attendu_Appren"), contains("Attendu_Mat"), # Avec apprenti
+            contains("Attendu_Direc"), contains("Attendu_Responsable adminis"), contains("Attendu_Ingénieur resp"), contains("Attendu_Responsable"), contains("Attendu_Ingénieur hy"), contains("Attendu_Charg"), contains("Attendu_Technicien quali"), contains("Attendu_Appren"), contains("Attendu_Mat"), # Avec apprenti
             # contains("Réalisé_Responsable adminis"), contains("Réalisé_Ingénieur resp"), contains("Réalisé_Ingénieur hy"), contains("Réalisé_Charg"), contains("Réalisé_Technicien quali"), contains("Réalisé_Mat") # Sans apprenti
-            contains("Réalisé_Responsable adminis"), contains("Réalisé_Ingénieur resp"), contains("Réalisé_Ingénieur hy"), contains("Réalisé_Charg"), contains("Réalisé_Technicien quali"), contains("Réalisé_Appren"), contains("Réalisé_Intérim"), contains("Réalisé_Mat") # Avec apprenti
+            # contains("Réalisé_Responsable adminis"), contains("Réalisé_Ingénieur resp"), contains("Réalisé_Ingénieur hy"), contains("Réalisé_Charg"), contains("Réalisé_Technicien quali"), contains("Réalisé_Appren"), contains("Réalisé_Intérim"), contains("Réalisé_Mat") # Avec apprenti
+            contains("Réalisé_Direc"), contains("Réalisé_Responsable adminis"), contains("Réalisé_Ingénieur resp"), contains("Réalisé_Responsable"), contains("Réalisé_Ingénieur hy"), contains("Réalisé_Charg"), contains("Réalisé_Technicien quali"), contains("Réalisé_Appren"), contains("Réalisé_Intérim"), contains("Réalisé_Mat") # Avec apprenti
     )
   
   ## Renommage des colonnes
-  if(ncol(Recapitulatif) == 11) colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses")
-  if(ncol(Recapitulatif) == 22) colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses") # Sans apprenti
-  if(ncol(Recapitulatif) == 25) colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses") # Avec apprenti avec matériel
-  if(ncol(Recapitulatif) == 26) colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses") # Avec apprenti
+  # if(ncol(Recapitulatif) == 11) colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses")
+  # if(ncol(Recapitulatif) == 22) colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses") # Sans apprenti
+  # if(ncol(Recapitulatif) == 25) colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses") # Avec apprenti avec matériel
+  # if(ncol(Recapitulatif) == 26) colnames(Recapitulatif) <- c("Thème", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses") # Avec apprenti
+  if(ncol(Recapitulatif) == 27) colnames(Recapitulatif) <- c("Thème", 
+                                                             "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses", # Fin du attendu
+                                                             "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Nb h/j", "Dépenses", "Dépenses") # Fin du réalisé
 
   ## Création d'un classeur
   tempsprojet <- createWorkbook()
@@ -418,35 +423,40 @@ if(grepl("AERMC", Projets$prjlst_projet)){
   ## Ajout des données
   writeData(tempsprojet, 1, Recapitulatif, startCol = 1, startRow = 3, colNames = T) # writing content on the left-most column to be merged
   ## Ajout de cellules fusionnées
-  mergeCells(tempsprojet, 1, cols = 2:12, rows = 1)
-  mergeCells(tempsprojet, 1, cols = 13:25, rows = 1)
+  mergeCells(tempsprojet, 1, cols = 2:14, rows = 1)
+  mergeCells(tempsprojet, 1, cols = 15:27, rows = 1)
   writeData(tempsprojet, 1, "Attendu", startCol = 2, startRow = 1)
-  writeData(tempsprojet, 1, "Réalisé", startCol = 13, startRow = 1)
+  writeData(tempsprojet, 1, "Réalisé", startCol = 15, startRow = 1)
   mergeCells(tempsprojet, 1, cols = 2:3, rows = 2)
   mergeCells(tempsprojet, 1, cols = 4:5, rows = 2)
   mergeCells(tempsprojet, 1, cols = 6:7, rows = 2)
   mergeCells(tempsprojet, 1, cols = 8:9, rows = 2)
   mergeCells(tempsprojet, 1, cols = 10:11, rows = 2)
-  mergeCells(tempsprojet, 1, cols = 13:14, rows = 2)
+  mergeCells(tempsprojet, 1, cols = 12:13, rows = 2)
   mergeCells(tempsprojet, 1, cols = 15:16, rows = 2)
   mergeCells(tempsprojet, 1, cols = 17:18, rows = 2)
   mergeCells(tempsprojet, 1, cols = 19:20, rows = 2)
   mergeCells(tempsprojet, 1, cols = 21:22, rows = 2)
   mergeCells(tempsprojet, 1, cols = 23:24, rows = 2)
-  writeData(tempsprojet, 1, "Resp. admin. et fin.", startCol = 2, startRow = 2)
-  writeData(tempsprojet, 1, "Mat.", startCol = 12, startRow = 2)
-  writeData(tempsprojet, 1, "Resp. admin. et fin.", startCol = 13, startRow = 2)
-  writeData(tempsprojet, 1, "Resp. techn.	", startCol = 4, startRow = 2)
-  writeData(tempsprojet, 1, "Resp. techn.	", startCol = 15, startRow = 2)
-  writeData(tempsprojet, 1, "Ing. hydr.", startCol = 6, startRow = 2)
-  writeData(tempsprojet, 1, "Ing. hydr.", startCol = 17, startRow = 2)
-  writeData(tempsprojet, 1, "Chargés de dével.", startCol = 8, startRow = 2)
-  writeData(tempsprojet, 1, "Chargés de dével.", startCol = 19, startRow = 2)
-  writeData(tempsprojet, 1, "Appr.", startCol = 10, startRow = 2)
-  writeData(tempsprojet, 1, "Appr.", startCol = 21, startRow = 2)
+  mergeCells(tempsprojet, 1, cols = 25:26, rows = 2)
+  writeData(tempsprojet, 1, "Dir.", startCol = 2, startRow = 2)
+  writeData(tempsprojet, 1, "Dir.", startCol = 15, startRow = 2)
+  writeData(tempsprojet, 1, "Resp. admin. et fin.", startCol = 4, startRow = 2)
+  writeData(tempsprojet, 1, "Resp. admin. et fin.", startCol = 17, startRow = 2)
+  writeData(tempsprojet, 1, "Resp. techn.", startCol = 6, startRow = 2)
+  writeData(tempsprojet, 1, "Resp. techn.", startCol = 19, startRow = 2)
+  writeData(tempsprojet, 1, "Resp. dev.", startCol = 8, startRow = 2)
+  writeData(tempsprojet, 1, "Resp. dev.", startCol = 21, startRow = 2)
+  writeData(tempsprojet, 1, "Ing. hydr.", startCol = 10, startRow = 2)
+  writeData(tempsprojet, 1, "Ing. hydr.", startCol = 23, startRow = 2)
+  writeData(tempsprojet, 1, "Chargés de dével.", startCol = 12, startRow = 2)
+  writeData(tempsprojet, 1, "Chargés de dével.", startCol = 25, startRow = 2)
+  # writeData(tempsprojet, 1, "Appr.", startCol = 10, startRow = 2)
+  # writeData(tempsprojet, 1, "Appr.", startCol = 21, startRow = 2)
+  writeData(tempsprojet, 1, "Mat.", startCol = 14, startRow = 2)
+  writeData(tempsprojet, 1, "Mat.", startCol = 27, startRow = 2)
   # writeData(tempsprojet, 1, "Inter.", startCol = 10, startRow = 2)
-  writeData(tempsprojet, 1, "Inter.", startCol = 23, startRow = 2)
-  writeData(tempsprojet, 1, "Mat.", startCol = 25, startRow = 2)
+  # writeData(tempsprojet, 1, "Inter.", startCol = 23, startRow = 2)
   ## Centrage des cellules fusionnées
   centerStyle <- createStyle(halign = "center")
   addStyle(tempsprojet, 1, centerStyle, rows = 1:2, cols = 1:25, gridExpand = TRUE)

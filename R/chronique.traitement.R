@@ -500,7 +500,7 @@ if(export == TRUE & dep39 == FALSE){
   mesures_dce <-
     fs::dir_ls(glue("./{projet}/Sorties/Données/DCE/")) %>%
     map_dfr(~ read_excel(., sheet = 2))
-  
+  if(nrow(mesures_dce) < 1048500){
   fichier <- glue("./{projet}/Sorties/Données/DCE/Donnees_thermie_regroupees_format_DCE.xlsx")
   openxlsx2::wb_workbook() %>% 
     openxlsx2::wb_add_worksheet("Pose_relève") %>% 
@@ -512,6 +512,7 @@ if(export == TRUE & dep39 == FALSE){
     openxlsx2::wb_set_col_widths(cols = 1:20, widths = "auto") %>%
     openxlsx2::wb_freeze_pane(first_row = T, first_col = F) %>%
     openxlsx2::wb_save(file = fichier)
+  }
   
 }
 if(log != "Aucun") put("Fin de la sortie des données au format DCE") # Log
