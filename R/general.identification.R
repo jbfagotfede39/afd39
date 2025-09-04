@@ -13,6 +13,8 @@ general.identification <- function(
   #### Calcul ####
   id_machine <- "inconnu"
   if(system('uname -n', intern=T) == "MBPdeJeBaptiste") id_machine <- "jb_pro"
+  if(system('uname -n', intern=T) == "MacBook-Pro-de-Jean-Baptiste") id_machine <- "jb_pro"
+  if(system('uname -n', intern=T) == "MacBookPro") id_machine <- "jb_pro"
   if(system('uname -n', intern=T) == "r-ftp") id_machine <- "serveur"
 
   #### Vérification ####

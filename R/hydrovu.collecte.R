@@ -6,6 +6,7 @@
 #' @param chsta_coderhj Station concernées par l'\code{id} recherché sur l'API
 #' @param modem Modem concerné par l'\code{id} recherché sur l'API
 #' @param capteur Capteur concerné par l'\code{id} recherché sur l'API
+#' @param time_end Timecode de fin de recherche (\code{now()} par défaut)
 #' @param profondeur Profondeur temporelle recherchée (en jours)
 #' @param intervalle Intervalle entre deux séquences de collecte (en heures)
 #' @keywords chronique
@@ -20,6 +21,7 @@ hydrovu.collecte <- function(
     chsta_coderhj = NA_character_,
     modem = NA_character_,
     capteur = NA_character_,
+    time_end = now(),
     profondeur = 10,
     intervalle = 6
   )
@@ -47,7 +49,7 @@ hydrovu.collecte <- function(
   #### Collecte des données ####
   ##### Création de la liste des requêtes #####
   liste_creneaux <-
-    seq(floor_date(now()-days(profondeur), unit = "hours"), floor_date(now(), unit = "hours"), by = glue("{intervalle} hour")) %>% 
+    seq(floor_date(time_end-days(profondeur), unit = "hours"), floor_date(time_end, unit = "hours"), by = glue("{intervalle} hour")) %>% 
     as_tibble() %>% 
     rename(time = value) %>% 
     mutate(chmes_coderhj = id, .before = time)
@@ -73,11 +75,15 @@ hydrovu.collecte <- function(
       chmes_typemesure == "Barométrie" ~ modem,
       chmes_typemesure == "Niveau de batterie" ~ modem,
       chmes_typemesure == "Piézométrie compensée" ~ capteur,
-      chmes_typemesure == "Thermie piézométrique" ~ capteur
+      chmes_typemesure == "Thermie piézométrique" ~ capteur,
+      chmes_typemesure == "Thermie" ~ capteur,
+      chmes_typemesure == "Nitrates" ~ capteur,
+      chmes_typemesure == "Conductivité" ~ capteur
     )
     ) %>% 
     mutate(chmes_typemesure = ifelse(chmes_typemesure == "Piézométrie compensée" & chmes_unite == "m", "Piézométrie NGF", chmes_typemesure)) %>% 
     mutate(chmes_unite = ifelse(chmes_typemesure == "Piézométrie NGF", "NGF", chmes_unite)) %>% 
+    mutate(chmes_unite = ifelse(chmes_unite == "uS/cm", "μS/cm", chmes_unite)) %>% 
     mutate(chmes_validation = "À valider") %>% 
     mutate(chmes_mode_acquisition = "Mesuré") %>% 
     mutate(chmes_mode_integration = "Ajout automatique") %>% 
@@ -94,7 +100,8 @@ hydrovu.collecte <- function(
   data_sortie <- data_to_add_v3
   
   #### Vérification ####
-  if(data_sortie %>% filter(is.na(chmes_capteur))%>% nrow() != 0) stop("Attention : il y a des lignes sans capteur attribué")
+  test <- data_sortie %>% filter(is.na(chmes_capteur))
+  if(test %>% nrow() != 0) stop("Attention : il y a des lignes sans capteur attribué")
   
   #### Sortie ####
   return(data_sortie)

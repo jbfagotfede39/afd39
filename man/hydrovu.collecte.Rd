@@ -9,6 +9,7 @@ hydrovu.collecte(
   chsta_coderhj = NA_character_,
   modem = NA_character_,
   capteur = NA_character_,
+  time_end = now(),
   profondeur = 10,
   intervalle = 6
 )
@@ -21,6 +22,8 @@ hydrovu.collecte(
 \item{modem}{Modem concerné par l'\code{id} recherché sur l'API}
 
 \item{capteur}{Capteur concerné par l'\code{id} recherché sur l'API}
+
+\item{time_end}{Timecode de fin de recherche (\code{now()} par défaut)}
 
 \item{profondeur}{Profondeur temporelle recherchée (en jours)}
 

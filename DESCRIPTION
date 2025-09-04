@@ -1,6 +1,6 @@
 Package: afd39
 Title: Outils pour la FJPPMA
-Version: 0.0.31
+Version: 0.0.32
 Authors@R: 
     person("Jean-Baptiste", "Fagot", , "jean-baptiste.fagot@peche-jura.com", role = c("aut", "cre"))
 Maintainer: Jean-Baptiste Fagot <jean-baptiste.fagot@peche-jura.com>
@@ -14,7 +14,6 @@ Depends:
 Imports:
     aquatools,
     chromote,
-    cli,
     DBI,
     dbplyr,
     devtools,
@@ -34,7 +33,6 @@ Imports:
     lubridate,
     metR,
     openxlsx,
-    openxlsx2,
     purrr,
     raster,
     readxl,
@@ -50,8 +48,6 @@ Imports:
     tidyverse,
     wkb,
     zip
-Suggests: 
-    testthat
 Remotes: 
     jbfagotfede39/aquatools
 Encoding: UTF-8

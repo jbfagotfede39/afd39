@@ -1,5 +1,14 @@
 # NEWS - afd39
 
+## 0.0.32 - 2025-09-04
+### Ajouts
+- `hydrovu.collecte` : 
+  * ajout du paramètre `time_end`
+  * ajout de paramètres et unités
+
+### Modifications
+- `hydrovu.collecte` : refactoring
+
 ## 0.0.31 - 2025-09-02
 ### Ajouts
 - `chronique.traitement` : ajout d'un test relatif au regroupement des données DCE, afin de ne lancer que si le nombre de mesures est inférieur à la taille maximale d'une feuille excel, afin de ne pas tout faire planter
