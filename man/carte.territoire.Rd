@@ -17,7 +17,7 @@ carte.territoire(
 )
 }
 \arguments{
-\item{emprise}{Objet sf d'emprise de la carte à représenter}
+\item{emprise}{Objet sf (polygone)d'emprise de la carte à représenter}
 
 \item{occupation_sols}{Affichage de l'occupation des sols en couleur (\code{TRUE} par défaut)}
 

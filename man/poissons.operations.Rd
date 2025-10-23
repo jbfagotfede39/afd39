@@ -7,6 +7,7 @@
 poissons.operations(
   ListeStations = data.frame(Nom = character(0)),
   CodeOperation = FALSE,
+  codeinventaire = FALSE,
   Sortie = c("Simple", "Propre", "Complet")
 )
 }
@@ -14,6 +15,8 @@ poissons.operations(
 \item{ListeStations}{Dataframe contenant un colonne "Nom" avec le code de la station (RHJ)}
 
 \item{CodeOperation}{Affichage du CodeOperation - \code{FALSE} (par défault)}
+
+\item{codeinventaire}{Affichage du codeinventaire - \code{FALSE} (par défault)}
 
 \item{Sortie}{Forme du dataframe de sortie - \code{Simple} (par défault), \code{Propre} (format diffusable, avec stations) ou \code{Complet} (tous les champs)}
 }

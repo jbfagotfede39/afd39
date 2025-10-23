@@ -15,5 +15,6 @@ Cette fonction permet d'extraire les données de mesures topographiques
 \examples{
 mesures <- topographie.mesures()
 mesures <- topographie.mesures("1")
+mesures <- c(17, 23) \%>\% tibble(id = .) \%>\% group_split(id) \%>\% map(~ topographie.mesures(.)) \%>\% reduce(rbind)
 }
 \keyword{topographie}

@@ -2,81 +2,36 @@
 #'
 #' Cette fonction permet de collecter les résultats des IAM
 #' @name iam.resultats
-#' @param ListeStations Dataframe contenant un colonne "Nom" avec le code de la station (RHJ)
-#' @param Sortie Forme du dataframe de sortie - \code{Simple} (par défault), \code{Propre} (format diffusable, avec stations) ou \code{Complet} (tous les champs)
-#' @param periode Permet de limiter la durée des données traitées : 5ans, 10ans (par défaut), 20ans, Complet, 4campagnes
-#' @keywords donnees
+#' @param tpiam_op_id Identifiant de l'opération
+#' @keywords topographie
 #' @import DBI
+#' @import glue
+#' @import sf
 #' @import tidyverse
 #' @export
 #' @examples
-#' iam.resultats()
-#' Resultats <- iam.resultats()
-#' Resultats <- iam.resultats(Sortie = "Complet")
-#' iam.resultats(data.frame(Nom = "SOR10-2"), Sortie = "Propre", periode = "20ans")
-#' iam.resultats(Sortie = "Complet") %>% st_join(stations.territoire("Commune", c("Montmorot"))) %>% filter(!is.na(tpcomm_commune_libellesansarticle))
+#' mesures <- iam.resultats()
+#' mesures <- iam.resultats("12")
+#' mesures <- c(17, 23) %>% tibble(id = .) %>% group_split(id) %>% map(~ iam.resultats(.)) %>% reduce(rbind)
 
 iam.resultats <- function(
-  ListeStations = data.frame(Nom = character(0)),
-  Sortie = c("Simple","Propre","Complet"),
-  periode = c("10ans","5ans","20ans","Complet","4campagnes")
+    tpiam_op_id = NA_character_
 )
-  {
+{
   
-  ## Évaluation des choix ##
-  Sortie <- match.arg(Sortie)
-  periode <- match.arg(periode)
+  #### Nettoyage & reformatage ####
+  test_tpiam_op_id <- tpiam_op_id %>% nchar()
+  if(!(test_tpiam_op_id %>% is.na())) {
+    if(test_tpiam_op_id == 0) tpiam_op_id <- NA_character_}
   
-  ## Ouverture de la BDD ##
-  dbD <- BDD.ouverture("Data")
+  #### Test de cohérence ####
+  # if(is.na(tpiam_op_id)) stop("Il faut fournir un tpiam_op_id")
   
-  ##### Récupération des données #####
-  Resultats <- 
-    sf::st_read(dbD, query = "SELECT * FROM fd_production.topographie_iam;") %>% 
-    arrange(tpiam_coderhj, tpiam_date) %>%
-    collect(n = Inf)
+  #### Collecte des données ####
+  if(is.na(tpiam_op_id)) iam <- table.recuperation("topographie_iam")
+  if(!is.na(tpiam_op_id)) iam <- table.recuperation("topographie_iam", glue("tpiam_op_id = {tpiam_op_id}"))
   
-  ## Fermeture de la BDD ##
-  DBI::dbDisconnect(dbD)
+  #### Sortie ####
+  return(iam)
   
-  ##### Filtrage station #####
-if(dim(ListeStations)[1] != 0){
-  Resultats <-
-    Resultats %>% 
-    filter(nom %in% ListeStations$Nom) %>% 
-    arrange(codeespece)
-}
-  
-  ##### Limitation temporelle des résultats #####
-  if(periode == "5ans") limitetemporelle <- now()-years(5)
-  if(periode == "10ans") limitetemporelle <- now()-years(10)
-  if(periode == "20ans") limitetemporelle <- now()-years(20)
-  if(periode == "Complet") limitetemporelle <- now()-years(100)
-  if(periode == "4campagnes") limitetemporelle <- Resultats %>% distinct(tpiam_date) %>% arrange(desc(tpiam_date)) %>% pull() %>% nth(4)
-  Resultats <- Resultats %>% filter(tpiam_date >= limitetemporelle)
-  
-  ##### Simplification #####
-if(dim(ListeStations)[1] == 0 & Sortie == "Simple"){
-  stop("Paramétrage de la sortie à développer")
- # Resultats <-
- #   Resultats %>%
- #   dplyr::rename(Station = nom, Date = tpiam_date) %>% 
- #   select(Station, Date, codeespece)
-}
-  
-  if(dim(ListeStations)[1] == 0 & Sortie == "Propre"){
-    stop("Paramétrage de la sortie à développer")
-    # Resultats <-
-    #   Resultats %>%
-    #   select(Nom, DateDebut, Codeespece, TailleMinimum, TailleMaximum, Nombre, Poids)
-  }
-  
-  if(dim(ListeStations)[1] != 0 & Sortie == "Complet"){
-    # Resultats <-
-    #   Resultats %>%
-    #   select(Nom, DateDebut, Codeespece, TailleMinimum, TailleMaximum, Nombre, Poids)
-    # Rien à faire
-  }
-
-  return(Resultats)
 } # Fin de la fonction

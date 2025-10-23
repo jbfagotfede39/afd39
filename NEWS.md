@@ -1,7 +1,27 @@
 # NEWS - afd39
 
+## 0.0.33 - 2025-10-23
+### Ajouts
+- `app.tps_travail` : création
+- `hydrovu.collecte` : ajout d'une sortie vide si absence de données en retour
+- `poissons.operations` : ajout du paramètre `codeinventaire`
+- `table.recuperation` : création
+- `topographie.habitats` : création
+- `topographie.mesures` : ajout d'un exemple
+
+### Modifications
+- `carte.territoire` :
+  * Précision sur le format de `emprise` attendu et inversion du test d'entrée
+  * Ajout d'une conversion de `emprise` en WGS84
+  * Changement temporaire du format de requête de `elevatr::get_elev_raster`
+- `poissons.operations` : refactoring du nettoyage/mise en forme
+
+### Corrections
+- `BDD.format` : correction de l'absence d'ouverture de connexion pour le formatage des données de chroniques
+
 ## 0.0.32 - 2025-09-04
 ### Ajouts
+- `general.identification` : ajout de cas
 - `hydrovu.collecte` : 
   * ajout du paramètre `time_end`
   * ajout de paramètres et unités

@@ -2,7 +2,7 @@
 #'
 #' Cette fonction permet de créer un fond de carte départemental ou local au format ggplot2
 #' @name carte.territoire
-#' @param emprise Objet sf d'emprise de la carte à représenter
+#' @param emprise Objet sf (polygone)d'emprise de la carte à représenter
 #' @param occupation_sols Affichage de l'occupation des sols en couleur (\code{TRUE} par défaut)
 #' @param routes_principales Affichage des routes principales (\code{TRUE} par défaut)
 #' @param voies_ferrees Affichage des voies ferrées (\code{TRUE} par défaut)
@@ -41,13 +41,20 @@ carte.territoire <- function(
   # periode <- match.arg(periode)
   
   #### Test de cohérence ####
-  if(length(emprise) == 1) emprise_definie <- F
-  if(length(emprise) != 1) emprise_definie <- T
+  if(length(emprise) == 1) emprise_definie <- T # Enveloppe sf
+  if(length(emprise) != 1) emprise_definie <- F # Objet bbox <-> length == 4
   if(emprise_definie == F) warning("Pas d'emprise de définie")
   
   #### Collecte des données ####
   ## Ouverture de la BDD ##
   dbD <- BDD.ouverture("Data")
+  
+  ## Emprise ##
+  emprise_wgs84 <- emprise %>% st_transform(4326)
+  emprise_wgs84_bbox_df <- data.frame(x = runif(6,min=sf::st_bbox(emprise_wgs84)$xmin, 
+                                           max=sf::st_bbox(emprise_wgs84)$xmax),
+                                 y = runif(6,min=sf::st_bbox(emprise_wgs84)$ymin, 
+                                           max=sf::st_bbox(emprise_wgs84)$ymax))
   
   ## Occupation des sols ##
   if(occupation_sols == T) occupation <- sf::st_read(dbD, query = "SELECT clc.usgclc_code_simplifie, st_intersection(clc.geom, dep.geom) as geom FROM fd_referentiels.usages_corinelandcover_2018 clc, fd_referentiels.topographie_departement dep WHERE st_intersects(clc.geom, dep.geom);")
@@ -70,7 +77,8 @@ carte.territoire <- function(
   
   ## MNT ##
   if(altitude == T){
-    if(emprise_definie == T) elevations <- elevatr::get_elev_raster(locations = emprise, z = zoom, clip = 'locations')
+    if(emprise_definie == T) elevations <- elevatr::get_elev_raster(locations = emprise_wgs84_bbox_df, z = zoom, prj = st_crs(departement_wgs84), clip = 'locations')
+    # if(emprise_definie == T) elevations <- elevatr::get_elev_raster(locations = emprise_wgs84, z = zoom, clip = 'locations')
     if(emprise_definie == F) elevations <- elevatr::get_elev_raster(locations = departement_wgs84, z = zoom, clip = 'locations')
     elevations <- raster::projectRaster(elevations,
                                         crs = raster::crs(departement))

@@ -65,43 +65,46 @@ hydrovu.collecte <- function(
   #### Données de référence ####
   mesures <- mesures_structure
   
-  #### Nettoyage & reformatage ####
-  data_to_add_v2 <- 
-    data_to_add_v1 %>% 
-    mutate(chmes_coderhj = chsta_coderhj) %>% 
-    mutate(chmes_date = ymd(chmes_date)) %>%
-    mutate(chmes_valeur = as.numeric(chmes_valeur)) %>%
-    mutate(chmes_capteur = case_when(
-      chmes_typemesure == "Barométrie" ~ modem,
-      chmes_typemesure == "Niveau de batterie" ~ modem,
-      chmes_typemesure == "Piézométrie compensée" ~ capteur,
-      chmes_typemesure == "Thermie piézométrique" ~ capteur,
-      chmes_typemesure == "Thermie" ~ capteur,
-      chmes_typemesure == "Nitrates" ~ capteur,
-      chmes_typemesure == "Conductivité" ~ capteur
-    )
-    ) %>% 
-    mutate(chmes_typemesure = ifelse(chmes_typemesure == "Piézométrie compensée" & chmes_unite == "m", "Piézométrie NGF", chmes_typemesure)) %>% 
-    mutate(chmes_unite = ifelse(chmes_typemesure == "Piézométrie NGF", "NGF", chmes_unite)) %>% 
-    mutate(chmes_unite = ifelse(chmes_unite == "uS/cm", "μS/cm", chmes_unite)) %>% 
-    mutate(chmes_validation = "À valider") %>% 
-    mutate(chmes_mode_acquisition = "Mesuré") %>% 
-    mutate(chmes_mode_integration = "Ajout automatique") %>% 
-    # mutate(chmes_mode_integration = "Ajout manuel") %>% 
-    mutate(chmes_referentiel_temporel = NA_character_)
-  
-  data_to_add_v3 <- 
-    data_to_add_v2 %>% 
-    mutate(id = NA_integer_) %>% mutate(`_modif_utilisateur` = NA) %>% mutate(`_modif_type` = NA) %>% mutate(`_modif_date` = NA) %>% 
-    select(match(colnames(mesures), names(.))) %>% 
-    distinct() %>% 
-    arrange(desc(chmes_date), desc(chmes_heure))
-  
-  data_sortie <- data_to_add_v3
-  
-  #### Vérification ####
-  test <- data_sortie %>% filter(is.na(chmes_capteur))
-  if(test %>% nrow() != 0) stop("Attention : il y a des lignes sans capteur attribué")
+  if(data_to_add_v1 %>% nrow() == 0) data_sortie <- mesures_structure
+  if(data_to_add_v1 %>% nrow() != 0){
+    #### Nettoyage & reformatage ####
+    data_to_add_v2 <- 
+      data_to_add_v1 %>% 
+      mutate(chmes_coderhj = chsta_coderhj) %>% 
+      mutate(chmes_date = ymd(chmes_date)) %>%
+      mutate(chmes_valeur = as.numeric(chmes_valeur)) %>%
+      mutate(chmes_capteur = case_when(
+        chmes_typemesure == "Barométrie" ~ modem,
+        chmes_typemesure == "Niveau de batterie" ~ modem,
+        chmes_typemesure == "Piézométrie compensée" ~ capteur,
+        chmes_typemesure == "Thermie piézométrique" ~ capteur,
+        chmes_typemesure == "Thermie" ~ capteur,
+        chmes_typemesure == "Nitrates" ~ capteur,
+        chmes_typemesure == "Conductivité" ~ capteur
+      )
+      ) %>% 
+      mutate(chmes_typemesure = ifelse(chmes_typemesure == "Piézométrie compensée" & chmes_unite == "m", "Piézométrie NGF", chmes_typemesure)) %>% 
+      mutate(chmes_unite = ifelse(chmes_typemesure == "Piézométrie NGF", "NGF", chmes_unite)) %>% 
+      mutate(chmes_unite = ifelse(chmes_unite == "uS/cm", "μS/cm", chmes_unite)) %>% 
+      mutate(chmes_validation = "À valider") %>% 
+      mutate(chmes_mode_acquisition = "Mesuré") %>% 
+      mutate(chmes_mode_integration = "Ajout automatique") %>% 
+      # mutate(chmes_mode_integration = "Ajout manuel") %>% 
+      mutate(chmes_referentiel_temporel = NA_character_)
+    
+    data_to_add_v3 <- 
+      data_to_add_v2 %>% 
+      mutate(id = NA_integer_) %>% mutate(`_modif_utilisateur` = NA) %>% mutate(`_modif_type` = NA) %>% mutate(`_modif_date` = NA) %>% 
+      select(match(colnames(mesures), names(.))) %>% 
+      distinct() %>% 
+      arrange(desc(chmes_date), desc(chmes_heure))
+    
+    data_sortie <- data_to_add_v3
+    
+    #### Vérification ####
+    test <- data_sortie %>% filter(is.na(chmes_capteur))
+    if(test %>% nrow() != 0) stop("Attention : il y a des lignes sans capteur attribué")
+  }
   
   #### Sortie ####
   return(data_sortie)

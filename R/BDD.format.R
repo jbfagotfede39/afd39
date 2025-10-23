@@ -121,6 +121,9 @@ BDD.format <- function(
   if(traitementforce == TRUE & Type == "Chroniques") Testtraitementforce <- 1
   if(traitementforce == FALSE & Type == "Chroniques") Testtraitementforce <- 1
   if(Testtraitementforce == 1){
+    
+    ## Connexion à la BDD ##
+    dbD <- BDD.ouverture("Data")
   
   ## Création des données type ##
     data("chronique_structure")
@@ -400,6 +403,7 @@ BDD.format <- function(
         select(id, everything(), `_modif_utilisateur`, `_modif_type`,`_modif_date`)
     }
   } # fin de travail sur les résultats
+  DBI::dbDisconnect(dbD)
   } # Fin de travail sur les chroniques
   
   ##### PC #####

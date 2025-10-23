@@ -12,6 +12,7 @@
 #' @examples
 #' mesures <- topographie.mesures()
 #' mesures <- topographie.mesures("1")
+#' mesures <- c(17, 23) %>% tibble(id = .) %>% group_split(id) %>% map(~ topographie.mesures(.)) %>% reduce(rbind)
 
 topographie.mesures <- function(
     tplvop_id = NA_character_)
