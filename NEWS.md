@@ -1,5 +1,20 @@
 # NEWS - afd39
 
+## 0.0.34 - 2025-12-10
+### Ajouts
+- `projet.comptabilite` : création
+- `table.recuperation` : ajout du traitement de tables non spatialisées avec conditions
+
+### Modifications
+- `app.tps_travail` : 
+  * suppression de l'utilisateur Valéry et ajout de l'utilisateur Léo
+  * suppression de la fonction `shiny::dataTableOutput` remplacée par `DT::DTOutput` (deprecated as of shiny 1.8.1)
+- `table.recuperation` : ajout de l'export automatique en excel dans le cas de données spatialisées
+
+### Corrections
+- `carte.territoire` : correctif du test d'emprise un peu trop restrictif, mais pas encore parfait (cas d'un sf à 4 colonnes -> longueur == 4)
+- `poissons.operations` : correctif de la refactorisation en `0.0.33`
+
 ## 0.0.33 - 2025-10-23
 ### Ajouts
 - `app.tps_travail` : création

@@ -19,6 +19,7 @@
 #' table.recuperation("chroniques_resultats")
 #' table.recuperation("chroniques_resultats", export = T)
 #' table.recuperation("topographie_operations_habitats", "id = 12")
+#' table.recuperation("physicochimie_mesures", "pcmes_coderhj = 'ROU'")
 #' c("gis_emprise", "pecheloisir_categories_polygones", "hydrographie_contextespdpg") %>% map(~ table.recuperation(., export = T))
 
 table.recuperation <- function(
@@ -71,8 +72,8 @@ table.recuperation <- function(
   }
   if(table_sf == FALSE) {
     if(is.na(condition)) donnees <- tbl(dbD, in_schema(schema, table)) %>% collect()
-    if(!is.na(condition)) stop("Collecte avec condition d'un table non sf à développer") #donnees <- tbl(dbD, in_schema(schema, table)) %>% collect()
-    }
+    if(!is.na(condition)) donnees <- tbl(dbD, sql(glue("SELECT * FROM {schema}.{table} WHERE {condition}"))) %>% collect()
+  }
   DBI::dbDisconnect(dbD)
   
   #### Nettoyage & reformatage ####
@@ -89,7 +90,7 @@ table.recuperation <- function(
     name_sans_schema <- name %>% str_replace("fd_referentiels.", "") %>% str_replace("fd_production.", "")
 
     data_sortie %>% 
-      {if(table_sf == TRUE) SIG.export(., glue("{today()}_{name_sans_schema}"), shp = F, kml = F, excel = F) else .} %>% 
+      {if(table_sf == TRUE) SIG.export(., glue("{today()}_{name_sans_schema}"), shp = F, kml = F, excel = T) else .} %>% 
       {if(table_sf == FALSE) write_xlsx(., glue("{today()}_{name_sans_schema}.xlsx"))}
   }
 

@@ -2,7 +2,7 @@
 #'
 #' Cette fonction permet de créer un fond de carte départemental ou local au format ggplot2
 #' @name carte.territoire
-#' @param emprise Objet sf (polygone)d'emprise de la carte à représenter
+#' @param emprise Objet sf (polygone) d'emprise de la carte à représenter
 #' @param occupation_sols Affichage de l'occupation des sols en couleur (\code{TRUE} par défaut)
 #' @param routes_principales Affichage des routes principales (\code{TRUE} par défaut)
 #' @param voies_ferrees Affichage des voies ferrées (\code{TRUE} par défaut)
@@ -41,8 +41,8 @@ carte.territoire <- function(
   # periode <- match.arg(periode)
   
   #### Test de cohérence ####
-  if(length(emprise) == 1) emprise_definie <- T # Enveloppe sf
-  if(length(emprise) != 1) emprise_definie <- F # Objet bbox <-> length == 4
+  if(length(emprise) != 4) emprise_definie <- T # Enveloppe sf
+  if(length(emprise) == 4) emprise_definie <- F # Objet bbox <-> length == 4
   if(emprise_definie == F) warning("Pas d'emprise de définie")
   
   #### Collecte des données ####

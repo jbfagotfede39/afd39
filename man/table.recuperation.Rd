@@ -25,6 +25,7 @@ table.recuperation("gis_emprise", export = T)
 table.recuperation("chroniques_resultats")
 table.recuperation("chroniques_resultats", export = T)
 table.recuperation("topographie_operations_habitats", "id = 12")
+table.recuperation("physicochimie_mesures", "pcmes_coderhj = 'ROU'")
 c("gis_emprise", "pecheloisir_categories_polygones", "hydrographie_contextespdpg") \%>\% map(~ table.recuperation(., export = T))
 }
 \keyword{cartographie}

@@ -69,8 +69,8 @@ poissons.operations <- function(
     {if(ListeStations %>% nrow() != 0) filter(., nom %in% ListeStations$Nom) else .} %>%
     {if(Sortie == "Simple") select(., codeinventaire, codeoperation, nom, datedebut.x) else .} %>%
     {if(Sortie == "Propre") select(., codeinventaire, codeoperation, nom, limiteamont, datedebut.x, modeechantillonnage, xlambert, ylambert, typelambert) else .} %>%
-    {if(CodeOperation == F) select(., -codeoperation) else .} %>%
-    {if(codeinventaire == F) select(., -codeinventaire) else .} %>%
+    {if(CodeOperation == F & Sortie != "Complet") select(., -codeoperation) else .} %>%
+    {if(codeinventaire == F & Sortie != "Complet") select(., -codeinventaire) else .} %>%
     rename(any_of(renommage)) %>%
     arrange(Station, Date)
   
