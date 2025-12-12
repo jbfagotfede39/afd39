@@ -31,6 +31,12 @@ iam.resultats <- function(
   if(is.na(tpiam_op_id)) iam <- table.recuperation("topographie_iam")
   if(!is.na(tpiam_op_id)) iam <- table.recuperation("topographie_iam", glue("tpiam_op_id = {tpiam_op_id}"))
   
+  #### Test ####
+  # Test si le nom existe bien, sinon message d'avertissement #
+  if(!is.na(tpiam_op_id)) {
+    if(nrow(iam) == 0) stop(glue("Attention : id de projet ('{tpiam_op_id}') absent de la base de données"))
+  }
+  
   #### Sortie ####
   return(iam)
   

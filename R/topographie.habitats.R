@@ -19,7 +19,9 @@ topographie.habitats <- function(
 {
   
   #### Nettoyage & reformatage ####
-  if(tphabop_id == "") tphabop_id <- NA_character_
+  test_id <- tphabop_id %>% nchar()
+  if(!(test_id %>% is.na())) {
+    if(test_id == 0) tphabop_id <- NA_character_}
   
   #### Collecte des données ####
   ## Ouverture de la BDD ##
@@ -35,7 +37,7 @@ topographie.habitats <- function(
   #### Test ####
   # Test si le nom existe bien, sinon message d'avertissement #
   if(!is.na(tphabop_id)) {
-    if(nrow(habitats_v1) == 0) warning(glue("Attention : nom de projet ('{tphabop_id}') absent de la base de données"))
+    if(nrow(habitats_v1) == 0) stop(glue("Attention : id de projet ('{tphabop_id}') absent de la base de données"))
   }
 
   #### Nettoyage & reformatage ####
