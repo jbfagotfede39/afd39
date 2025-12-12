@@ -19,7 +19,9 @@ topographie.mesures <- function(
 {
   
   #### Nettoyage & reformatage ####
-  if(tplvop_id == "") tplvop_id <- NA_character_
+  test_id <- tplvop_id %>% nchar()
+  if(!(test_id %>% is.na())) {
+    if(test_id == 0) tplvop_id <- NA_character_}
   
   #### Collecte des données ####
   ## Ouverture de la BDD ##
@@ -35,7 +37,7 @@ topographie.mesures <- function(
   #### Test ####
   # Test si le nom existe bien, sinon message d'avertissement #
   if(!is.na(tplvop_id)) {
-    if(nrow(leves_v1) == 0) warning(glue("Attention : nom de projet ('{tplvop_id}') absent de la base de données"))
+    if(nrow(leves_v1) == 0) stop(glue("Attention : nom de projet ('{tplvop_id}') absent de la base de données"))
   }
 
   return(leves_v1)
