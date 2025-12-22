@@ -1,5 +1,29 @@
 # NEWS - afd39
 
+## 0.0.35 - 2025-12-22
+### Ajouts
+- `chronique.traitement` : 
+  * désactivation de `exportfigures_profil_longitudinal` si `dep39 = FALSE`
+  * création de colonnes absentes pour calcul `exportfigures_preferendums_especes` si `dep39 = FALSE`
+- `formatage.personnel.id` : création
+- `iam.resultats` : ajout d'un test de vérification de l'existence du `tpiam_op_id` recherché (+ ajout test unitaire)
+- `projet.calculInitial` : précision d'un message d'erreur
+- `thermie.spatiale.mesures` : création
+- `topographie.mesures` : ajout d'un message d'erreur si absence de valeur
+
+### Modifications
+- `chronique.traitement` : nettoyage du code
+
+### Corrections
+- `chronique.traitement` : 
+  * correction de la création des répertoires, qui ne tenait pas compte de certaines options : `exportfigures = FALSE` et `dep39 = FALSE`
+  * correction d'un test de cohérence des données relatif aux commentaires
+  * correction de la création de l'objet `contexte_stations`
+  * désactivation temporaire de `exportfigures_classes_calendaires` si `dep39 == FALSE` car ne sait pas gérer sans stations (distance à la source)
+  * remplacement de `export == TRUE & dep39` par `export == TRUE && dep39` afin d'avoir une comparaison logique scalaire, qui ne plante pas si on a deux lignes au lieu d'une unique (close #82)
+- `topographie.habitats` : correction du test de vérification de l'existence du `tphabop_id` recherché (+ ajout test unitaire)
+- `topographie.mesures` : correction du test de vérification de l'existence du `tplvop_id` recherché (+ ajout test unitaire)
+
 ## 0.0.34 - 2025-12-10
 ### Ajouts
 - `projet.comptabilite` : création

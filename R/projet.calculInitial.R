@@ -45,7 +45,7 @@ projet.calculInitial <- function(
     mutate(tpswrecap_detail = tpswrecap_detail_id) %>% 
     select(-tpswrecap_detail_id, -contains("_modif"))
   
-  if(nom_projet %>% filter(is.na(tpswrecap_detail)) %>% nrow() > 0) stop("Il y a des tpswrecap_detail non identifiés par leur identifiant")
+  if(nom_projet %>% filter(is.na(tpswrecap_detail)) %>% nrow() > 0) stop("Il y a des tpswrecap_detail non identifiés par leur identifiant issu de typologie_prestation")
   
   nom_projet_fjppma <-
     nom_projet %>% 
