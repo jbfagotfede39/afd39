@@ -1,5 +1,32 @@
 # NEWS - afd39
 
+## 0.0.36 - 2026-01-20
+### Ajouts
+- `formatage.personnel.prenomnom` : création
+- `formatage.sapl` : ajout de cas de traitement
+- `formatage.sapl.id` : création
+- `opentime.association.personnel` : création
+- `opentime.projet` : complément de la documentation
+- `opentime.tps.attendu` : création
+
+### Modifications
+- `chronique.traitement` : modification de la copie des fichiers originaux dans le cas où `dep39 == FALSE`
+- `formatage.personnel.id` : simplification de la collecte des données des données avec `table.recuperation()`
+- `formatage.personnel.prenom` : 
+  * simplification de la collecte des données des données avec `table.recuperation()`
+  * refactoring
+  * correction du nom de colonne en sortie
+- `opentime.projet` : suppression de dépendances inutiles
+- `opentime.tps.realise` : 
+  * renommage depuis `opentime.ouverture`
+  * complément de la description des paramètres
+
+### Corrections
+- `table.recuperation` : modification du filtre afin qu'il soit plus restrictif, car générait une erreur dans le cas de deux tables ayant en partie un intitulé identique (`gestion_operateurs` et `vue_gestion_operateurs`)
+
+### Suppressions
+- `opentime.ouverture` : renommage en `opentime.tps.realise`
+
 ## 0.0.35 - 2025-12-22
 ### Ajouts
 - `chronique.traitement` : 
@@ -20,7 +47,7 @@
   * correction d'un test de cohérence des données relatif aux commentaires
   * correction de la création de l'objet `contexte_stations`
   * désactivation temporaire de `exportfigures_classes_calendaires` si `dep39 == FALSE` car ne sait pas gérer sans stations (distance à la source)
-  * remplacement de `export == TRUE & dep39` par `export == TRUE && dep39` afin d'avoir une comparaison logique scalaire, qui ne plante pas si on a deux lignes au lieu d'une unique (close #82)
+  * remplacement de `export == TRUE & dep39` par `export == TRUE && dep39` afin d'avoir une comparaison logique scalaire, qui ne plante pas si on a deux lignes au lieu d'une unique (close jbfagotfede39/aquatools#82)
 - `topographie.habitats` : correction du test de vérification de l'existence du `tphabop_id` recherché (+ ajout test unitaire)
 - `topographie.mesures` : correction du test de vérification de l'existence du `tplvop_id` recherché (+ ajout test unitaire)
 

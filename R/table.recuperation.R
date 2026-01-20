@@ -59,7 +59,7 @@ table.recuperation <- function(
   
   tables_filtrees <-
     tables %>% 
-    filter(grepl(table, table_name))
+    filter(table_name == table)
   if(tables %>% nrow() == 0 & table_sf == FALSE) stop(glue("Attention : la table {table} n'existe pas dans les schémas fd_production et fd_referentiels"))
   
   if(table_sf == TRUE) schema <- tables_sf_filtrees %>% pull(f_table_schema)

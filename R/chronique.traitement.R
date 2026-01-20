@@ -296,7 +296,7 @@ if(export == TRUE && dep39 == TRUE){
   DBI::dbDisconnect(dbD)
 }
 
-if(export == TRUE && dep39 == "autre"){
+if(export == TRUE && dep39 != TRUE){
 
   # if(is.na(localisation_stations)) fnameStations <- tk_choose.files(caption = "Fichier de stations")
   if(is.na(localisation_stations)) stop("Localisation du fichier des stations à saisir manuellement")
@@ -783,27 +783,27 @@ if(log != "Aucun") put("Fin de sortie des informations de session") # Log
 
 #### Déplacement des données d'entrée ####
 ## Stations ##
-if(export == TRUE && dep39 == "autre"){
+if(export == TRUE && dep39 != TRUE){
 file_move(fnameStations, glue('./{projet}/Entrées/Stations/'))
 }
 
 ## Suivi de terrain ##
-if(export == TRUE && dep39 == "autre" & exportDCE == T){
+if(export == TRUE && dep39 != TRUE & exportDCE == T){
   file_move(fnameSuivi, glue('./{projet}/Entrées/Suivi/'))
 }
 
 ## Commentaires #####
-if(export == TRUE && dep39 == "autre"){
+if(export == TRUE && dep39 != TRUE){
   file_move(fnameCommentaires, glue('./{projet}/Entrées/Commentaires/'))
 }
 
 ## Capteurs #####
-if(export == TRUE && dep39 == "autre" & exportDCE == T){
+if(export == TRUE && dep39 != TRUE & exportDCE == T){
   file_move(fnameCapteurs, glue('./{projet}/Entrées/Capteurs/'))
 }
   
 ## Données brutes ##
-if(export == TRUE && dep39 == "autre"){
+if(export == TRUE && dep39 != TRUE){
 dir_ls(fnameDonnesbrutes) %>% 
   purrr::map_dfr(file_move(., glue('./{projet}/Entrées/Données/')))
 }

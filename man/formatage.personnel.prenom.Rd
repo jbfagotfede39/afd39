@@ -4,18 +4,12 @@
 \alias{formatage.personnel.prenom}
 \title{Reformatage des id en prénom}
 \usage{
-formatage.personnel.prenom(
-  data,
-  colonne_entree = NA_character_,
-  conservation = F
-)
+formatage.personnel.prenom(data, colonne_entree = NA_character_)
 }
 \arguments{
 \item{data}{Dataframe contenant les données à transformer}
 
 \item{colonne_entree}{Champ contenant la donnée à ré-écrire}
-
-\item{conservation}{Conservation du champs colonne_entree dans la sortie (avec suffixe \code{_id}) : \code{F} par défaut}
 }
 \description{
 Cette fonction permet de reformater les id du personnel en prénom

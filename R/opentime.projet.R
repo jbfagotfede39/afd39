@@ -3,8 +3,6 @@
 #' Ajoute une colonne `projet_id` à partir des données fines téléchargées depuis OpenTime
 #' @name opentime.projet
 #' @keywords personnel
-#' @import glue
-#' @import openxlsx
 #' @import stringr
 #' @import tidyverse
 #' @export
