@@ -21,7 +21,7 @@
 #' @param filtragenbj Nombre de journées minimales pour chaque résultat à conserver (75 par défaut).
 #' @param seuils Seuils de valeurs (25,22,19,15,4 par défaut) dont il faut tester les dépassements. L'ordre de sortie correspond à l'ordre de cette liste.
 #' @param seuilexcesdefaut Seuil en-deça duquel les dépassements sont testés par défaut, sinon ils sont testés par excès (valeur de 12 par défaut).
-#' @param dep39 Si \code{FALSE} (par défaut), ne va pas rechercher les données de stations dans la base locale et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations
+#' @param dep39 Si \code{FALSE} (par défaut), ne va pas rechercher les données de stations dans la base locale ou dans un fichier externe et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations
 #' @param localisation_stations Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier des stations
 #' @param localisation_commentaires Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier des commentaires
 #' @param localisation_suiviterrain Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier de suivi de terrain
@@ -182,7 +182,7 @@ if(file.exists(paste0("./",projet, "/Sorties/")) == TRUE & file.exists(paste0(".
 if(export == TRUE && dep39 != TRUE & file.exists(paste0("./",projet, "/Entrées/")) == FALSE){
   dir.create(paste0("./",projet, "/Entrées/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Entrées/Données/"), showWarnings = FALSE, recursive = FALSE)
-  dir.create(paste0("./",projet, "/Entrées/Stations/"), showWarnings = FALSE, recursive = FALSE)
+  if(dep39 != FALSE) dir.create(paste0("./",projet, "/Entrées/Stations/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Entrées/Capteurs/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Entrées/Commentaires/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Entrées/Suivi/"), showWarnings = FALSE, recursive = FALSE)
@@ -296,7 +296,7 @@ if(export == TRUE && dep39 == TRUE){
   DBI::dbDisconnect(dbD)
 }
 
-if(export == TRUE && dep39 != TRUE){
+if(export == TRUE && dep39 == "autre"){
 
   # if(is.na(localisation_stations)) fnameStations <- tk_choose.files(caption = "Fichier de stations")
   if(is.na(localisation_stations)) stop("Localisation du fichier des stations à saisir manuellement")
@@ -783,27 +783,27 @@ if(log != "Aucun") put("Fin de sortie des informations de session") # Log
 
 #### Déplacement des données d'entrée ####
 ## Stations ##
-if(export == TRUE && dep39 != TRUE){
+if(export == TRUE && dep39 == "autre"){
 file_move(fnameStations, glue('./{projet}/Entrées/Stations/'))
 }
 
 ## Suivi de terrain ##
-if(export == TRUE && dep39 != TRUE & exportDCE == T){
+if(export == TRUE && dep39 == "autre" & exportDCE == T){
   file_move(fnameSuivi, glue('./{projet}/Entrées/Suivi/'))
 }
 
 ## Commentaires #####
-if(export == TRUE && dep39 != TRUE){
+if(export == TRUE && dep39 == "autre"){
   file_move(fnameCommentaires, glue('./{projet}/Entrées/Commentaires/'))
 }
 
 ## Capteurs #####
-if(export == TRUE && dep39 != TRUE & exportDCE == T){
+if(export == TRUE && dep39 == "autre" & exportDCE == T){
   file_move(fnameCapteurs, glue('./{projet}/Entrées/Capteurs/'))
 }
   
 ## Données brutes ##
-if(export == TRUE && dep39 != TRUE){
+if(export == TRUE && dep39 == "autre"){
 dir_ls(fnameDonnesbrutes) %>% 
   purrr::map_dfr(file_move(., glue('./{projet}/Entrées/Données/')))
 }
