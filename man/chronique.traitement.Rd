@@ -70,7 +70,7 @@ chronique.traitement(
 
 \item{seuilexcesdefaut}{Seuil en-deça duquel les dépassements sont testés par défaut, sinon ils sont testés par excès (valeur de 12 par défaut).}
 
-\item{dep39}{Si \code{FALSE} (par défaut), ne va pas rechercher les données de stations dans la base locale et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations}
+\item{dep39}{Si \code{FALSE} (par défaut), ne va pas rechercher les données de stations dans la base locale ou dans un fichier externe et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations}
 
 \item{localisation_stations}{Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier des stations}
 

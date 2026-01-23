@@ -1,5 +1,16 @@
 # NEWS - afd39
 
+## 0.0.37 - 2026-01-23
+### Ajouts
+- `chronique.traitement` : 
+  * ajout du calcul du contexte
+  * implémentation pour l'ensemble des figures générées du paramètre `origine_donnees` (close jbfagotfede39/gestion_thermie_epage_hdhl/#1)
+
+### Modifications
+- `chronique.traitement` : 
+  * rétablissement partiel de la non obligation d'un fichier de stations dans le cas où `dep39 == FALSE`
+  * renommage de la variable `Titre` en `titre` pour l'ensemble des fonctions de génération de figures
+
 ## 0.0.36 - 2026-01-20
 ### Ajouts
 - `formatage.personnel.prenomnom` : création
