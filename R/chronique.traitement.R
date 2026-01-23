@@ -12,6 +12,7 @@
 #' @param exportfigures_cumul_degresjours Si \code{TRUE} (par défaut), exporte les cumuls de degrés-jours. Si \code{FALSE}, ne les exporte pas.
 #' @param exportfigures_boxplot_interannuel Si \code{TRUE} (par défaut), exporte les boxplots interannuels. Si \code{FALSE}, ne les exporte pas.
 #' @param exportfigures_classes_calendaires Si \code{TRUE} (par défaut), exporte les vues sous forme de classes calendaires. Si \code{FALSE}, ne les exporte pas.
+#' @param exportfigures_classes_densite Si \code{TRUE} (par défaut), exporte les vues sous forme de classes de densité Si \code{FALSE}, ne les exporte pas.
 #' @param exportfigures_profil_longitudinal Si \code{TRUE} (par défaut), exporte les figures de profils longitudinaux. Si \code{FALSE}, ne les exporte pas.
 #' @param exportfigures_preferendums_especes Si \code{TRUE} (par défaut), exporte les figures de préférendums des espèces avec les Vmm30j. Si \code{FALSE}, ne les exporte pas.
 #' @param exportDCE Si \code{TRUE}, exporte les mesures au format DCE. Si \code{FALSE} (par défaut), ne les exporte pas.
@@ -49,17 +50,18 @@
 chronique.traitement <- function(  
   data = data,
   projet = NA_character_,
-  export = T,
-  exportfigures = T,
+  export = TRUE,
+  exportfigures = TRUE,
   style = c("boxplot","violon"),
-  exportfigures_chronique_classique = T,
-  exportfigures_cumul_degresjours = T,
-  exportfigures_boxplot_interannuel = T,
-  exportfigures_classes_calendaires = T,
-  exportfigures_profil_longitudinal = T,
-  exportfigures_preferendums_especes = T,
-  exportDCE = F,
-  filtrage = F,
+  exportfigures_chronique_classique = TRUE,
+  exportfigures_cumul_degresjours = TRUE,
+  exportfigures_boxplot_interannuel = TRUE,
+  exportfigures_classes_calendaires = TRUE,
+  exportfigures_classes_densite = TRUE,
+  exportfigures_profil_longitudinal = TRUE,
+  exportfigures_preferendums_especes = TRUE,
+  exportDCE = FALSE,
+  filtrage = FALSE,
   filtrageanneevmm = TRUE,
   filtragedatefperiode = "07-15",
   filtragenbj = 75,
@@ -101,6 +103,7 @@ chronique.traitement <- function(
   if(exportfigures == FALSE) exportfigures_boxplot_interannuel <- FALSE
   if(exportfigures == FALSE) exportfigures_classes_calendaires <- FALSE
   if(dep39 == FALSE) exportfigures_classes_calendaires <- FALSE # À supprimer par la suite quand on saura envoyer des données vides dans chronique.figure.classescalendaires() (#102)
+  if(dep39 == FALSE) exportfigures_classes_densite <- FALSE # À supprimer par la suite quand on saura envoyer des données vides dans chronique.figure.classesdensite()
   if(exportfigures == FALSE) exportfigures_profil_longitudinal <- FALSE
   if(dep39 == FALSE) exportfigures_profil_longitudinal <- FALSE
   if(exportfigures == FALSE) exportfigures_preferendums_especes <- FALSE
@@ -145,7 +148,7 @@ if(export == TRUE){
       dir.create(paste0("./",projet, "/Sorties/Vues/"), showWarnings = FALSE, recursive = FALSE)
       dir.create(paste0("./",projet, "/Sorties/Vues/Interannuelles"), showWarnings = FALSE, recursive = FALSE)
       dir.create(paste0("./",projet, "/Sorties/Vues/Intersites"), showWarnings = FALSE, recursive = FALSE)
-      if(exportfigures_classes_calendaires == TRUE){dir.create(paste0("./",projet, "/Sorties/Vues/Calendaires"), showWarnings = FALSE, recursive = FALSE)}
+      if(exportfigures_classes_calendaires == TRUE | exportfigures_classes_densite == TRUE){dir.create(paste0("./",projet, "/Sorties/Vues/Calendaires"), showWarnings = FALSE, recursive = FALSE)}
       if(exportfigures_preferendums_especes == TRUE){dir.create(paste0("./",projet, "/Sorties/Vues/Preferendums_biologiques"), showWarnings = FALSE, recursive = FALSE)}
       dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_absolu-fixe/"), showWarnings = FALSE, recursive = FALSE)
       dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_absolu-libre/"), showWarnings = FALSE, recursive = FALSE)
@@ -171,7 +174,7 @@ if(file.exists(paste0("./",projet, "/Sorties/")) == TRUE & file.exists(paste0(".
   dir.create(paste0("./",projet, "/Sorties/Vues/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Sorties/Vues/Interannuelles"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Sorties/Vues/Intersites"), showWarnings = FALSE, recursive = FALSE)
-  if(exportfigures_classes_calendaires == TRUE){dir.create(paste0("./",projet, "/Sorties/Vues/Calendaires"), showWarnings = FALSE, recursive = FALSE)}
+  if(exportfigures_classes_calendaires == TRUE | exportfigures_classes_densite == TRUE){dir.create(paste0("./",projet, "/Sorties/Vues/Calendaires"), showWarnings = FALSE, recursive = FALSE)}
   if(exportfigures_preferendums_especes == TRUE){dir.create(paste0("./",projet, "/Sorties/Vues/Preferendums_biologiques"), showWarnings = FALSE, recursive = FALSE)}
   dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_absolu-fixe/"), showWarnings = FALSE, recursive = FALSE)
   dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_absolu-libre/"), showWarnings = FALSE, recursive = FALSE)
@@ -684,6 +687,25 @@ if (exportfigures == TRUE) {
     } # Fin de la condition de résultats suffisants
     if(log != "Aucun") put("Fin de la sortie graphique des vues de classes calendaires") # Log
   } # Fin de l'interrupteur volontaire d'export des vues de classes calendaires
+  
+  ##### Sorties graphiques vue classes densité #####
+  if(exportfigures_classes_densite == T){
+    if (all(export & "chmes_typemesure" %in% colnames(data) & n_distinct(data$chmes_typemesure) == 1) == TRUE) {
+      ## Sortie par station ##
+      data %>% 
+        group_split(chmes_coderhj) %>% 
+        purrr::map(~ chronique.figure.classesdensite(., stations = listeStations, origine_donnees = contexte_stations$mo, projet = projet, save = T))
+      ## Sortie par année ##
+      data %>% 
+        group_split(chmes_anneebiol) %>% 
+        purrr::map(~ chronique.figure.classesdensite(., stations = listeStations, origine_donnees = contexte_stations$mo, projet = projet, save = T))
+      ## Sortie par station par année ##
+      data %>% 
+        group_split(chmes_coderhj, chmes_anneebiol) %>% 
+        purrr::map(~ chronique.figure.classesdensite(., stations = listeStations, origine_donnees = contexte_stations$mo, projet = projet, save = T))
+    } # Fin de la condition de résultats suffisants
+    if(log != "Aucun") put("Fin de la sortie graphique des vues de classes de densité") # Log
+  } # Fin de l'interrupteur volontaire d'export des vues de classes de densité
   
   ##### Sorties graphiques basées sur les résultats (filtrés ou non) #####
   if(filtrage == F){

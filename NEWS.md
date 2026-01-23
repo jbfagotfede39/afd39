@@ -1,5 +1,9 @@
 # NEWS - afd39
 
+## 0.0.38 - 2026-01-23
+### Ajouts
+- `chronique.traitement` : ajout de `chronique.figure.classesdensite`
+
 ## 0.0.37 - 2026-01-23
 ### Ajouts
 - `chronique.traitement` : 
