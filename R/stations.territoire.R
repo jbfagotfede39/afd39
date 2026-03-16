@@ -17,6 +17,7 @@
 #' stations.territoire("Commune", c("39568", "39571"))
 #' stations.territoire("Commune", c("Villerserine", "39571"))
 #' stations.territoire("Milieu", c("Lac de Chalain", "Bonlieu"))
+#' stations.territoire(Echelle = "GEMAPI", Territoire = "Contrat HVAO")
 
 ##### TODO LIST #####
 # Ajout de l'échelon cantonal
@@ -132,7 +133,7 @@ stations.territoire <- function(
     # DBI::dbDisconnect(dbD)
     if(Liste == F){
       if(class(Territoire) != "character"){stop("Liste de territoires pas au bon format")}
-      if(grepl("BIE|Bienne", Territoire)){Territoire <- c("39.19", "39.62", "39.16", "39.17", "39.21", "39.24", "39.18", "39.22", "39.23", "39.18", "39.18", "39.25")}
+      if(grepl("BIE|Bienne", Territoire)){Territoire <- c("39.16", "39.17", "39.18", "39.19", "39.21", "39.22", "39.23", "39.24", "39.25", "39.62")}
       if(length(Territoire) == 1) {if(grepl("ORB|Orbe", Territoire)){Territoire <- c("39.33")}}
     }
     if(Liste == T){

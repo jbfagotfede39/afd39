@@ -10,6 +10,7 @@
 #' @import glue
 #' @import lubridate
 #' @import sf
+#' @import stringr
 #' @import testit
 #' @import tidyverse
 #' @export
@@ -31,11 +32,11 @@ BDD.format <- function(
   ##### Évaluation des choix #####
   Type <- match.arg(Type)
 
-  ###### Contexte ######
+  #### Contexte ####
   if(traitementforce == "TRUE"){Type <- match.arg(Type)} # Évaluation des choix
   if(Type == "MI") warning("Attention le type par défaut est MI")
   
-  ###### MI ######
+  #### MI ####
   Testtraitementforce <- 0
   if(traitementforce == TRUE & Type == "MI") Testtraitementforce <- 1
   if(traitementforce == FALSE & Type == "MI") Testtraitementforce <- 1
@@ -116,7 +117,7 @@ BDD.format <- function(
   DBI::dbDisconnect(dbD)
   } # Fin de travail sur les MI
   
-  ###### Chroniques ######
+  #### Chroniques ####
   Testtraitementforce <- 0
   if(traitementforce == TRUE & Type == "Chroniques") Testtraitementforce <- 1
   if(traitementforce == FALSE & Type == "Chroniques") Testtraitementforce <- 1
@@ -136,7 +137,7 @@ BDD.format <- function(
     
     if(all(colnames(data) %in% colnames(mesures_sans_chmes_referentiel_temporel))) data <- data %>% mutate(chmes_referentiel_temporel = NA_character_) # rustine temporaire le temps de modifier les scripts d'importation automatique
   
-  # MesuresGroupees
+  # MesuresGroupees #
   MesuresGroupees <- structure(list(id = integer(0), chmesgr_coderhj_id = integer(0), 
                                     chmesgr_capteur_id = integer(0), chmesgr_date = structure(numeric(0), class = "Date"), 
                                     chmesgr_periodicite = character(0), chmesgr_typeagregation = character(0), 
@@ -149,8 +150,11 @@ BDD.format <- function(
                                                                                                 "POSIXt"))), row.names = integer(0), class = c("tbl_df", 
                                                                                                                                                "tbl", "data.frame"))
   
-  # Mesures #
+  ##### Mesures #####
   if(all(colnames(data) %in% colnames(Mesures))) {
+    
+    # Message d'information
+    message("Application du formatage relatif aux mesures de chroniques")
     
     # Arrondi des valeurs
     data$chmes_valeur <- round(as.numeric(data$chmes_valeur),3) # On arrondi à 3 chiffres après la virgule
@@ -173,16 +177,22 @@ BDD.format <- function(
     if(data %>% filter(is.na(id)) %>% nrow() > 0) stop("Tous les id ne sont pas complétés")
   }
   
-  # Mesures groupées #
+  ##### Mesures groupées #####
   if(all(colnames(data) %in% colnames(MesuresGroupees))) {
+    
+    # Message d'information
+    message("Application du formatage relatif aux mesures groupées de chroniques")
     
     # Ajout des ID
     data$id <- row_number(data$chmesgr_coderhj_id) + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_production.chroniques_mesuresgroupees;")) # Pour incrémenter les id à partir du dernier
     data <- data %>% arrange(id)
   }
   
-  # SuiviTerrain #
+  ##### SuiviTerrain #####
   if(all(colnames(data) %in% colnames(SuiviTerrain))) {
+    
+    # Message d'information
+    message("Application du formatage relatif au suivi de terrain de chroniques")
     
     # Travail sur les MO #
     data <-
@@ -358,13 +368,23 @@ BDD.format <- function(
 
   }
   
-  # Capteurs #
+  ##### Capteurs #####
   if(all(colnames(data) %in% colnames(Capteurs))) {
+    
+    # Message d'information
+    message("Application du formatage relatif aux capteurs de chroniques")
+    
+    # Traitement
     data$id <- row_number(data$chcap_numerocapteur) + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_production.chroniques_capteurs;")) # Pour incrémenter les id à partir du dernier
   }
   
-  # Stations #
-  if(all(colnames(data) %in% colnames(Stations))) {
+  ##### Stations #####
+  if(all(colnames(data) %in% colnames(Stations))) {    
+    
+    # Message d'information
+    message("Application du formatage relatif aux stations de chroniques")
+    
+    # Traitement
     data <-
       data %>% 
       mutate(id = row_number(data$chsta_coderhj) + as.numeric(dbGetQuery(dbD, "SELECT MAX(id) FROM fd_production.chroniques_stations;"))) %>% # Pour incrémenter les id à partir du dernier
@@ -376,6 +396,13 @@ BDD.format <- function(
       mutate(chsta_mo = ifelse(chsta_mo == "AFB", "OFB", chsta_mo)) %>% 
       mutate(chsta_mo = ifelse(chsta_mo == "CD39_CR_Ain - ONEMA", "CD39_CR_Ain - OFB", chsta_mo)) %>% 
       mutate(chsta_mo = ifelse(chsta_mo == "CD39_CR_Ain - AFB", "CD39_CR_Ain - OFB", chsta_mo)) %>% 
+      mutate(chsta_transmission = str_to_sentence(chsta_transmission)) %>% 
+      mutate(chsta_suivithermie = str_to_sentence(chsta_suivithermie)) %>% 
+      mutate(chsta_reseauthermietype = str_to_sentence(chsta_reseauthermietype)) %>% 
+      mutate(chsta_suivipiezo = str_to_sentence(chsta_suivipiezo)) %>% 
+      mutate(chsta_suivihydro = str_to_sentence(chsta_suivihydro)) %>% 
+      mutate(chsta_suivio2 = str_to_sentence(chsta_suivio2)) %>% 
+      mutate(chsta_suivipluvio = str_to_sentence(chsta_suivipluvio)) %>% 
       mutate(chsta_profsonde = str_replace(chsta_profsonde, "m", "")) %>% # On efface le m
       mutate(chsta_profsonde = as.numeric(sub(",", ".", .$chsta_profsonde))) %>% # On efface le m
       mutate(chsta_distberge = str_replace(chsta_distberge, "m", "")) %>% # On efface le m
@@ -388,7 +415,11 @@ BDD.format <- function(
   
   # Résultats #
   if(length(colnames(data)) > 22) {
-    if(colnames(data)[46] == "Percentile90diurneAB"){
+    if(colnames(data)[46] == "Percentile90diurneAB"){    
+      
+      # Message d'information
+      message("Application du formatage relatif aux résultats de chroniques")
+      
       data <- 
         data %>% 
         rename_all(list(~ stringi::stri_trans_general(., "latin-ascii"))) %>% # Pour remplacer les caractères accentués par les mêmes sans accents

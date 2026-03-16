@@ -28,5 +28,6 @@ stations.territoire("Commune", c("Villerserine", "Villers-Robert"))
 stations.territoire("Commune", c("39568", "39571"))
 stations.territoire("Commune", c("Villerserine", "39571"))
 stations.territoire("Milieu", c("Lac de Chalain", "Bonlieu"))
+stations.territoire(Echelle = "GEMAPI", Territoire = "Contrat HVAO")
 }
 \keyword{stations}

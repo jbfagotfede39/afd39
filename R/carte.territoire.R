@@ -22,6 +22,7 @@
 #' carte.territoire()
 #' carte.territoire(emprise, altitude = F)
 #' carte.territoire(routes_principales = F, voies_ferrees = F)
+#' carte.territoire(occupation_sols = F, routes_principales = F, voies_ferrees = F, altitude = F)
 
 carte.territoire <- function(
     emprise = NA,
@@ -43,6 +44,7 @@ carte.territoire <- function(
   #### Test de cohérence ####
   if(length(emprise) != 4) emprise_definie <- T # Enveloppe sf
   if(length(emprise) == 4) emprise_definie <- F # Objet bbox <-> length == 4
+  if(length(emprise) == 1 & is.na(emprise)) emprise_definie <- F # Objet bbox <-> length == 4
   if(emprise_definie == F) warning("Pas d'emprise de définie")
   
   #### Collecte des données ####
@@ -50,6 +52,9 @@ carte.territoire <- function(
   dbD <- BDD.ouverture("Data")
   
   ## Emprise ##
+  departement <- sf::st_read(dbD, query = "select * from fd_referentiels.topographie_departement;")
+  if(emprise_definie == F) emprise <- departement
+  
   emprise_wgs84 <- emprise %>% st_transform(4326)
   emprise_wgs84_bbox_df <- data.frame(x = runif(6,min=sf::st_bbox(emprise_wgs84)$xmin, 
                                            max=sf::st_bbox(emprise_wgs84)$xmax),
@@ -72,7 +77,6 @@ carte.territoire <- function(
   if(communes_principales == T) communes_ppales <- sf::st_read(dbD, query = "select * from fd_referentiels.topographie_communes_principales;")
   
   ## Département ##
-  departement <- sf::st_read(dbD, query = "select * from fd_referentiels.topographie_departement;")
   departement_wgs84 <- departement %>% st_transform(4326)
   
   ## MNT ##

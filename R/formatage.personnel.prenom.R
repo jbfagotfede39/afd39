@@ -20,7 +20,10 @@ formatage.personnel.prenom <- function(
   {
 
   #### Test de cohérence ####
-  if(nchar(colonne_entree) == 0) stop("Pas de champs en entrée")
+  test_colonne_entree <- colonne_entree %>% nchar()
+  if(!(test_colonne_entree %>% is.na())) {
+    if(test_colonne_entree == 0) colonne_entree <- NA_character_}
+  if(is.na(colonne_entree)) stop("Pas de champs en entrée")
   if(colonne_entree %in% names(data) == FALSE) stop(glue("Le champs {colonne_entree} est absent du jeu de données d'entrée"))
 
   #### Collecte des données ####

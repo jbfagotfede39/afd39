@@ -1,5 +1,32 @@
 # NEWS - afd39
 
+## 0.0.39 - 2026-03-16
+### Ajouts
+- `BDD.format` : 
+  * ajout de mise en minuscules pour certains paramètres (`Oui`/`Non`)
+  * ajout de messages d'information lors du traitement des données de chroniques, afin de savoir que le traitement a bien été réalisé
+- `carte.territoire` :
+  * ajout d'un interrupteur automatique en entrée
+  * ajout de la collecte de l'emprise départementale si `emprise` vide
+  * ajout d'un exemple
+- `chronique.suivi` : ajout d'un critère de tri afin d'avoir la dépose puis la pose dans le bon ordre lors d'une même intervention
+- `chronique.traitement` : 
+  * ajout du paramètre `estival` dans le traitement de `chronique.figure.classesdensite`
+  * ajout d'un test des données les plus anciennes (< 1980)
+  * ajout d'un test des données pour vérifier la présence de la description de station correspondante
+  * ajout de l'affichage des sources de données avec des MO différents dans le jeu de données
+- `formatage.personnel.id` : 
+  * ajout d'un test de format de données en entrée
+  * ajout d'un traitement dans la forme `nom prénom`, acar il n'y avait que `prénom nom`
+- `formatage.personnel.prenom` : ajout d'un test de format de données en entrée
+- `formatage.personnel.prenomnom` : ajout d'un test de format de données en entrée
+- `stations.territoire` : 
+  * ajout d'un exemple relatif aux contextes PDPG
+  * ajout d'un exemple relatif aux territoires GEMAPI
+
+### Modifications
+- `stations.territoire` : nettoyage/tri des contextes relatifs à la Bienne
+
 ## 0.0.38 - 2026-01-23
 ### Ajouts
 - `chronique.traitement` : ajout de `chronique.figure.classesdensite`

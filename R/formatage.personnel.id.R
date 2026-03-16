@@ -22,7 +22,10 @@ formatage.personnel.id <- function(
   {
 
   #### Test de cohérence ####
-  if(nchar(colonne_entree) == 0) stop("Pas de champs en entrée")
+  test_colonne_entree <- colonne_entree %>% nchar()
+  if(!(test_colonne_entree %>% is.na())) {
+    if(test_colonne_entree == 0) colonne_entree <- NA_character_}
+  if(is.na(colonne_entree)) stop("Pas de champs en entrée")
   if(colonne_entree %in% names(data) == FALSE) stop(glue("Le champs {colonne_entree} est absent du jeu de données d'entrée"))
 
   #### Collecte des données ####
@@ -36,6 +39,9 @@ formatage.personnel.id <- function(
     rename(colonne_a_joindre := !!colonne_entree) %>% 
     {if(conservation == T) mutate(., !!colonne_entree_libelle := colonne_a_joindre, .after = "colonne_a_joindre") else .} %>% 
     left_join(operateurs %>% select(id, gestop_prenom, gestop_nom) %>% mutate(personnel = glue("{gestop_prenom} {gestop_nom}"), .keep = "unused"), join_by(colonne_a_joindre == personnel)) %>%
+    left_join(operateurs %>% select(id, gestop_prenom, gestop_nom) %>% mutate(personnel_v2 = glue("{gestop_nom} {gestop_prenom}"), .keep = "unused"), join_by(colonne_a_joindre == personnel_v2)) %>%
+    mutate(id = pmax(id.x, id.y, na.rm = TRUE)) %>% 
+    select(-id.x, -id.y) %>% 
     mutate(colonne_a_joindre := id, .keep = "unused") %>%
     # mutate(colonne_entree := personnel, .keep = "unused") %>%
     rename(!!colonne_entree := colonne_a_joindre)

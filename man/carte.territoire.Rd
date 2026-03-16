@@ -42,5 +42,6 @@ Cette fonction permet de créer un fond de carte départemental ou local au form
 carte.territoire()
 carte.territoire(emprise, altitude = F)
 carte.territoire(routes_principales = F, voies_ferrees = F)
+carte.territoire(occupation_sols = F, routes_principales = F, voies_ferrees = F, altitude = F)
 }
 \keyword{cartographie}

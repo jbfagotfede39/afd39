@@ -55,7 +55,7 @@ chronique.suivi <- function(
   Vue <-
     Vue %>% 
     {if(nrow(Vue) != 0) mutate(., chsvi_date = ymd(chsvi_date)) else .} %>% # Dans le cas où il n'y a pas de suivi dans la base, car sinon ça plante : Error in lapply(list(...), .num_to_date) : objet 'chsvi_date' introuvable
-    {if(nrow(Vue) != 0) arrange(., desc(chsvi_date), desc(chsvi_heure)) else .} %>% 
+    {if(nrow(Vue) != 0) arrange(., desc(chsvi_date), desc(chsvi_heure), desc(chsvi_action)) else .} %>% # desc(chsvi_action) afin d'avoir la dépose puis la pose dans le bon ordre
     {if(Sortie == "Propre") select(., -contains("modif")) else .}
   
   if(nrow(Vue) == 0) warning("Attention il n'y a aucune ligne correspondante")
