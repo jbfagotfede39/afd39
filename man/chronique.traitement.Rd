@@ -15,6 +15,7 @@ chronique.traitement(
   exportfigures_boxplot_interannuel = TRUE,
   exportfigures_classes_calendaires = TRUE,
   exportfigures_classes_densite = TRUE,
+  exportfigures_horizonplot = TRUE,
   exportfigures_profil_longitudinal = TRUE,
   exportfigures_preferendums_especes = TRUE,
   exportDCE = FALSE,
@@ -53,7 +54,9 @@ chronique.traitement(
 
 \item{exportfigures_classes_calendaires}{Si \code{TRUE} (par défaut), exporte les vues sous forme de classes calendaires. Si \code{FALSE}, ne les exporte pas.}
 
-\item{exportfigures_classes_densite}{Si \code{TRUE} (par défaut), exporte les vues sous forme de classes de densité Si \code{FALSE}, ne les exporte pas.}
+\item{exportfigures_classes_densite}{Si \code{TRUE} (par défaut), exporte les vues sous forme de classes de densité. Si \code{FALSE}, ne les exporte pas.}
+
+\item{exportfigures_horizonplot}{Si \code{TRUE} (par défaut), exporte les vues sous forme de graphiques d'horizons. Si \code{FALSE}, ne les exporte pas.}
 
 \item{exportfigures_profil_longitudinal}{Si \code{TRUE} (par défaut), exporte les figures de profils longitudinaux. Si \code{FALSE}, ne les exporte pas.}
 

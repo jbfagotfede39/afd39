@@ -55,7 +55,7 @@ chronique.DCE <- function(
     if(!is.na(fichierSuivis)) fnameSuivi <- fichierSuivis
     # if(is.na(fichierSuivis)) fnameSuivi <- tk_choose.files(caption = "Fichier de suivi de terrain")
     if(is.na(fichierSuivis))  stop("Localisation du fichier du suivi de terrain à saisir manuellement")
-    SuiviTerrain <- chronique.ouverture("Suivis", "Thermie", fnameSuivi)
+    SuiviTerrain <- chronique.ouverture("Suivis", "Thermie", fnameSuivi) %>% mutate(chsvi_capteur = as.character(chsvi_capteur))
     
     listeStations <- 
       Stations %>% 

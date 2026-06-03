@@ -3,7 +3,7 @@
 #' Associe proprement les personnels aux données issues de OpenTime
 #' @name opentime.association.personnel
 #' @keywords personnel
-#' @param data Jeu de données à traiter, issu de \code{opentime.tps.attendu()} par exemple
+#' @param data Jeu de données à traiter, issu de \code{opentime.tps.attendu()} ou \code{opentime.tps.realise()}
 #' @param format Format de la sortie : \code{libelle_separe} (par défaut), \code{libelle_complet} ou \code{id}
 #' @import DBI
 #' @import tidyverse
@@ -22,8 +22,13 @@ opentime.association.personnel <- function(
   #### Nettoyage & reformatage ####
   data_v2 <- 
     data %>% 
+    {if(!("Utilisateur" %in% names(.))) opentime.projet(.) %>% mutate(., Utilisateur = ifelse(projet_id > 479 & metier == "Responsable du pôle technique", "Fagot Jean-Baptiste", NA_character_)) %>% mutate(Utilisateur = ifelse(is.na(Utilisateur) & metier == "Responsable du pôle technique", "El Bettah Mehdi", Utilisateur)) %>% select(., -projet_id) else .} %>% 
     mutate(id = ifelse(metier == "Ingénieur JBF", 1, NA), .after = metier) %>% 
-    mutate(id = ifelse(metier == "Responsable du pôle technique", 1, id)) %>% 
+    rowwise() %>% 
+    mutate(id = ifelse(metier == "Responsable du pôle technique" & grepl("Fagot", Utilisateur), 1, id)) %>% 
+    mutate(id = ifelse(metier == "Responsable du pôle technique" & grepl("Bettah", Utilisateur), 9, id)) %>% 
+    ungroup() %>% 
+    # select(-Utilisateur) %>% 
     mutate(id = ifelse(metier == "Chargé de développement VR", 6, id)) %>% 
     mutate(id = ifelse(metier == "Chargé de développement PM", 7, id)) %>% 
     mutate(id = ifelse(metier == "Chargé de développement SP", 8, id)) %>% 

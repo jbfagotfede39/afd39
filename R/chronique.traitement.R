@@ -12,7 +12,8 @@
 #' @param exportfigures_cumul_degresjours Si \code{TRUE} (par défaut), exporte les cumuls de degrés-jours. Si \code{FALSE}, ne les exporte pas.
 #' @param exportfigures_boxplot_interannuel Si \code{TRUE} (par défaut), exporte les boxplots interannuels. Si \code{FALSE}, ne les exporte pas.
 #' @param exportfigures_classes_calendaires Si \code{TRUE} (par défaut), exporte les vues sous forme de classes calendaires. Si \code{FALSE}, ne les exporte pas.
-#' @param exportfigures_classes_densite Si \code{TRUE} (par défaut), exporte les vues sous forme de classes de densité Si \code{FALSE}, ne les exporte pas.
+#' @param exportfigures_classes_densite Si \code{TRUE} (par défaut), exporte les vues sous forme de classes de densité. Si \code{FALSE}, ne les exporte pas.
+#' @param exportfigures_horizonplot Si \code{TRUE} (par défaut), exporte les vues sous forme de graphiques d'horizons. Si \code{FALSE}, ne les exporte pas.
 #' @param exportfigures_profil_longitudinal Si \code{TRUE} (par défaut), exporte les figures de profils longitudinaux. Si \code{FALSE}, ne les exporte pas.
 #' @param exportfigures_preferendums_especes Si \code{TRUE} (par défaut), exporte les figures de préférendums des espèces avec les Vmm30j. Si \code{FALSE}, ne les exporte pas.
 #' @param exportDCE Si \code{TRUE}, exporte les mesures au format DCE. Si \code{FALSE} (par défaut), ne les exporte pas.
@@ -58,6 +59,7 @@ chronique.traitement <- function(
   exportfigures_boxplot_interannuel = TRUE,
   exportfigures_classes_calendaires = TRUE,
   exportfigures_classes_densite = TRUE,
+  exportfigures_horizonplot = TRUE,
   exportfigures_profil_longitudinal = TRUE,
   exportfigures_preferendums_especes = TRUE,
   exportDCE = FALSE,
@@ -104,6 +106,7 @@ chronique.traitement <- function(
   if(exportfigures == FALSE) exportfigures_classes_calendaires <- FALSE
   if(dep39 == FALSE) exportfigures_classes_calendaires <- FALSE # À supprimer par la suite quand on saura envoyer des données vides dans chronique.figure.classescalendaires() (#102)
   if(dep39 == FALSE) exportfigures_classes_densite <- FALSE # À supprimer par la suite quand on saura envoyer des données vides dans chronique.figure.classesdensite()
+  if(dep39 == FALSE) exportfigures_horizonplot <- FALSE # À supprimer par la suite quand on saura envoyer des données vides dans chronique.figure.classesdensite()
   if(exportfigures == FALSE) exportfigures_profil_longitudinal <- FALSE
   if(dep39 == FALSE) exportfigures_profil_longitudinal <- FALSE
   if(exportfigures == FALSE) exportfigures_preferendums_especes <- FALSE
@@ -148,7 +151,7 @@ if(export == TRUE){
       dir.create(paste0("./",projet, "/Sorties/Vues/"), showWarnings = FALSE, recursive = FALSE)
       dir.create(paste0("./",projet, "/Sorties/Vues/Interannuelles"), showWarnings = FALSE, recursive = FALSE)
       dir.create(paste0("./",projet, "/Sorties/Vues/Intersites"), showWarnings = FALSE, recursive = FALSE)
-      if(exportfigures_classes_calendaires == TRUE | exportfigures_classes_densite == TRUE){dir.create(paste0("./",projet, "/Sorties/Vues/Calendaires"), showWarnings = FALSE, recursive = FALSE)}
+      if(exportfigures_classes_calendaires == TRUE | exportfigures_classes_densite == TRUE | exportfigures_horizonplot == TRUE){dir.create(paste0("./",projet, "/Sorties/Vues/Calendaires"), showWarnings = FALSE, recursive = FALSE)}
       if(exportfigures_preferendums_especes == TRUE){dir.create(paste0("./",projet, "/Sorties/Vues/Preferendums_biologiques"), showWarnings = FALSE, recursive = FALSE)}
       dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_absolu-fixe/"), showWarnings = FALSE, recursive = FALSE)
       dir.create(paste0("./",projet, "/Sorties/Vues/Annuelles_absolu-libre/"), showWarnings = FALSE, recursive = FALSE)
@@ -316,7 +319,7 @@ if(export == TRUE && dep39 == "autre"){
     # if(is.na(localisation_suiviterrain)) fnameSuivi <- tk_choose.files(caption = "Fichier de suivi de terrain")
     if(is.na(localisation_suiviterrain))  stop("Localisation du fichier du suivi de terrain à saisir manuellement")
     if(!is.na(localisation_suiviterrain)) fnameSuivi <- adresse.switch(localisation_suiviterrain)
-    SuiviTerrain <- chronique.ouverture("Suivis", "Thermie", fnameSuivi)
+    SuiviTerrain <- chronique.ouverture("Suivis", "Thermie", fnameSuivi) %>% mutate(chsvi_capteur = as.character(chsvi_capteur))
     
     # if(is.na(localisation_capteurs)) fnameCapteurs <- tk_choose.files(caption = "Fichier des capteurs")
     if(is.na(localisation_capteurs))  stop("Localisation du fichier des capteurs à saisir manuellement")
@@ -454,14 +457,14 @@ if(log != "Aucun") put("Fin de la sortie des stations") # Log
 #### Sortie suivi de terrain #####
 if(export == TRUE && dep39 == TRUE){
   SuiviTerrain %>% 
-    openxlsx::write.xlsx(paste0("./",projet, "/Sorties/", format(now(), format="%Y-%m-%d"), "_suivi_terrain.xlsx"), sheetName = "SuiviTerrain", row.names = F, showNA = F, colWidths="auto")
+    openxlsx::write.xlsx(paste0("./",projet, "/Sorties/", today(), "_suivi_terrain.xlsx"), sheetName = "SuiviTerrain", row.names = F, showNA = F, colWidths="auto")
 }
 if(log != "Aucun") put("Fin de la sortie du suivi de terrain") # Log
 
 #### Sortie données capteurs #####
 if(export == TRUE && dep39 == TRUE){
   SuiviCapteurs %>% 
-    openxlsx::write.xlsx(paste0("./",projet, "/Sorties/", format(now(), format="%Y-%m-%d"), "_historique_capteurs.xlsx"), sheetName = "Capteurs", row.names = F, showNA = F, colWidths="auto")
+    openxlsx::write.xlsx(paste0("./",projet, "/Sorties/", today(), "_historique_capteurs.xlsx"), sheetName = "Capteurs", row.names = F, showNA = F, colWidths="auto")
   }
 if(log != "Aucun") put("Fin de la sortie des données de capteurs") # Log
 
@@ -472,7 +475,7 @@ DataTravailSIG <- DataTravailSIG %>% left_join(communes %>% st_drop_geometry() %
 DataTravailSIG <- DataTravailSIG %>% st_join(HER) %>% dplyr::select(-id)
 DataTravailSIG <- DataTravailSIG %>% st_join(contextesPDPG %>% dplyr::select(hycont_contexte_code))
 DataTravailSIG <- DataTravailSIG %>% left_join(Commentaires %>% dplyr::select(chres_coderhj, chres_typemesure, chres_anneebiol, chres_commentaire), by = c('chsta_coderhj' = "chres_coderhj", "AnneeVMM" = "chres_anneebiol", "Typemesure" = "chres_typemesure"))
-SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", format(now(), format="%Y-%m-%d"), "_Resultats"), shp = F)
+SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", today(), "_Resultats"), shp = F)
 SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", "Atlas_Resultats"), shp = F, excel = F, kml = F)
 }
 
@@ -484,13 +487,13 @@ if(export == TRUE && dep39 == "autre"){
   {if(!("chsta_codecontextepdpg" %in% names(DataTravailSIG))) mutate(., hycont_contexte_code = NA_character_) else .} %>% 
   {if(!("chsta_milieu" %in% names(DataTravailSIG))) mutate(., chsta_milieu = NA_character_) else .}
   DataTravailSIG <- DataTravailSIG %>% left_join(Commentaires %>% dplyr::select(chres_coderhj, chres_typemesure, chres_anneebiol, chres_commentaire), by = c('chsta_coderhj' = "chres_coderhj", "AnneeVMM" = "chres_anneebiol", "Typemesure" = "chres_typemesure"))
-  SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", format(now(), format="%Y-%m-%d"), "_Resultats"), shp = F)
+  SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", today(), "_Resultats"), shp = F)
   SIG.export(DataTravailSIG, paste0("./",projet, "/Sorties/Résultats/", "Atlas_Resultats"), shp = F, excel = F, kml = F)
 }
 
 if(export == TRUE && dep39 == FALSE){
   DataTravail %>% 
-    openxlsx::write.xlsx(paste0("./",projet, "/Sorties/Résultats/", format(now(), format="%Y-%m-%d"), "_Resultats.xlsx"), sheetName = "Feuille1", row.names = F, showNA = F, colWidths="auto")
+    openxlsx::write.xlsx(paste0("./",projet, "/Sorties/Résultats/", today(), "_Resultats.xlsx"), sheetName = "Feuille1", row.names = F, showNA = F, colWidths="auto")
 }
 if(log != "Aucun") put("Fin de la sortie des résultats élaborés") # Log
 
@@ -568,6 +571,7 @@ if(export == TRUE){
     mesures_agregees_journalieres %>% 
     ungroup() %>% 
     formatage.annee.biologique() %>% 
+    formatage.annee.neutre() %>% 
     {if(export == TRUE && dep39 == TRUE) left_join(., listeStations %>% select(chsta_coderhj, chsta_mo) %>% st_drop_geometry(), join_by(chmes_coderhj == chsta_coderhj)) else .} %>% # Afin de raccroche le mo = source des données
     {if(export == TRUE && dep39 == "autre") left_join(., Stations %>% select(chsta_coderhj, chsta_mo) %>% st_drop_geometry(), join_by(chmes_coderhj == chsta_coderhj)) else .} # Afin de raccroche le mo = source des données
 } # Fin de sorties agrégées
@@ -614,19 +618,19 @@ if (exportfigures == TRUE) {
         # Y libre sans vmm30j
         data %>%
           group_split(chmes_coderhj, chmes_anneebiol) %>%
-          purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Complet", typemesure = "Thermie", Ymin = NA, Ymax = NA, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
+          purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Complet", typemesure = "Thermie", complement = TRUE, Ymin = NA, Ymax = NA, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
         # Y libre avec vmm30j
         data %>%
           group_split(chmes_coderhj, chmes_anneebiol) %>%
-          purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Complet", typemesure = "Thermie", Ymin = NA, Ymax = NA, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), Vmm30j = T, save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
+          purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Complet", typemesure = "Thermie", complement = TRUE, Ymin = NA, Ymax = NA, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), Vmm30j = T, save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
         # Y fixé sans vmm30j
         data %>%
           group_split(chmes_coderhj, chmes_anneebiol) %>%
-          purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Complet", typemesure = "Thermie", Ymin = -1, Ymax = 30, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
+          purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Complet", typemesure = "Thermie", complement = TRUE, Ymin = -1, Ymax = 30, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
         # Y fixé avec vmm30j
         data %>%
           group_split(chmes_coderhj, chmes_anneebiol) %>%
-          purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Complet", typemesure = "Thermie", Ymin = -1, Ymax = 30, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), Vmm30j = T, save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
+          purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Complet", typemesure = "Thermie", complement = TRUE, Ymin = -1, Ymax = 30, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), Vmm30j = T, save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
       }
     }
     if(log != "Aucun") put("Fin de la sortie graphique des chroniques complètes") # Log
@@ -637,19 +641,19 @@ if (exportfigures == TRUE) {
       # Y libre sans vmm30j
       data %>%
         group_split(chmes_coderhj, chmes_anneebiol, chmes_typemesure) %>%
-        purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = unique(.$chmes_typemesure), Ymin = NA, Ymax = NA, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
+        purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = unique(.$chmes_typemesure), complement = TRUE, Ymin = NA, Ymax = NA, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
       # Y libre avec vmm30j
       data %>%
         group_split(chmes_coderhj, chmes_anneebiol, chmes_typemesure) %>%
-        purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = unique(.$chmes_typemesure), Ymin = NA, Ymax = NA, Vmm30j = T, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
+        purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = unique(.$chmes_typemesure), complement = TRUE, Ymin = NA, Ymax = NA, Vmm30j = T, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
       # Y fixé sans vmm30j
       data %>%
         group_split(chmes_coderhj, chmes_anneebiol, chmes_typemesure) %>%
-        purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = unique(.$chmes_typemesure), Ymin = -1, Ymax = 30, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
+        purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = unique(.$chmes_typemesure), complement = TRUE, Ymin = -1, Ymax = 30, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
       # Y fixé avec vmm30j
       data %>%
         group_split(chmes_coderhj, chmes_anneebiol, chmes_typemesure) %>%
-        purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = unique(.$chmes_typemesure), Ymin = -1, Ymax = 30, Vmm30j = T, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
+        purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = unique(.$chmes_typemesure), complement = TRUE, Ymin = -1, Ymax = 30, Vmm30j = T, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
     }
     
     ## Type de mesures non spécifié ##
@@ -658,19 +662,19 @@ if (exportfigures == TRUE) {
       # Y libre sans vmm30j
       data %>%
         group_split(chmes_coderhj, chmes_anneebiol) %>%
-        purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = "Thermie", Ymin = NA, Ymax = NA, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
+        purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = "Thermie", complement = TRUE, Ymin = NA, Ymax = NA, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
       # Y libre avec vmm30j
       data %>%
         group_split(chmes_coderhj, chmes_anneebiol) %>%
-        purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = "Thermie", Ymin = NA, Ymax = NA, Vmm30j = T, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
+        purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = "Thermie", complement = TRUE, Ymin = NA, Ymax = NA, Vmm30j = T, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
       # Y fixé sans vmm30j
       data %>%
         group_split(chmes_coderhj, chmes_anneebiol) %>%
-        purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = "Thermie", Ymin = -1, Ymax = 30, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
+        purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = "Thermie", complement = TRUE, Ymin = -1, Ymax = 30, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
       # Y fixé avec vmm30j
       data %>%
         group_split(chmes_coderhj, chmes_anneebiol) %>%
-        purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = "Thermie", Ymin = -1, Ymax = 30, Vmm30j = T, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
+        purrr::map_dfr(~ chronique.figure(data = ., titre = as.character(paste0(unique(unlist(.$chmes_coderhj)), " - ", unique(unlist(.$chmes_anneebiol)))), duree = "Relatif", typemesure = "Thermie", complement = TRUE, Ymin = -1, Ymax = 30, Vmm30j = T, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png")) # Fonctionne si plusieurs années
     }
     if(log != "Aucun") put("Fin de la sortie graphique des données incomplètes") # Log
   } # Fin de l'interrupteur volontaire d'export des vues de chroniques classiques
@@ -714,7 +718,7 @@ if (exportfigures == TRUE) {
         purrr::map(~ chronique.figure.classesdensite(., stations = listeStations, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), projet = projet, save = T))
       # Estival #
       data %>% 
-        filter(mois %in% c("06", "07", "08", "09")) %>% 
+        filtrage.estival() %>% 
         group_split(chmes_coderhj) %>% 
         purrr::map(~ chronique.figure.classesdensite(., stations = listeStations, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), projet = projet, estival = T, save = T))
       ## Sortie par année ##
@@ -724,7 +728,7 @@ if (exportfigures == TRUE) {
         purrr::map(~ chronique.figure.classesdensite(., stations = listeStations, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), projet = projet, save = T))
       # Estival #
       data %>% 
-        filter(mois %in% c("06", "07", "08", "09")) %>% 
+        filtrage.estival() %>% 
         group_split(chmes_anneebiol) %>% 
         purrr::map(~ chronique.figure.classesdensite(., stations = listeStations, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), projet = projet, estival = T, save = T))
       ## Sortie par station par année ##
@@ -734,12 +738,27 @@ if (exportfigures == TRUE) {
         purrr::map(~ chronique.figure.classesdensite(., stations = listeStations, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), projet = projet, save = T))
       # Estival #
       data %>% 
-        filter(mois %in% c("06", "07", "08", "09")) %>% 
+        filtrage.estival() %>% 
         group_split(chmes_coderhj, chmes_anneebiol) %>% 
         purrr::map(~ chronique.figure.classesdensite(., stations = listeStations, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), projet = projet, estival = T, save = T))
     } # Fin de la condition de résultats suffisants
     if(log != "Aucun") put("Fin de la sortie graphique des vues de classes de densité") # Log
   } # Fin de l'interrupteur volontaire d'export des vues de classes de densité
+  
+  ##### Sorties graphiques vue graphiques d'horizons #####
+  if(exportfigures_horizonplot == T){
+    if (all(export & "chmes_typemesure" %in% colnames(mesures_agregees_journalieres) & n_distinct(mesures_agregees_journalieres$chmes_typemesure) == 1) == TRUE) {
+      ## Sortie par station ##
+      mesures_agregees_journalieres %>% 
+        group_split(chmes_coderhj) %>% 
+        purrr::map(~ chronique.figure.horizonplot(., stations = listeStations, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), projet = projet, save = T))
+      ## Sortie par année ##
+      mesures_agregees_journalieres %>% 
+        group_split(chmes_anneebiol) %>% 
+        purrr::map(~ chronique.figure.horizonplot(., stations = listeStations, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), projet = projet, save = T))
+    } # Fin de la condition de résultats suffisants
+    if(log != "Aucun") put("Fin de la sortie graphique des graphiques d'horizons") # Log
+  } # Fin de l'interrupteur volontaire d'export des graphiques d'horizons
   
   ##### Sorties graphiques basées sur les résultats (filtrés ou non) #####
   if(filtrage == F){
@@ -778,12 +797,15 @@ if (exportfigures == TRUE) {
   ## Sortie graphique boxplot interannuel ##
   if(exportfigures_boxplot_interannuel == T){
     if (all(export & "chmes_typemesure" %in% colnames(data) & n_distinct(data$chmes_typemesure) == 1) == TRUE) {
+      liste_annees <- data %>% distinct(chmes_anneebiol) %>% arrange(desc(chmes_anneebiol)) %>% slice(1:10)
       # Boxplot
       data %>%
+        filter(chmes_anneebiol %in% liste_annees$chmes_anneebiol) %>% 
         group_split(chmes_coderhj, chmes_typemesure) %>%
         purrr::map_dfr(~ chronique.figure.interannuelle(data = ., titre = as.character(paste0(unique(.$chmes_coderhj))), typemesure = unique(.$chmes_typemesure), style = "boxplot", origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png"))
       # Violon
       data %>%
+        filter(chmes_anneebiol %in% liste_annees$chmes_anneebiol) %>% 
         group_split(chmes_coderhj, chmes_typemesure) %>%
         purrr::map_dfr(~ chronique.figure.interannuelle(data = ., titre = as.character(paste0(unique(.$chmes_coderhj))), typemesure = unique(.$chmes_typemesure), style = "violon", origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), save = T, projet = projet, format = ".png"))
     } # Fin de la condition de résultats suffisants

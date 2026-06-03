@@ -10,7 +10,7 @@ opentime.association.personnel(
 )
 }
 \arguments{
-\item{data}{Jeu de données à traiter, issu de \code{opentime.tps.attendu()} par exemple}
+\item{data}{Jeu de données à traiter, issu de \code{opentime.tps.attendu()} ou \code{opentime.tps.realise()}}
 
 \item{format}{Format de la sortie : \code{libelle_separe} (par défaut), \code{libelle_complet} ou \code{id}}
 }

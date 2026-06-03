@@ -1,5 +1,23 @@
 # NEWS - afd39
 
+## 0.0.40 - 2026-06-03
+### Ajouts
+- `chronique.traitement` : 
+  * implémentation de `filtrage.estival()`
+  * implémentation de `chronique.figure.horizonplot()`
+  * ajout d'un filtrage sur les 10 premières années pour la création des boxplots et diagrammes en violons interannuels (solve jbfagotfede39/aquatools/issues/103)
+- `opentime.association.personnel` : complément des exemples
+
+### Modifications
+- `chronique.DCE` : forçage d'un datatype
+- `chronique.traitement` : 
+  * refactoring de l'établissement de la date du jour dans les noms de fichiers
+  * forçage d'un datatype
+  * ajout du `complement = TRUE` des séries pour les figures classiques qui n'en disposaient pas, ce qui générait des barres lors d'absences de données
+
+### Corrections
+- `opentime.association.personnel` : correction du poste de responsable technique entre Mehdi et JB
+
 ## 0.0.39 - 2026-03-16
 ### Ajouts
 - `BDD.format` : 
