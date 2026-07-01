@@ -900,10 +900,10 @@ if(log != "Aucun"){
 
 #### Zippage ####
 if(export == TRUE & archivage != "Aucun"){
-  zip::zipr(zipfile = glue("{projet}.zip"), files = glue("./{projet}"))
+  zip::zipr(zipfile = glue("{projet}.zip"), files = projet)
 }
 if(export == TRUE & archivage == "Complet"){
-  fs::dir_delete(glue("./{projet}"))
+  fs::dir_delete(projet)
 }
 
 #### Sortie ####

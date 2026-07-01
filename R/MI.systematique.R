@@ -102,7 +102,9 @@ MI.systematique <- function(data)
     mutate(gi_ibl = ifelse(!is.na(sysgen_gi_ibl), sysgen_gi_ibl, sysfam_gi_ibl), .after = "gi_cb2")
 
   #### Vérification ####
-  if(data_v2_sans_ordres %>% nrow() != 0) stop("Présence de taxons sans jointure")
+  if(data_v2_sans_ordres %>% nrow() != 0){
+    stop(glue("Présence de taxons sans jointure : {data_v2_sans_ordres %>% formatage.liste('micapt_taxon')}"))
+  }
   nrow_apres <- data_v5 %>% nrow()
   if(nrow_apres != nrow_avant) stop("Incohérence dans le nombre de lignes avant et après traitement")
   

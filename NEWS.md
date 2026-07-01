@@ -1,5 +1,13 @@
 # NEWS - afd39
 
+## 0.0.41 - 2026-07-01
+### Ajouts
+- `MI.systematique` : explicitation d'un message d'erreur
+- `projet.suivi` : création
+
+### Modifications
+- `chronique.traitement` : modification de chemin au moment du zippage, qui pouvait générer des problèmes
+
 ## 0.0.40 - 2026-06-03
 ### Ajouts
 - `chronique.traitement` : 
