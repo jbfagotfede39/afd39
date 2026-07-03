@@ -23,6 +23,7 @@ chronique.traitement(
   filtrageanneevmm = TRUE,
   filtragedatefperiode = "07-15",
   filtragenbj = 75,
+  filtragenbanneevmm = 10,
   seuils = c(25, 22, 19, 15, 4),
   seuilexcesdefaut = 12,
   dep39 = c(FALSE, TRUE, "autre"),
@@ -68,13 +69,15 @@ chronique.traitement(
 
 \item{filtrageanneevmm}{Si \code{TRUE} (par défaut), ne conserve que les résultats dont l'année de fin de vmm30j est égale à l'année biologique du résultat}
 
-\item{filtragedatefperiode}{Ne conserver que les résultats dont la date de fin de période est postérieure à la date choisie ("07-15", soit le 15 juillet par défaut)}
+\item{filtragedatefperiode}{Ne conserver que les résultats dont la date de fin de période est postérieure à la date choisie (\code{07-15}, soit le 15 juillet par défaut)}
 
-\item{filtragenbj}{Nombre de journées minimales pour chaque résultat à conserver (75 par défaut).}
+\item{filtragenbj}{Nombre de journées minimales pour chaque résultat à conserver (\code{75} par défaut).}
 
-\item{seuils}{Seuils de valeurs (25,22,19,15,4 par défaut) dont il faut tester les dépassements. L'ordre de sortie correspond à l'ordre de cette liste.}
+\item{filtragenbanneevmm}{Nombre maximal d'années à conserver dans les représentations pluriannuelles (\code{10} par défaut).}
 
-\item{seuilexcesdefaut}{Seuil en-deça duquel les dépassements sont testés par défaut, sinon ils sont testés par excès (valeur de 12 par défaut).}
+\item{seuils}{Seuils de valeurs (\code{25,22,19,15,4} par défaut) dont il faut tester les dépassements. L'ordre de sortie correspond à l'ordre de cette liste.}
+
+\item{seuilexcesdefaut}{Seuil en-deça duquel les dépassements sont testés par défaut, sinon ils sont testés par excès (\code{12} par défaut).}
 
 \item{dep39}{Si \code{FALSE} (par défaut), ne va pas rechercher les données de stations dans la base locale ou dans un fichier externe et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations}
 

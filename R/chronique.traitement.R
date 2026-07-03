@@ -19,10 +19,11 @@
 #' @param exportDCE Si \code{TRUE}, exporte les mesures au format DCE. Si \code{FALSE} (par défaut), ne les exporte pas.
 #' @param filtrage Si \code{TRUE}, filtre les résultats avec chronique.resultats.filtrage pour ne conserver que les pertinents pour les représentations graphiques inter-annuelles/inter-sites. \code{FALSE} (par défaut)
 #' @param filtrageanneevmm Si \code{TRUE} (par défaut), ne conserve que les résultats dont l'année de fin de vmm30j est égale à l'année biologique du résultat
-#' @param filtragedatefperiode Ne conserver que les résultats dont la date de fin de période est postérieure à la date choisie ("07-15", soit le 15 juillet par défaut)
-#' @param filtragenbj Nombre de journées minimales pour chaque résultat à conserver (75 par défaut).
-#' @param seuils Seuils de valeurs (25,22,19,15,4 par défaut) dont il faut tester les dépassements. L'ordre de sortie correspond à l'ordre de cette liste.
-#' @param seuilexcesdefaut Seuil en-deça duquel les dépassements sont testés par défaut, sinon ils sont testés par excès (valeur de 12 par défaut).
+#' @param filtragedatefperiode Ne conserver que les résultats dont la date de fin de période est postérieure à la date choisie (\code{07-15}, soit le 15 juillet par défaut)
+#' @param filtragenbj Nombre de journées minimales pour chaque résultat à conserver (\code{75} par défaut).
+#' @param filtragenbanneevmm Nombre maximal d'années à conserver dans les représentations pluriannuelles (\code{10} par défaut).
+#' @param seuils Seuils de valeurs (\code{25,22,19,15,4} par défaut) dont il faut tester les dépassements. L'ordre de sortie correspond à l'ordre de cette liste.
+#' @param seuilexcesdefaut Seuil en-deça duquel les dépassements sont testés par défaut, sinon ils sont testés par excès (\code{12} par défaut).
 #' @param dep39 Si \code{FALSE} (par défaut), ne va pas rechercher les données de stations dans la base locale ou dans un fichier externe et donc export simplifié. Si \code{TRUE}, fait la jointure SIG. Possibilité d'utiliser \code{autre} afin de sélectionner un fichier source de stations
 #' @param localisation_stations Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier des stations
 #' @param localisation_commentaires Si \code{NA} (par défaut), ouvre un applet pour localiser le fichier des commentaires
@@ -67,6 +68,7 @@ chronique.traitement <- function(
   filtrageanneevmm = TRUE,
   filtragedatefperiode = "07-15",
   filtragenbj = 75,
+  filtragenbanneevmm = 10,
   seuils = c(25,22,19,15,4),
   seuilexcesdefaut = 12,
   dep39 = c(FALSE, TRUE, "autre"),
@@ -797,7 +799,7 @@ if (exportfigures == TRUE) {
   ## Sortie graphique boxplot interannuel ##
   if(exportfigures_boxplot_interannuel == T){
     if (all(export & "chmes_typemesure" %in% colnames(data) & n_distinct(data$chmes_typemesure) == 1) == TRUE) {
-      liste_annees <- data %>% distinct(chmes_anneebiol) %>% arrange(desc(chmes_anneebiol)) %>% slice(1:10)
+      liste_annees <- data %>% distinct(chmes_anneebiol) %>% arrange(desc(chmes_anneebiol)) %>% slice(1:filtragenbanneevmm)
       # Boxplot
       data %>%
         filter(chmes_anneebiol %in% liste_annees$chmes_anneebiol) %>% 
@@ -816,6 +818,7 @@ if (exportfigures == TRUE) {
   if(exportfigures_profil_longitudinal == T){
     if (all(export & "chmes_typemesure" %in% colnames(data) & n_distinct(data$chmes_typemesure) == 1) == TRUE) {
       if(DataTravailSIG %>% group_by(chsta_milieu) %>% st_drop_geometry() %>% distinct(chsta_coderhj) %>% group_by(chsta_milieu) %>% summarise(N = n()) %>% filter(N > 2) %>% nrow() != 0){ # Début de test s'il y a bien au moins un milieu à tester
+        liste_annees <- DataTravailSIG %>% distinct(AnneeVMM) %>% arrange(desc(AnneeVMM)) %>% slice(1:filtragenbanneevmm)
         dataaconserver %>% # Le filtrage général est réalisé plus en amont avec ce qui remplit dataaconserver
           st_drop_geometry() %>% 
           filter(chsta_milieu %in% (DataTravailSIG %>% 
