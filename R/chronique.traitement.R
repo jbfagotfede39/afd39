@@ -817,20 +817,14 @@ if (exportfigures == TRUE) {
   ## Sortie graphique profil longitudinal ##
   if(exportfigures_profil_longitudinal == T){
     if (all(export & "chmes_typemesure" %in% colnames(data) & n_distinct(data$chmes_typemesure) == 1) == TRUE) {
-      if(DataTravailSIG %>% group_by(chsta_milieu) %>% st_drop_geometry() %>% distinct(chsta_coderhj) %>% group_by(chsta_milieu) %>% summarise(N = n()) %>% filter(N > 2) %>% nrow() != 0){ # Début de test s'il y a bien au moins un milieu à tester
-        liste_annees <- DataTravailSIG %>% distinct(AnneeVMM) %>% arrange(desc(AnneeVMM)) %>% slice(1:filtragenbanneevmm)
+      combinaisons <- DataTravailSIG %>% st_drop_geometry() %>% group_by(chsta_milieu, AnneeVMM) %>% distinct(chsta_coderhj)
+      liste_milieux_annees <- combinaisons %>% group_by(chsta_milieu, AnneeVMM) %>% count() %>% filter(n > 2) %>% ungroup() %>% group_by(chsta_milieu) %>% arrange(desc(AnneeVMM)) %>% slice(1:filtragenbanneevmm) %>% mutate(annee = AnneeVMM) %>% chronique.cle("MA")
+      if(liste_milieux_annees %>% nrow() != 0){ # Début de test s'il y a bien au moins un milieu à tester
         dataaconserver %>% # Le filtrage général est réalisé plus en amont avec ce qui remplit dataaconserver
           st_drop_geometry() %>% 
-          filter(chsta_milieu %in% (DataTravailSIG %>% 
-                                      group_by(chsta_milieu) %>% 
-                                      st_drop_geometry() %>% 
-                                      distinct(chsta_coderhj) %>% 
-                                      group_by(chsta_milieu) %>% 
-                                      summarise(N = n()) %>% 
-                                      filter(N > 2) %>% 
-                                      pull(chsta_milieu)
-          )
-          ) %>% # Ici on filtre pour ne conserver que les milieux pour lesquels il y a au moins trois stations
+          mutate(annee = AnneeVMM) %>% chronique.cle("MA") %>% 
+          filter(Cle %in% liste_milieux_annees$Cle) %>% 
+          select(-Cle) %>% 
           group_split(chsta_milieu) %>%
           purrr::map_dfr(~ chronique.figure.longitudinale(data = ., save = TRUE, origine_donnees = .$chsta_mo %>% unique() %>% glue_collapse(, sep = ", ", last = " et "), projet = projet, format = ".png"))
       } # Fin de test s'il y a bien au moins un milieu à tester
