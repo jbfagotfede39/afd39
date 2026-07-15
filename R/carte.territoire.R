@@ -44,7 +44,7 @@ carte.territoire <- function(
   #### Test de cohérence ####
   if(length(emprise) != 4) emprise_definie <- T # Enveloppe sf
   if(length(emprise) == 4) emprise_definie <- F # Objet bbox <-> length == 4
-  if(length(emprise) == 1 & is.na(emprise)) emprise_definie <- F # Objet bbox <-> length == 4
+  if(all(length(emprise) == 1 & is.na(emprise))) emprise_definie <- F # Objet bbox <-> length == 4
   if(emprise_definie == F) warning("Pas d'emprise de définie")
   
   #### Collecte des données ####
